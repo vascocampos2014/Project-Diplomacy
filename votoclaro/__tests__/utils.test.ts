@@ -64,7 +64,8 @@ describe('vercel.json', () => {
     expect(csp).toMatch(/script-src 'self' 'sha256-/);
     expect(csp).not.toMatch(/script-src[^;]*'unsafe-(inline|eval)'/);
     expect(csp).toContain("frame-ancestors 'none'");
-    expect(csp).toContain('connect-src \'self\' https://api.openar.pt');
+    // Data from openAR, questions to the RAG API on Hugging Face, nothing else.
+    expect(csp).toMatch(/connect-src 'self' https:\/\/api\.openar\.pt https:\/\/vscocmp-votoclaro-rag\.hf\.space;/);
   });
 
   it('sets the other security headers', () => {

@@ -91,3 +91,17 @@ Data comes from [openAR](https://api.openar.pt), which is built on the
 Assembleia da República's open data. It covers the XVII legislature. The
 official record lists each parliamentary group's position, not the vote of
 each individual deputy.
+
+## Deploying to a Hugging Face Space
+
+`deploy/hf-space/` holds the Space's Dockerfile and README. The image is CPU-only PyTorch with bge-m3
+baked in (offline at runtime) and the SQLite database copied in, and it uses about 2.1 GB RAM. Production
+settings: no `/docs`, 10 questions per minute per visitor (real IP from `X-Forwarded-For`), and 300 per day
+for the whole server.
+
+1. Create a public Space: SDK **Docker**, hardware **CPU Basic**, name `votoclaro-rag`.
+2. In the Space settings, add the secret `GROQ_API_KEY`. Use a key made just for the Space.
+3. Run `.venv/bin/hf auth login` with a write token, then `deploy/push_space.sh`. Only the Dockerfile, the
+   README, `src/` and the database are uploaded, and the script refuses anything that looks like a key.
+4. In the app, set `EXPO_PUBLIC_RAG_API_URL=https://vscocmp-votoclaro-rag.hf.space`. The CSP in
+   `votoclaro/vercel.json` already allows it.
