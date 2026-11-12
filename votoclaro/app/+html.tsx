@@ -41,10 +41,10 @@ const DESCRICAO =
 
 const responsiveBackground = `
 body {
-  background-color: #fff;
+  background-color: #F7F6F2;
 }
 @media (prefers-color-scheme: dark) {
   body {
-    background-color: #000;
+    background-color: #111111;
   }
 }`;

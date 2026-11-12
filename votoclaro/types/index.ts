@@ -44,8 +44,10 @@ export interface PerguntaAfinidade {
   id: string;
   tema: string;
   afirmacao: string;
-  // iniciativa cujo historial de voto é usado para comparar com a resposta do utilizador
-  iniciativaId: string;
+  // a votação real com que a resposta é comparada
+  referencia: string; // "Projeto de Lei n.º 511"
+  iniciativaId: number;
+  votacaoId: string;
 }
 
 export interface ResultadoAfinidade {

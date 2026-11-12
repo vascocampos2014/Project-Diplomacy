@@ -1,34 +1,26 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { LEGISLATURA, fetchDeputado } from '@/lib/parlamento-api';
+import { useDeputados } from '@/hooks/useDeputados';
+import { fetchDeputado } from '@/lib/parlamento-api';
+import { montarDeputadoDetalhe, type DeputadoDetalhe } from '@/lib/parlamentoAdapters';
 
-export interface DeputadoDetalhe {
-  id: number;
-  nome: string;
-  nomeCompleto: string;
-  partido: string;
-  circulo: string;
-  numMandatos: number;
-}
+export type { DeputadoDetalhe };
 
 export function useDeputado(id: string | undefined) {
-  return useQuery({
-    queryKey: ['deputado', id],
-    queryFn: async (): Promise<DeputadoDetalhe> => {
-      const detalhe = await fetchDeputado(id!);
-      const mandatoAtual = detalhe.mandatos.find((m) => m.legislaturaId === LEGISLATURA) ?? detalhe.mandatos[0];
-      const numMandatos = new Set(detalhe.mandatos.map((m) => m.legislaturaId)).size;
+  const lista = useDeputados();
+  const daLista = id ? lista.data?.porId.get(id) : undefined;
 
-      return {
-        id: detalhe.id,
-        nome: detalhe.nomeParlamentar,
-        nomeCompleto: detalhe.nomeCompleto,
-        partido: mandatoAtual?.grupoParlamentar ?? '—',
-        circulo: mandatoAtual?.circuloEleitoral ?? '—',
-        numMandatos,
-      };
-    },
+  const detalhe = useQuery({
+    queryKey: ['deputado', id],
+    queryFn: () => fetchDeputado(id!),
     enabled: !!id,
     staleTime: 60 * 60_000,
   });
+
+  const data = detalhe.data ? montarDeputadoDetalhe(detalhe.data, daLista) : undefined;
+  return {
+    data,
+    isLoading: detalhe.isLoading || lista.isLoading,
+    isError: detalhe.isError,
+  };
 }

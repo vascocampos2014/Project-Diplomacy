@@ -1,13 +1,14 @@
+// Linha de deputado — ver DESIGN.md › DeputadoRow
+import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { Avatar } from '@/components/Avatar';
+import { useCores } from '@/components/ui';
 import { VotoIndicator } from '@/components/VotoIndicator';
-import { useColorScheme } from '@/components/useColorScheme';
-import Colors from '@/constants/Colors';
 import { getCorPartido } from '@/constants/CORES_PARTIDOS';
-import { Radii, Spacing } from '@/constants/Spacing';
-import { Typography } from '@/constants/Typography';
-import { hexToRgba, iniciais } from '@/lib/format';
+import { Spacing } from '@/constants/Spacing';
+import { Fonts, Typography } from '@/constants/Typography';
 import type { Posicao } from '@/types';
 
 interface DeputadoRowProps {
@@ -20,94 +21,73 @@ interface DeputadoRowProps {
 }
 
 export function DeputadoRow({ nome, partido, circulo, fotoUrl, posicao, onPress }: DeputadoRowProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme];
-  const corPartido = getCorPartido(partido);
-
+  const cores = useCores();
   const conteudo = (
-    <View style={styles.row}>
-      <Avatar nome={nome} fotoUrl={fotoUrl} corPartido={corPartido} />
+    <>
+      <Avatar nome={nome} fotoUrl={fotoUrl} partido={partido} />
       <View style={styles.info}>
-        <Text style={[styles.nome, { color: colors.text }]} numberOfLines={1}>
+        <Text style={[Typography.bodySm, styles.nome, { color: cores.text }]} numberOfLines={1}>
           {nome}
         </Text>
-        <View style={styles.metaRow}>
-          <Text style={[styles.partido, { color: corPartido }]}>{partido}</Text>
-          <Text style={[Typography.caption, { color: colors.tabIconDefault }]}>· {circulo}</Text>
-        </View>
+        <Text style={[Typography.caption, { color: cores.textMuted }]} numberOfLines={1}>
+          {circulo}
+        </Text>
       </View>
-      {posicao && <VotoIndicator posicao={posicao} />}
-    </View>
+      <View style={styles.partidoCaixa}>
+        <View style={[styles.ponto, { backgroundColor: getCorPartido(partido) }]} />
+        <Text style={[styles.partido, { color: cores.text }]}>{partido}</Text>
+      </View>
+      {posicao ? <VotoIndicator posicao={posicao} size="sm" /> : null}
+      {onPress ? <MaterialIcons name="chevron-right" size={20} color={cores.textMuted} accessible={false} /> : null}
+    </>
   );
 
   if (!onPress) {
-    return conteudo;
+    return (
+      <View style={styles.linha} accessible accessibilityLabel={`${nome}, ${partido}, ${circulo}`}>
+        {conteudo}
+      </View>
+    );
   }
-
   return (
-    <TouchableOpacity
-      activeOpacity={0.7}
+    <Pressable
+      style={({ pressed }) => [styles.linha, pressed && { opacity: 0.7 }]}
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={`${nome}, ${partido}, ${circulo}`}
       accessibilityHint="Abre o perfil do deputado"
     >
       {conteudo}
-    </TouchableOpacity>
-  );
-}
-
-function Avatar({ nome, fotoUrl, corPartido }: { nome: string; fotoUrl?: string; corPartido: string }) {
-  if (fotoUrl) {
-    return <Image source={{ uri: fotoUrl }} style={styles.avatar} resizeMode="cover" accessible={false} />;
-  }
-  return (
-    <View
-      style={[styles.avatar, styles.avatarFallback, { backgroundColor: hexToRgba(corPartido, 0.18) }]}
-      accessible={false}
-    >
-      <Text style={[styles.avatarIniciais, { color: corPartido }]}>{iniciais(nome)}</Text>
-    </View>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  row: {
+  linha: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: Spacing.sm,
-  },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: Radii.badge,
-  },
-  avatarFallback: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarIniciais: {
-    fontFamily: 'PublicSans_700Bold',
-    fontSize: 15,
+    gap: Spacing.md,
+    paddingVertical: Spacing.md,
   },
   info: {
     flex: 1,
-    marginLeft: Spacing.md,
-    marginRight: Spacing.md,
   },
   nome: {
-    fontFamily: 'PublicSans_700Bold',
-    fontSize: Typography.bodyLg.fontSize,
+    fontFamily: Fonts.semibold,
   },
-  metaRow: {
+  partidoCaixa: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 2,
-    gap: Spacing.xs,
+    gap: 5,
+  },
+  ponto: {
+    width: 8,
+    height: 8,
+    borderRadius: 999,
   },
   partido: {
-    fontFamily: 'PublicSans_600SemiBold',
-    fontSize: 11,
-    letterSpacing: 0.5,
+    fontFamily: Fonts.bold,
+    fontSize: 12,
+    letterSpacing: 0.3,
   },
 });

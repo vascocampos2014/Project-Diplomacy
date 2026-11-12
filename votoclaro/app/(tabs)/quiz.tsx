@@ -1,32 +1,41 @@
-import React, { useState } from 'react';
-import { ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import React, { useMemo, useState } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AfinidadeQuestaoCard } from '@/components/AfinidadeQuestaoCard';
+import { EcraVazio } from '@/components/EcraVazio';
 import { MenuTresPontos } from '@/components/MenuTresPontos';
-import { ResultadoAfinidadeBarra } from '@/components/ResultadoAfinidadeBarra';
-import { useColorScheme } from '@/components/useColorScheme';
-import Colors from '@/constants/Colors';
+import { PartidoBar } from '@/components/PartidoBar';
+import { Aviso, Botao, CabecalhoEcra, Cartao, Contentor, TituloSecao, useCores } from '@/components/ui';
+import { VotoIndicator } from '@/components/VotoIndicator';
 import { Radii, Spacing } from '@/constants/Spacing';
 import { Typography } from '@/constants/Typography';
+import { useQuiz } from '@/hooks/useQuiz';
 import { calcularAfinidade } from '@/lib/afinidade';
-import { hexToRgba } from '@/lib/format';
-import { MOCK_PERGUNTAS_AFINIDADE } from '@/lib/quizData';
 import type { RespostaAfinidade } from '@/types';
 
+const SIMBOLO_RESPOSTA: Record<RespostaAfinidade, string> = { concordo: '✓ Concordo', neutro: '— Neutro', discordo: '✗ Discordo' };
+
 export default function QuizScreen() {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme];
+  const cores = useCores();
+  const router = useRouter();
+  const { perguntas, partidos, posicoesPorVotacao, pronto, isError } = useQuiz();
   const [indice, setIndice] = useState(0);
   const [respostas, setRespostas] = useState<Record<string, RespostaAfinidade>>({});
 
-  const total = MOCK_PERGUNTAS_AFINIDADE.length;
+  const total = perguntas.length;
   const terminou = indice >= total;
-  const pergunta = MOCK_PERGUNTAS_AFINIDADE[indice];
+  const pergunta = perguntas[Math.min(indice, total - 1)];
+
+  const resultados = useMemo(
+    () => (terminou && pronto ? calcularAfinidade(perguntas, respostas, posicoesPorVotacao, partidos) : []),
+    [terminou, pronto, perguntas, respostas, posicoesPorVotacao, partidos]
+  );
 
   function responder(resposta: RespostaAfinidade) {
-    setRespostas((atual) => ({ ...atual, [pergunta.id]: resposta }));
-    setIndice((atual) => atual + 1);
+    setRespostas((r) => ({ ...r, [pergunta.id]: resposta }));
+    setIndice((i) => i + 1);
   }
 
   function repetir() {
@@ -34,151 +43,177 @@ export default function QuizScreen() {
     setRespostas({});
   }
 
-  const resultados = terminou ? calcularAfinidade(respostas) : [];
-
   async function partilhar() {
-    const principal = resultados[0];
+    const topo = resultados.slice(0, 3).map((r) => `${r.partido} ${r.pontuacao}%`).join(', ');
     await Share.share({
-      message: principal
-        ? `Fiz o teste de afinidade partidária do VotoClaro. As minhas respostas coincidiram mais com o historial de voto do ${principal.partido} (${principal.pontuacao}%). Testa tu também!`
-        : 'Fiz o teste de afinidade partidária do VotoClaro!',
+      message: `Fiz o teste de afinidade do VotoClaro: as minhas respostas coincidiram mais com os votos reais de ${topo}. Faz o teu!`,
     });
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={[styles.header, { borderBottomColor: colors.border }]}>
-          <View style={styles.headerRow}>
-            <View style={styles.headerTextos}>
-              <Text style={[Typography.displayLg, { color: colors.text }]}>Quiz</Text>
-              <Text style={[Typography.bodySm, styles.subtitulo, { color: colors.tabIconDefault }]}>
-                Afinidade Partidária — responde a afirmações sobre políticas reais e descobre que partidos votaram
-                como tu.
-              </Text>
-            </View>
-            <MenuTresPontos />
-          </View>
-        </View>
+    <SafeAreaView style={[styles.ecra, { backgroundColor: cores.background }]} edges={['top']}>
+      <ScrollView contentContainerStyle={styles.conteudo}>
+        <Contentor>
+          <CabecalhoEcra
+            titulo="Afinidade"
+            subtitulo="Responde a propostas que foram mesmo votadas no Parlamento e vê que partidos votaram como tu."
+            direita={<MenuTresPontos />}
+          />
 
-        {terminou ? (
-          <>
-            <View style={styles.resultados}>
-              {resultados.map((resultado) => (
-                <ResultadoAfinidadeBarra
-                  key={resultado.partido}
-                  partido={resultado.partido}
-                  pontuacao={resultado.pontuacao}
-                />
-              ))}
-            </View>
-            <View style={[styles.aviso, { backgroundColor: hexToRgba(colors.text, 0.05) }]}>
-              <Text style={[Typography.caption, { color: colors.tabIconDefault }]}>
-                Esta comparação baseia-se apenas em dados públicos de votação. É informação, não uma recomendação de
-                voto.
-              </Text>
-            </View>
-            <TouchableOpacity
-              style={[styles.botao, { backgroundColor: colors.tint }]}
-              onPress={repetir}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel="Repetir teste"
-            >
-              <Text style={[styles.botaoLabel, { color: colors.background }]}>Repetir</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.botaoSecundario, { borderColor: colors.border }]}
-              onPress={partilhar}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel="Partilhar resultado"
-            >
-              <Text style={[Typography.label, { color: colors.text }]}>Partilhar resultado</Text>
-            </TouchableOpacity>
-          </>
-        ) : (
-          <>
-            <View style={styles.progresso}>
-              <Text style={[Typography.label, { color: colors.tabIconDefault }]}>
-                PERGUNTA {indice + 1} DE {total}
-              </Text>
-              <View style={[styles.trilho, { backgroundColor: colors.border }]}>
-                <View
-                  style={[styles.barra, { width: `${((indice + 1) / total) * 100}%`, backgroundColor: colors.tint }]}
-                />
+          {isError ? (
+            <EcraVazio icone="cloud-off" titulo="Não foi possível carregar" descricao="Verifica a tua ligação à internet e tenta de novo." />
+          ) : terminou ? (
+            !pronto ? (
+              <View style={styles.carregar}>
+                <ActivityIndicator color={cores.tint} />
               </View>
-            </View>
-            <AfinidadeQuestaoCard
-              tema={pergunta.tema}
-              afirmacao={pergunta.afirmacao}
-              respostaSelecionada={respostas[pergunta.id] ?? null}
-              onResponder={responder}
-            />
-          </>
-        )}
+            ) : (
+              <>
+                <Cartao>
+                  <Text style={[Typography.eyebrow, { color: cores.textMuted }]}>Resultado</Text>
+                  <Text style={[Typography.bodySm, styles.resultadoTexto, { color: cores.text }]}>
+                    Percentagem das tuas respostas que coincidem com o voto de cada partido nas {total} votações.
+                  </Text>
+                  {resultados.map((r) => (
+                    <PartidoBar key={r.partido} partido={r.partido} percentagem={r.pontuacao} legenda="de coincidência" />
+                  ))}
+                </Cartao>
+                <View style={styles.aviso}>
+                  <Aviso>
+                    Isto é informação sobre votos passados, não uma recomendação de voto. Um partido que faltou a uma
+                    votação não é avaliado nessa pergunta.
+                  </Aviso>
+                </View>
+                <View style={styles.botoes}>
+                  <Botao label="Partilhar resultado" icone="share" onPress={partilhar} />
+                  <Botao label="Repetir" icone="replay" variante="secundario" onPress={repetir} />
+                </View>
+
+                <TituloSecao nota="Toca numa votação para ver como votou cada partido.">As tuas respostas</TituloSecao>
+                <Cartao style={styles.semPadding}>
+                  {perguntas.map((p, i) => (
+                    <Pressable
+                      key={p.id}
+                      onPress={() => router.push({ pathname: '/votacao/[id]', params: { id: p.votacaoId, iniciativaId: String(p.iniciativaId) } })}
+                      style={({ pressed }) => [styles.resposta, i > 0 && { borderTopColor: cores.border, borderTopWidth: StyleSheet.hairlineWidth }, pressed && { opacity: 0.7 }]}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${p.afirmacao}. Respondeste: ${respostas[p.id] ?? 'sem resposta'}. ${p.referencia}`}
+                    >
+                      <Text style={[Typography.bodySm, { color: cores.text }]}>{p.afirmacao}</Text>
+                      <View style={styles.respostaMeta}>
+                        <Text style={[Typography.label, { color: cores.tintInk }]}>{respostas[p.id] ? SIMBOLO_RESPOSTA[respostas[p.id]] : '—'}</Text>
+                        <Text style={[Typography.caption, { color: cores.textMuted }]}>{p.referencia}</Text>
+                      </View>
+                    </Pressable>
+                  ))}
+                </Cartao>
+              </>
+            )
+          ) : (
+            <>
+              <View style={styles.progresso}>
+                <View style={styles.progressoTopo}>
+                  <Text style={[Typography.eyebrow, { color: cores.textMuted }]}>
+                    Pergunta {indice + 1} de {total}
+                  </Text>
+                  <View style={styles.pontos} accessible={false}>
+                    {perguntas.map((p, i) => (
+                      <View key={p.id} style={[styles.ponto, { backgroundColor: i <= indice ? cores.tint : cores.border }]} />
+                    ))}
+                  </View>
+                </View>
+              </View>
+              <AfinidadeQuestaoCard
+                tema={pergunta.tema}
+                afirmacao={pergunta.afirmacao}
+                respostaSelecionada={respostas[pergunta.id] ?? null}
+                onResponder={responder}
+              />
+              <View style={styles.rodape}>
+                {indice > 0 ? <Botao label="Anterior" icone="arrow-back" variante="secundario" onPress={() => setIndice((i) => i - 1)} /> : <View />}
+                <Text style={[Typography.caption, styles.fonte, { color: cores.textMuted }]}>Baseado no {pergunta.referencia}</Text>
+              </View>
+              <View style={styles.legenda}>
+                <VotoIndicator posicao="favor" size="sm" />
+                <Text style={[Typography.caption, { color: cores.textMuted, flex: 1 }]}>
+                  “Concordo” conta como voto a favor da proposta, “Discordo” como voto contra e “Neutro” como abstenção.
+                </Text>
+              </View>
+            </>
+          )}
+        </Contentor>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  ecra: {
     flex: 1,
   },
-  content: {
-    padding: Spacing.lg,
+  conteudo: {
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.huge,
   },
-  header: {
-    marginBottom: Spacing.xl,
-    paddingBottom: Spacing.lg,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+  carregar: {
+    paddingVertical: Spacing.huge,
+    alignItems: 'center',
   },
-  headerRow: {
+  progresso: {
+    marginBottom: Spacing.md,
+  },
+  progressoTopo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  headerTextos: {
-    flex: 1,
-    marginRight: Spacing.sm,
+  pontos: {
+    flexDirection: 'row',
+    gap: 6,
   },
-  subtitulo: {
+  ponto: {
+    width: 8,
+    height: 8,
+    borderRadius: Radii.pill,
+  },
+  rodape: {
+    marginTop: Spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.md,
+  },
+  fonte: {
+    flexShrink: 1,
+    textAlign: 'right',
+  },
+  legenda: {
+    marginTop: Spacing.xl,
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    alignItems: 'center',
+  },
+  resultadoTexto: {
     marginTop: Spacing.xs,
-  },
-  progresso: {
-    marginBottom: Spacing.xl,
-  },
-  trilho: {
-    height: 6,
-    overflow: 'hidden',
-    marginTop: Spacing.sm,
-  },
-  barra: {
-    height: '100%',
-  },
-  resultados: {
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.md,
   },
   aviso: {
-    borderRadius: Radii.chip,
-    padding: Spacing.lg,
-    marginBottom: Spacing.lg,
+    marginTop: Spacing.lg,
   },
-  botao: {
-    alignItems: 'center',
+  botoes: {
+    marginTop: Spacing.lg,
+    gap: Spacing.sm,
+  },
+  semPadding: {
+    paddingVertical: 0,
+  },
+  resposta: {
     paddingVertical: Spacing.md,
-    borderRadius: Radii.badge,
+    gap: Spacing.xs,
   },
-  botaoSecundario: {
-    marginTop: Spacing.md,
-    alignItems: 'center',
-    paddingVertical: Spacing.md,
-    borderRadius: Radii.badge,
-    borderWidth: StyleSheet.hairlineWidth,
-  },
-  botaoLabel: {
-    fontFamily: 'PublicSans_700Bold',
-    fontSize: 15,
+  respostaMeta: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: Spacing.sm,
   },
 });

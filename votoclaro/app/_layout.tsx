@@ -1,5 +1,4 @@
-import { Newsreader_600SemiBold, Newsreader_700Bold } from '@expo-google-fonts/newsreader';
-import { PublicSans_400Regular, PublicSans_600SemiBold, PublicSans_700Bold } from '@expo-google-fonts/public-sans';
+import { Inter_400Regular, Inter_600SemiBold, Inter_700Bold, Inter_900Black } from '@expo-google-fonts/inter';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
@@ -19,7 +18,7 @@ export {
 } from 'expo-router';
 
 export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
+  // A deep link straight to a detail page still gets the tabs underneath, so "back" works.
   initialRouteName: '(tabs)',
 };
 
@@ -28,12 +27,10 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-    Newsreader_600SemiBold,
-    Newsreader_700Bold,
-    PublicSans_400Regular,
-    PublicSans_600SemiBold,
-    PublicSans_700Bold,
+    Inter_400Regular,
+    Inter_600SemiBold,
+    Inter_700Bold,
+    Inter_900Black,
   });
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
@@ -80,14 +77,13 @@ function RootLayoutNav() {
       <Stack
         screenOptions={{
           headerStyle: { backgroundColor: colors.background },
-          headerTitleStyle: { fontFamily: 'PublicSans_700Bold', fontSize: 17, color: colors.text },
+          headerTitleStyle: { fontFamily: 'Inter_700Bold', fontSize: 17, color: colors.text },
           headerTintColor: colors.tint,
           headerShadowVisible: false,
           headerBackButtonDisplayMode: 'minimal',
         }}
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
       </Stack>
     </ThemeProvider>
   );

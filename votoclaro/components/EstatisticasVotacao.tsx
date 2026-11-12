@@ -1,9 +1,10 @@
+// 4 células tingidas — ver DESIGN.md › EstatisticasVotacao
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { useColorScheme } from '@/components/useColorScheme';
-import Colors from '@/constants/Colors';
-import { Spacing } from '@/constants/Spacing';
+import { useCores } from '@/components/ui';
+import { coresPosicao, ROTULO } from '@/components/VotoIndicator';
+import { Radii, Spacing } from '@/constants/Spacing';
 import { Typography } from '@/constants/Typography';
 import type { Posicao } from '@/types';
 
@@ -14,58 +15,56 @@ interface EstatisticasVotacaoProps {
   ausentes: number;
 }
 
-const ORDEM: Posicao[] = ['favor', 'contra', 'abstencao', 'ausente'];
-
-const LABELS: Record<Posicao, string> = {
-  favor: 'Favor',
-  contra: 'Contra',
-  abstencao: 'Abstenção',
-  ausente: 'Ausente',
-};
-
 export function EstatisticasVotacao({ favor, contra, abstencao, ausentes }: EstatisticasVotacaoProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme];
-  const valores: Record<Posicao, number> = { favor, contra, abstencao, ausente: ausentes };
   const total = favor + contra + abstencao + ausentes;
-  const pct = (n: number) => (total > 0 ? (n / total) * 100 : 0);
-
+  const celulas: [Posicao, number][] = [
+    ['favor', favor],
+    ['contra', contra],
+    ['abstencao', abstencao],
+    ['ausente', ausentes],
+  ];
   return (
-    <View style={[styles.container, { borderColor: colors.border }]}>
-      {ORDEM.map((posicao, index) => (
-        <View
-          key={posicao}
-          style={[styles.celula, index > 0 && { borderLeftWidth: StyleSheet.hairlineWidth, borderLeftColor: colors.border }]}
-        >
-          <Text style={[Typography.label, styles.label, { color: colors[posicao] }]} numberOfLines={1} adjustsFontSizeToFit>
-            {LABELS[posicao].toUpperCase()}
-          </Text>
-          <Text style={[Typography.data, styles.valor, { color: colors[posicao] }]}>{valores[posicao]}</Text>
-          <Text style={[Typography.caption, { color: colors.tabIconDefault }]}>{pct(valores[posicao]).toFixed(1)}%</Text>
-        </View>
+    <View style={styles.grelha}>
+      {celulas.map(([posicao, n]) => (
+        <Celula key={posicao} posicao={posicao} n={n} pct={total > 0 ? (n / total) * 100 : 0} />
       ))}
     </View>
   );
 }
 
+function Celula({ posicao, n, pct }: { posicao: Posicao; n: number; pct: number }) {
+  const cores = useCores();
+  const c = coresPosicao(cores, posicao);
+  const label = posicao === 'abstencao' ? 'Absten.' : ROTULO[posicao];
+  return (
+    <View
+      style={[styles.celula, { backgroundColor: c.fundo }]}
+      accessible
+      accessibilityLabel={`${ROTULO[posicao]}: ${n} votos, ${pct.toFixed(1)}%`}
+    >
+      <Text style={[Typography.eyebrow, { color: c.tinta }]} numberOfLines={1}>
+        {label}
+      </Text>
+      <Text style={[Typography.data, styles.numero, { color: c.tinta }]}>{n}</Text>
+      <Text style={[Typography.caption, { color: cores.textMuted }]}>{pct.toFixed(1)}%</Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  container: {
+  grelha: {
     flexDirection: 'row',
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    gap: Spacing.sm,
   },
   celula: {
     flex: 1,
     alignItems: 'center',
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.xs,
+    borderRadius: Radii.chip,
   },
-  label: {
-    fontSize: 10,
-    letterSpacing: 0.5,
-    marginBottom: 4,
-  },
-  valor: {
-    marginBottom: 2,
+  numero: {
+    marginVertical: 2,
+    fontSize: 24,
   },
 });

@@ -98,6 +98,6 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
   },
   itemLabel: {
-    fontFamily: 'PublicSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
 });

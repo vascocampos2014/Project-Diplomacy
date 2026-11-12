@@ -1,21 +1,24 @@
 import { useEffect, useState } from 'react';
 import { Appearance, type ColorSchemeName } from 'react-native';
 
-import { useThemeStore } from '@/store/themeStore';
+import { lerTemaGuardado, useThemeStore } from '@/store/themeStore';
 
-// NOTE: The default React Native styling doesn't support server rendering.
-// Server rendered styles should not change between the first render of the HTML
-// and the first render on the client, so we start with 'light' and sync to the
-// real system preference once mounted (and keep it in sync on changes).
+let temaGuardadoLido = false;
+
+// O HTML é pré-gerado sem saber o tema do sistema: começa em 'light' e passa
+// para a preferência real (e para a escolha guardada) depois de montar.
 export function useColorScheme(): 'light' | 'dark' {
   const [scheme, setScheme] = useState<ColorSchemeName>('light');
   const override = useThemeStore((state) => state.override);
 
   useEffect(() => {
+    if (!temaGuardadoLido) {
+      temaGuardadoLido = true;
+      const guardado = lerTemaGuardado();
+      if (guardado) useThemeStore.setState({ override: guardado });
+    }
     setScheme(Appearance.getColorScheme());
-    const subscription = Appearance.addChangeListener(({ colorScheme }) => {
-      setScheme(colorScheme);
-    });
+    const subscription = Appearance.addChangeListener(({ colorScheme }) => setScheme(colorScheme));
     return () => subscription.remove();
   }, []);
 

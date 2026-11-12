@@ -1,5 +1,6 @@
 import { formatarDataPt } from '@/lib/format';
-import type { ApiDeputado } from '@/lib/parlamento-api';
+import type { ApiDeputado, ApiDeputadoDetail } from '@/lib/parlamento-api';
+import { LEGISLATURA } from '@/lib/parlamento-api';
 import { fotoUrl } from '@/lib/parlamento-api';
 import { classificarTema } from '@/lib/temas';
 import type { Deputado, Iniciativa, Posicao } from '@/types';
@@ -146,5 +147,30 @@ export function deputadoApiParaDeputado(d: ApiDeputado): Deputado {
     fotoUrl: fotoUrl(d.id),
     mandatos: 1,
     ativo: d.situacao !== null,
+  };
+}
+
+export interface DeputadoDetalhe {
+  id: number;
+  nome: string;
+  nomeCompleto: string;
+  partido: string;
+  circulo: string;
+  numMandatos: number;
+}
+
+// Junta o detalhe do deputado com a entrada da lista da legislatura. O
+// endpoint de detalhe deixou de trazer os mandatos, por isso o partido e o
+// círculo vêm da lista quando faltam.
+export function montarDeputadoDetalhe(detalhe: ApiDeputadoDetail, daLista?: ApiDeputado): DeputadoDetalhe {
+  const mandatos = detalhe.mandatos ?? [];
+  const atual = mandatos.find((m) => m.legislaturaId === LEGISLATURA) ?? mandatos[0];
+  return {
+    id: detalhe.id,
+    nome: detalhe.nomeParlamentar,
+    nomeCompleto: detalhe.nomeCompleto,
+    partido: atual?.grupoParlamentar ?? daLista?.grupoParlamentar ?? '—',
+    circulo: atual?.circuloEleitoral ?? daLista?.circuloEleitoral ?? '—',
+    numMandatos: Math.max(1, new Set(mandatos.map((m) => m.legislaturaId)).size),
   };
 }

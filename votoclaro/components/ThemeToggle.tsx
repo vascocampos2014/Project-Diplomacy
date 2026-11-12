@@ -34,8 +34,8 @@ export function ThemeToggle() {
             accessibilityLabel={`Tema ${opcao.label}`}
             accessibilityState={{ selected: selecionado }}
           >
-            <MaterialIcons name={opcao.icone} size={18} color={selecionado ? colors.background : colors.tabIconDefault} />
-            <Text style={[Typography.label, styles.opcaoLabel, { color: selecionado ? colors.background : colors.text }]}>
+            <MaterialIcons name={opcao.icone} size={18} color={selecionado ? colors.onTint : colors.textMuted} />
+            <Text style={[Typography.label, styles.opcaoLabel, { color: selecionado ? colors.onTint : colors.text }]}>
               {opcao.label}
             </Text>
           </TouchableOpacity>
@@ -48,7 +48,7 @@ export function ThemeToggle() {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    borderRadius: Radii.badge,
+    borderRadius: Radii.pill,
     borderWidth: StyleSheet.hairlineWidth,
     padding: 4,
     gap: 4,
@@ -60,9 +60,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 6,
     paddingVertical: Spacing.sm,
-    borderRadius: Radii.badge,
+    borderRadius: Radii.pill,
   },
   opcaoLabel: {
-    fontFamily: 'PublicSans_600SemiBold',
+    fontFamily: 'Inter_600SemiBold',
   },
 });

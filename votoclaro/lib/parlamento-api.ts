@@ -81,7 +81,8 @@ export interface ApiDeputadoDetail {
   depId: number | null;
   nomeParlamentar: string;
   nomeCompleto: string;
-  mandatos: ApiMandato[];
+  // A API deixou de incluir os mandatos neste endpoint (2026); tratar como opcional.
+  mandatos?: ApiMandato[];
 }
 
 type ApiParams = Record<string, string | number | boolean | undefined>;

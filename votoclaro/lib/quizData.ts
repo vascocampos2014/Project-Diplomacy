@@ -1,79 +1,77 @@
 import type { PerguntaAfinidade } from '@/types';
 
-// Afirmações do teste de afinidade partidária. Cada afirmação está ligada a uma
-// iniciativa real: "concordo" equivale a um voto a favor dessa iniciativa,
-// "discordo" a um voto contra, e "neutro" a uma abstenção.
-export const MOCK_PERGUNTAS_AFINIDADE: PerguntaAfinidade[] = [
+// Afirmações do teste de afinidade. Cada uma descreve, em linguagem neutra, o
+// que propunha uma iniciativa REAL da XVII legislatura, e está ligada à
+// votação oficial dessa iniciativa: o resultado compara as respostas com o
+// voto efetivo de cada grupo parlamentar (carregado da API openAR).
+//
+// Critérios de escolha: votações em que os partidos se dividiram (uma votação
+// unânime não distingue ninguém), temas variados, e texto que descreve a
+// proposta sem a avaliar.
+export const PERGUNTAS_AFINIDADE: PerguntaAfinidade[] = [
   {
-    id: 'af-arrendamento',
+    id: 'af-credito-habitacao',
     tema: 'Habitação',
-    afirmacao: 'O Estado deve impor limites ao aumento das rendas para proteger os inquilinos.',
-    iniciativaId: 'ini-1',
+    afirmacao:
+      'Deve existir um regime extraordinário para proteger quem tem crédito à habitação da casa própria quando as prestações sobem muito.',
+    referencia: 'Projeto de Lei n.º 511',
+    iniciativaId: 356354,
+    votacaoId: '182976',
   },
   {
-    id: 'af-medicos',
-    tema: 'Saúde',
-    afirmacao: 'O Estado deve definir metas obrigatórias de contratação de médicos de família.',
-    iniciativaId: 'ini-2',
+    id: 'af-pensoes',
+    tema: 'Pensões',
+    afirmacao: 'As pensões de menor valor devem ter um aumento suplementar, para além da atualização anual.',
+    referencia: 'Projeto de Resolução n.º 1292',
+    iniciativaId: 377308,
+    votacaoId: '193051',
   },
   {
-    id: 'af-iva',
+    id: 'af-irs-filhos',
     tema: 'Economia',
-    afirmacao: 'O IVA da eletricidade para consumo doméstico deve ser reduzido.',
-    iniciativaId: 'ini-3',
+    afirmacao: 'A dedução no IRS por cada filho deve ser maior a partir do terceiro filho.',
+    referencia: 'Projeto de Lei n.º 672',
+    iniciativaId: 356929,
+    votacaoId: '172307',
   },
   {
-    id: 'af-reflorestacao',
-    tema: 'Ambiente',
-    afirmacao: 'O Estado deve criar um programa nacional de reflorestação com espécies autóctones.',
-    iniciativaId: 'ini-4',
-  },
-  {
-    id: 'af-salario-minimo',
-    tema: 'Trabalho',
-    afirmacao: 'O salário mínimo nacional deve ser aumentado de forma significativa.',
-    iniciativaId: 'ini-8',
-  },
-  {
-    id: 'af-cuidadores',
-    tema: 'Saúde',
-    afirmacao: 'Os cuidadores informais devem ter mais direitos e apoios sociais reconhecidos por lei.',
-    iniciativaId: 'ini-6',
-  },
-  {
-    id: 'af-renda-apoiada',
-    tema: 'Habitação',
-    afirmacao: 'Os critérios de acesso à renda apoiada em habitação pública devem ser atualizados.',
-    iniciativaId: 'ini-7',
-  },
-  {
-    id: 'af-manuais',
-    tema: 'Educação',
-    afirmacao: 'Os manuais escolares devem ser gratuitos para todos os alunos do secundário.',
-    iniciativaId: 'ini-9',
-  },
-  {
-    id: 'af-violencia-domestica',
-    tema: 'Justiça',
-    afirmacao: 'As penas para crimes de violência doméstica devem ser agravadas.',
-    iniciativaId: 'ini-10',
-  },
-  {
-    id: 'af-petroleo',
-    tema: 'Ambiente',
-    afirmacao: 'Não devem ser concedidas novas licenças de prospeção de petróleo e gás em Portugal.',
-    iniciativaId: 'ini-11',
-  },
-  {
-    id: 'af-iva-geral',
+    id: 'af-isp',
     tema: 'Economia',
-    afirmacao: 'A taxa geral do IVA deve ser reduzida.',
-    iniciativaId: 'ini-12',
+    afirmacao: 'Os valores mínimos do imposto sobre os combustíveis (ISP) devem ser eliminados até ao final de 2027.',
+    referencia: 'Projeto de Lei n.º 796',
+    iniciativaId: 377316,
+    votacaoId: '193037',
   },
   {
-    id: 'af-habitacao-publica',
-    tema: 'Habitação',
-    afirmacao: 'O Estado deve investir na construção de habitação pública para responder à crise de habitação.',
-    iniciativaId: 'ini-13',
+    id: 'af-portagens',
+    tema: 'Mobilidade',
+    afirmacao: 'Devem acabar as portagens na A1 dentro do concelho de Vila Franca de Xira.',
+    referencia: 'Projeto de Resolução n.º 259',
+    iniciativaId: 315516,
+    votacaoId: '193058',
+  },
+  {
+    id: 'af-bombeiros',
+    tema: 'Proteção civil',
+    afirmacao: 'O Estado deve financiar de forma fixa os corpos de bombeiros profissionais das câmaras municipais.',
+    referencia: 'Projeto de Resolução n.º 1298',
+    iniciativaId: 377318,
+    votacaoId: '193220',
+  },
+  {
+    id: 'af-coleiras',
+    tema: 'Animais',
+    afirmacao: 'Deve ser proibido vender e usar coleiras de choque e coleiras estranguladoras em animais de companhia.',
+    referencia: 'Projeto de Lei n.º 528',
+    iniciativaId: 356420,
+    votacaoId: '193278',
+  },
+  {
+    id: 'af-capacete',
+    tema: 'Mobilidade',
+    afirmacao: 'Deve ser garantido o acesso a capacete a quem anda de bicicleta ou de trotinete elétrica.',
+    referencia: 'Projeto de Resolução n.º 1273',
+    iniciativaId: 377268,
+    votacaoId: '182975',
   },
 ];

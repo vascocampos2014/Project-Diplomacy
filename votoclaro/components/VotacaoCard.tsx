@@ -1,9 +1,10 @@
+// Card do feed — ver DESIGN.md › VotacaoCard
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { BarraProgresso } from '@/components/BarraProgresso';
-import { useColorScheme } from '@/components/useColorScheme';
-import Colors from '@/constants/Colors';
+import { ContagemVotos, ResultadoBadge } from '@/components/ContagemVotos';
+import { Cartao, Chip, useCores } from '@/components/ui';
 import { Spacing } from '@/constants/Spacing';
 import { Typography } from '@/constants/Typography';
 import type { Resultado } from '@/types';
@@ -21,11 +22,7 @@ interface VotacaoCardProps {
   onPress: () => void;
 }
 
-const RESULTADO_LABELS: Record<Resultado, string> = {
-  aprovada: 'Aprovada',
-  chumbada: 'Chumbada',
-  pendente: 'Pendente',
-};
+const RESULTADO_A11Y: Record<Resultado, string> = { aprovada: 'Aprovada', chumbada: 'Chumbada', pendente: 'Pendente' };
 
 export function VotacaoCard({
   titulo,
@@ -39,83 +36,83 @@ export function VotacaoCard({
   ausentes,
   onPress,
 }: VotacaoCardProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme];
-
+  const cores = useCores();
   const total = favor + contra + abstencao + ausentes;
   const pct = (n: number) => (total > 0 ? (n / total) * 100 : 0);
-
-  const resultadoColor =
-    resultado === 'aprovada' ? colors.favor : resultado === 'chumbada' ? colors.contra : colors.abstencao;
-  const accentColor = resultado === 'pendente' ? colors.border : resultadoColor;
+  const acento = resultado === 'aprovada' ? cores.favor : resultado === 'chumbada' ? cores.contra : cores.abstencao;
 
   return (
-    <TouchableOpacity
-      style={[styles.card, { borderLeftColor: accentColor, borderBottomColor: colors.border }]}
-      activeOpacity={0.7}
+    <Cartao
       onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={`${titulo}, ${referencia ? `${referencia}, ` : ''}${tema}, ${data}, ${RESULTADO_LABELS[resultado]}`}
+      style={styles.cartao}
+      accessibilityLabel={`${titulo}, ${referencia ? `${referencia}, ` : ''}${tema}, ${data}, ${RESULTADO_A11Y[resultado]}`}
       accessibilityHint="Abre o detalhe da votação"
     >
-      <View style={styles.headerRow}>
-        <Text style={[Typography.label, styles.tema, { color: colors.tabIconDefault }]}>{tema.toUpperCase()}</Text>
-        <Text style={[Typography.caption, { color: colors.tabIconDefault }]}>{data}</Text>
-      </View>
+      <View style={[styles.acento, { backgroundColor: acento }]} />
+      <View style={styles.corpo}>
+        <View style={styles.topo}>
+          <Chip label={tema.toUpperCase()} selecionado />
+          <Text style={[Typography.caption, { color: cores.textMuted }]}>{data}</Text>
+        </View>
 
-      <Text style={[Typography.displaySm, styles.titulo, { color: colors.text }]} numberOfLines={2}>
-        {titulo}
-      </Text>
-
-      {referencia ? (
-        <Text style={[Typography.caption, styles.referencia, { color: colors.tabIconDefault }]} numberOfLines={1}>
-          {referencia}
+        <Text style={[Typography.title, styles.titulo, { color: cores.text }]} numberOfLines={3}>
+          {titulo}
         </Text>
-      ) : null}
+        {referencia ? (
+          <Text style={[Typography.caption, styles.referencia, { color: cores.textMuted }]} numberOfLines={1}>
+            {referencia}
+          </Text>
+        ) : null}
 
-      <View style={styles.barraWrapper}>
-        <BarraProgresso favor={pct(favor)} contra={pct(contra)} abstencao={pct(abstencao)} animated={false} />
-      </View>
+        {total > 0 ? (
+          <View style={styles.barra}>
+            <BarraProgresso favor={pct(favor)} contra={pct(contra)} abstencao={pct(abstencao)} animated={false} />
+          </View>
+        ) : null}
 
-      <View style={styles.footerRow}>
-        <Text style={[Typography.label, { color: resultadoColor }]}>{RESULTADO_LABELS[resultado].toUpperCase()}</Text>
-        {total > 0 && (
-          <Text style={[Typography.caption, { color: colors.tabIconDefault }]}>{total} votos totais</Text>
-        )}
+        <View style={styles.rodape}>
+          {total > 0 ? <ContagemVotos favor={favor} contra={contra} abstencao={abstencao} ausentes={ausentes} /> : <View />}
+          <ResultadoBadge resultado={resultado} />
+        </View>
       </View>
-    </TouchableOpacity>
+    </Cartao>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    borderLeftWidth: 3,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    paddingLeft: Spacing.md,
-    paddingBottom: Spacing.lg,
+  cartao: {
+    flexDirection: 'row',
+    padding: 0,
+    overflow: 'hidden',
   },
-  headerRow: {
+  acento: {
+    width: 5,
+  },
+  corpo: {
+    flex: 1,
+    padding: Spacing.lg,
+  },
+  topo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  tema: {
-    letterSpacing: 0.5,
+    gap: Spacing.sm,
   },
   titulo: {
-    marginTop: Spacing.sm,
-    marginBottom: Spacing.md,
+    marginTop: Spacing.md,
   },
   referencia: {
-    marginTop: -Spacing.sm,
-    marginBottom: Spacing.md,
+    marginTop: Spacing.xs,
   },
-  barraWrapper: {
-    marginBottom: Spacing.md,
+  barra: {
+    marginTop: Spacing.lg,
   },
-  footerRow: {
+  rodape: {
+    marginTop: Spacing.md,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexWrap: 'wrap',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.sm,
   },
 });

@@ -1,10 +1,8 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 
-import { useColorScheme } from '@/components/useColorScheme';
-import Colors from '@/constants/Colors';
+import { Chip } from '@/components/ui';
 import { Spacing } from '@/constants/Spacing';
-import { Typography } from '@/constants/Typography';
 
 interface FiltroTemasProps {
   temas: string[];
@@ -13,58 +11,25 @@ interface FiltroTemasProps {
 }
 
 export function FiltroTemas({ temas, selecionado, onSelecionar }: FiltroTemasProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme];
-
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.container}
-      accessibilityRole="tablist"
-    >
-      <Tab label="Todos" ativo={selecionado === null} onPress={() => onSelecionar(null)} colors={colors} />
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.linha}>
+      <Chip label="Todos" selecionado={selecionado === null} onPress={() => onSelecionar(null)} />
       {temas.map((tema) => (
-        <Tab key={tema} label={tema} ativo={selecionado === tema} onPress={() => onSelecionar(tema)} colors={colors} />
+        <Chip
+          key={tema}
+          label={tema}
+          selecionado={selecionado === tema}
+          onPress={() => onSelecionar(selecionado === tema ? null : tema)}
+          accessibilityLabel={`Filtrar por ${tema}`}
+        />
       ))}
     </ScrollView>
   );
 }
 
-function Tab({
-  label,
-  ativo,
-  onPress,
-  colors,
-}: {
-  label: string;
-  ativo: boolean;
-  onPress: () => void;
-  colors: typeof Colors.light;
-}) {
-  return (
-    <TouchableOpacity
-      style={[styles.tab, { borderBottomColor: ativo ? colors.tint : 'transparent' }]}
-      onPress={onPress}
-      activeOpacity={0.6}
-      accessibilityRole="tab"
-      accessibilityLabel={`Filtrar por ${label}`}
-      accessibilityState={{ selected: ativo }}
-    >
-      <Text style={[Typography.label, { color: ativo ? colors.tint : colors.tabIconDefault }]}>
-        {label.toUpperCase()}
-      </Text>
-    </TouchableOpacity>
-  );
-}
-
 const styles = StyleSheet.create({
-  container: {
-    gap: Spacing.lg,
-    paddingRight: Spacing.lg,
-  },
-  tab: {
-    paddingBottom: Spacing.sm,
-    borderBottomWidth: 2,
+  linha: {
+    gap: Spacing.sm,
+    paddingVertical: Spacing.xs,
   },
 });

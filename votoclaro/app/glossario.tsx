@@ -9,6 +9,7 @@ import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { Radii, Spacing } from '@/constants/Spacing';
 import { Typography } from '@/constants/Typography';
+import { normalizar } from '@/lib/deputados';
 import { GLOSSARIO } from '@/lib/glossarioData';
 
 export default function GlossarioScreen() {
@@ -17,11 +18,9 @@ export default function GlossarioScreen() {
   const [pesquisa, setPesquisa] = useState('');
 
   const termos = useMemo(() => {
-    const termo = pesquisa.trim().toLowerCase();
+    const termo = normalizar(pesquisa);
     const lista = termo
-      ? GLOSSARIO.filter(
-          (item) => item.termo.toLowerCase().includes(termo) || item.definicao.toLowerCase().includes(termo)
-        )
+      ? GLOSSARIO.filter((item) => normalizar(item.termo).includes(termo) || normalizar(item.definicao).includes(termo))
       : GLOSSARIO;
     return [...lista].sort((a, b) => a.termo.localeCompare(b.termo, 'pt'));
   }, [pesquisa]);
@@ -30,7 +29,7 @@ export default function GlossarioScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
       <Stack.Screen options={{ title: 'Glossário' }} />
       <View style={styles.header}>
-        <Text style={[Typography.bodySm, styles.descricao, { color: colors.tabIconDefault }]}>
+        <Text style={[Typography.bodySm, styles.descricao, { color: colors.textMuted }]}>
           Termos comuns do processo legislativo, explicados de forma simples.
         </Text>
         <TextInput
@@ -39,7 +38,7 @@ export default function GlossarioScreen() {
             { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text },
           ]}
           placeholder="Procurar termo"
-          placeholderTextColor={colors.tabIconDefault}
+          placeholderTextColor={colors.textMuted}
           value={pesquisa}
           onChangeText={setPesquisa}
           accessibilityLabel="Procurar termo no glossário"
@@ -76,10 +75,10 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: Radii.badge,
+    borderRadius: Radii.pill,
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.sm,
-    fontFamily: 'PublicSans_400Regular',
+    fontFamily: 'Inter_400Regular',
     fontSize: Typography.bodyLg.fontSize,
   },
   list: {

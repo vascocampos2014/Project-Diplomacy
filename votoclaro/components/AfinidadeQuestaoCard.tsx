@@ -1,10 +1,9 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { useColorScheme } from '@/components/useColorScheme';
-import Colors from '@/constants/Colors';
+import { Cartao, Chip, useCores } from '@/components/ui';
 import { Radii, Spacing } from '@/constants/Spacing';
-import { Typography } from '@/constants/Typography';
+import { Fonts, Typography } from '@/constants/Typography';
 import type { RespostaAfinidade } from '@/types';
 
 interface AfinidadeQuestaoCardProps {
@@ -14,70 +13,84 @@ interface AfinidadeQuestaoCardProps {
   onResponder: (resposta: RespostaAfinidade) => void;
 }
 
-const OPCOES: { valor: RespostaAfinidade; label: string }[] = [
-  { valor: 'discordo', label: 'Discordo' },
-  { valor: 'neutro', label: 'Neutro' },
-  { valor: 'concordo', label: 'Concordo' },
+const OPCOES: { valor: RespostaAfinidade; label: string; simbolo: string }[] = [
+  { valor: 'concordo', label: 'Concordo', simbolo: '✓' },
+  { valor: 'neutro', label: 'Neutro', simbolo: '—' },
+  { valor: 'discordo', label: 'Discordo', simbolo: '✗' },
 ];
 
-export function AfinidadeQuestaoCard({
-  tema,
-  afirmacao,
-  respostaSelecionada,
-  onResponder,
-}: AfinidadeQuestaoCardProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme];
-
+export function AfinidadeQuestaoCard({ tema, afirmacao, respostaSelecionada, onResponder }: AfinidadeQuestaoCardProps) {
+  const cores = useCores();
   return (
-    <View>
-      <Text style={[Typography.label, styles.tema, { color: colors.tabIconDefault }]}>{tema.toUpperCase()}</Text>
-      <Text style={[Typography.displaySm, styles.afirmacao, { color: colors.text }]}>{afirmacao}</Text>
-      <View style={styles.opcoes}>
-        {OPCOES.map(({ valor, label }) => {
-          const ativo = respostaSelecionada === valor;
+    <Cartao style={styles.cartao}>
+      <View style={styles.tema}>
+        <Chip label={tema.toUpperCase()} selecionado />
+      </View>
+      <Text style={[Typography.title, styles.afirmacao, { color: cores.text }]} accessibilityRole="header">
+        {afirmacao}
+      </Text>
+      <View style={styles.opcoes} accessibilityRole="radiogroup">
+        {OPCOES.map((o) => {
+          const ativa = respostaSelecionada === o.valor;
           return (
-            <TouchableOpacity
-              key={valor}
-              style={[
+            <Pressable
+              key={o.valor}
+              onPress={() => onResponder(o.valor)}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: ativa }}
+              accessibilityLabel={o.label}
+              style={({ pressed, hovered }: { pressed: boolean; hovered?: boolean }) => [
                 styles.opcao,
-                {
-                  backgroundColor: ativo ? colors.tint : 'transparent',
-                  borderColor: ativo ? colors.tint : colors.border,
-                },
+                { borderColor: ativa || hovered ? cores.tint : cores.border, backgroundColor: ativa ? cores.tintBg : cores.surface },
+                pressed && styles.premido,
               ]}
-              activeOpacity={0.7}
-              onPress={() => onResponder(valor)}
-              accessibilityRole="button"
-              accessibilityLabel={label}
-              accessibilityState={{ selected: ativo }}
             >
-              <Text style={[Typography.label, { color: ativo ? colors.background : colors.text }]}>{label}</Text>
-            </TouchableOpacity>
+              <Text style={[styles.simbolo, { color: ativa ? cores.tintInk : cores.textMuted }]}>{o.simbolo}</Text>
+              <Text style={[styles.label, { color: ativa ? cores.tintInk : cores.text }]}>{o.label}</Text>
+            </Pressable>
           );
         })}
       </View>
-    </View>
+    </Cartao>
   );
 }
 
 const styles = StyleSheet.create({
+  cartao: {
+    padding: Spacing.xl,
+  },
   tema: {
-    letterSpacing: 0.5,
-    marginBottom: Spacing.lg,
+    flexDirection: 'row',
   },
   afirmacao: {
-    marginBottom: Spacing.xxl,
+    marginTop: Spacing.lg,
+    fontSize: 21,
+    lineHeight: 28,
   },
   opcoes: {
-    flexDirection: 'row',
+    marginTop: Spacing.xl,
     gap: Spacing.sm,
   },
   opcao: {
-    flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: Spacing.md,
+    minHeight: 52,
+    paddingHorizontal: Spacing.xl,
     borderWidth: 1.5,
-    borderRadius: Radii.badge,
-    paddingVertical: Spacing.md,
+    borderRadius: Radii.pill,
+  },
+  premido: {
+    transform: [{ scale: 0.98 }],
+  },
+  simbolo: {
+    fontFamily: Fonts.bold,
+    fontSize: 16,
+    width: 18,
+    textAlign: 'center',
+  },
+  label: {
+    fontFamily: Fonts.semibold,
+    fontSize: 16,
   },
 });

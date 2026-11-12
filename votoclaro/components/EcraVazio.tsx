@@ -1,9 +1,8 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { useColorScheme } from '@/components/useColorScheme';
-import Colors from '@/constants/Colors';
+import { Botao, useCores } from '@/components/ui';
 import { Radii, Spacing } from '@/constants/Spacing';
 import { Typography } from '@/constants/Typography';
 
@@ -17,39 +16,35 @@ interface EcraVazioProps {
   };
 }
 
+// Erro útil e ecrã vazio = convite (DESIGN.md › Tom de voz).
 export function EcraVazio({ icone, titulo, descricao, accao }: EcraVazioProps) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme];
-
+  const cores = useCores();
   return (
     <View style={styles.container}>
-      <MaterialIcons name={icone} size={32} color={colors.tabIconDefault} accessible={false} />
-      <Text style={[Typography.displaySm, styles.titulo, { color: colors.text }]}>{titulo}</Text>
-      <Text style={[Typography.bodySm, styles.descricao, { color: colors.tabIconDefault }]} numberOfLines={2}>
-        {descricao}
+      <View style={[styles.icone, { backgroundColor: cores.tintBg }]}>
+        <MaterialIcons name={icone} size={28} color={cores.tintInk} accessible={false} />
+      </View>
+      <Text style={[Typography.title, styles.titulo, { color: cores.text }]} accessibilityRole="header">
+        {titulo}
       </Text>
-      {accao && (
-        <TouchableOpacity
-          style={[styles.botao, { borderColor: colors.tint }]}
-          onPress={accao.onPress}
-          activeOpacity={0.7}
-          accessibilityRole="button"
-          accessibilityLabel={accao.label}
-        >
-          <Text style={[Typography.label, { color: colors.tint }]}>{accao.label}</Text>
-        </TouchableOpacity>
-      )}
+      <Text style={[Typography.bodySm, styles.descricao, { color: cores.textMuted }]}>{descricao}</Text>
+      {accao ? <Botao label={accao.label} onPress={accao.onPress} variante="secundario" style={styles.botao} /> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    alignItems: 'center',
+    paddingVertical: Spacing.huge,
+    paddingHorizontal: Spacing.xxl,
+  },
+  icone: {
+    width: 56,
+    height: 56,
+    borderRadius: Radii.pill,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: Spacing.xxxl,
-    paddingVertical: Spacing.huge,
   },
   titulo: {
     marginTop: Spacing.lg,
@@ -58,12 +53,9 @@ const styles = StyleSheet.create({
   descricao: {
     marginTop: Spacing.xs,
     textAlign: 'center',
+    maxWidth: 360,
   },
   botao: {
     marginTop: Spacing.xl,
-    paddingHorizontal: Spacing.xxl,
-    paddingVertical: Spacing.md,
-    borderWidth: 1.5,
-    borderRadius: Radii.badge,
   },
 });
