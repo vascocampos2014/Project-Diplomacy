@@ -53,6 +53,7 @@ DESCRICAO = (
     "Pergunta como votou o Parlamento português. As respostas vêm só dos textos das iniciativas e das "
     "votações da XVII legislatura, com fontes. Geradas por IA: podem ter erros, confirma nas fontes. "
     "Não dá opiniões nem recomendações de voto. "
+    "As perguntas são processadas por um serviço de IA externo (Groq): não escrevas dados pessoais. "
     "Parte da app [VotoClaro](https://project-diplomacy-votoclaro.vercel.app)."
 )
 
@@ -94,7 +95,28 @@ if __name__ == "__main__":
         prevent_thread_lock=True,
         # No auto-generated FastAPI docs in production.
         app_kwargs={"docs_url": None, "redoc_url": None, "openapi_url": None},
+        # The chat takes text only. Gradio still adds a public upload
+        # endpoint, which would let anyone host files on this Space: cap it
+        # here, and remove the route below.
+        max_file_size="1kb",
     )
+    # Gradio 6 nests its API routes in an included router, so instead of
+    # removing the upload route we put a refusing route first: routes are
+    # matched in order, so this one always wins.
+    from fastapi.responses import JSONResponse
+    from fastapi.routing import APIRoute
+
+    def _sem_uploads() -> JSONResponse:
+        return JSONResponse({"detail": "Uploads desativados."}, status_code=403)
+
+    def _nao_existe() -> JSONResponse:
+        return JSONResponse({"detail": "Not Found"}, status_code=404)
+
+    for caminho in ("/gradio_api/upload", "/upload"):
+        demo.app.router.routes.insert(0, APIRoute(caminho, _sem_uploads, methods=["POST"]))
+    # Gradio's usage dashboard: aggregate numbers only, but no need to publish.
+    for caminho in ("/monitoring", "/monitoring/summary", "/monitoring/{key}"):
+        demo.app.router.routes.insert(0, APIRoute(caminho, _nao_existe, methods=["GET"]))
     # Our JSON API on the same server. Routes are matched per request, so
     # adding them after start-up is fine, and Gradio has no catch-all route.
     # CORS here is Gradio's: on a public host it allows any origin. That is

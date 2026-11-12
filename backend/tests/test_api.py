@@ -124,3 +124,18 @@ def test_cors_allows_production_and_vercel_previews_only(client):
     assert origin_ok("https://project-diplomacy-votoclaro-git-preview-ui-overhaul-vasco-1298.vercel.app")
     assert not origin_ok("https://evil.example")
     assert not origin_ok("https://project-diplomacy-votoclaro-x.vercel.app.evil.example")
+
+
+def test_errors_are_short_and_never_echo_the_request(client):
+    r = client.post("/ask", json={"pergunta": "x" * 1000})
+    assert r.status_code == 422
+    assert r.json() == {"detail": "A pergunta tem de ter entre 3 e 500 caracteres."}
+    for bad in (b'{"pergunta": ', b'{"q": "abc"}', b'{"pergunta": 123}', b"pergunta=abc"):
+        r = client.post("/ask", content=bad, headers={"Content-Type": "application/json"})
+        assert r.status_code == 422 and "input" not in r.text
+
+
+def test_oversized_body_is_refused_before_reading(client):
+    r = client.post("/ask", content=b'{"pergunta": "' + b"x" * 10_000 + b'"}', headers={"Content-Type": "application/json"})
+    assert r.status_code == 413
+    assert len(r.content) < 100

@@ -118,6 +118,7 @@ describe('Perguntar screen', () => {
     const fake = jest.fn().mockResolvedValue(ok());
     render(<PerguntarScreen apiUrl="http://api" perguntar={fake} />);
     expect(screen.getByText(/geradas por IA/)).toBeTruthy();
+    expect(screen.getByText(/não escrevas dados pessoais/)).toBeTruthy();
     fireEvent.press(screen.getByRole('button', { name: 'Perguntar: O que propõe o Projeto de Lei 672?' }));
     expect(fake).toHaveBeenCalledWith('O que propõe o Projeto de Lei 672?', { baseUrl: 'http://api' });
     expect(await screen.findByText('FONTES')).toBeTruthy();

@@ -95,7 +95,8 @@ export default function PerguntarScreen({ apiUrl = RAG_API_URL, perguntar = perg
             />
             <Aviso>
               Respostas geradas por IA a partir de dados públicos. Podem ter erros: confirma nas fontes indicadas. O
-              assistente não dá opiniões nem recomendações de voto.
+              assistente não dá opiniões nem recomendações de voto. As perguntas são processadas por um serviço de IA
+              externo (Groq): não escrevas dados pessoais.
             </Aviso>
 
             {conversa.length === 0 ? (

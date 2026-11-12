@@ -8,10 +8,12 @@ from collections import defaultdict, deque
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, Request
+from fastapi.concurrency import run_in_threadpool
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from openai import APIStatusError, RateLimitError
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 from votoclaro_rag.agent import ask
 
@@ -138,19 +140,56 @@ class Resposta(BaseModel):
     modelo: str
 
 
-@app.post("/ask", response_model=Resposta)
-def post_ask(body: Pergunta, request: Request) -> Resposta:
-    bloqueio = check_limits(client_ip(request))
-    if bloqueio:
-        raise HTTPException(429, bloqueio)
+# The body is read and validated by hand (not by FastAPI's automatic
+# validation) so that: oversized bodies are refused before being read, and
+# errors are one short sentence instead of echoing the whole request back.
+MAX_BODY_BYTES = 4096
+PERGUNTA_INVALIDA = "A pergunta tem de ter entre 3 e 500 caracteres."
+
+
+def _erro(status: int, mensagem: str) -> JSONResponse:
+    return JSONResponse({"detail": mensagem}, status_code=status)
+
+
+async def _ler_pergunta(request: Request) -> str | JSONResponse:
+    declared = request.headers.get("content-length")
+    if declared and declared.isdigit() and int(declared) > MAX_BODY_BYTES:
+        return _erro(413, "Pedido demasiado grande.")
+    body = b""
+    async for parte in request.stream():
+        body += parte
+        if len(body) > MAX_BODY_BYTES:
+            return _erro(413, "Pedido demasiado grande.")
     try:
-        r = ask(body.pergunta)
+        return Pergunta.model_validate_json(body).pergunta
+    except ValidationError:
+        return _erro(422, PERGUNTA_INVALIDA)
+
+
+def _responder(pergunta: str, client: str) -> JSONResponse:
+    bloqueio = check_limits(client)
+    if bloqueio:
+        return _erro(429, bloqueio)
+    try:
+        r = ask(pergunta)
     except RateLimitError:
-        raise HTTPException(429, "Limite de pedidos ao modelo atingido. Tenta daqui a pouco.")
+        return _erro(429, "Limite de pedidos ao modelo atingido. Tenta daqui a pouco.")
     except APIStatusError as e:
         log.warning("LLM provider error %s", e.status_code)
-        raise HTTPException(502, "O serviço de respostas está indisponível de momento.")
-    return Resposta(resposta=r.answer, ferramentas=r.tool_calls, segundos=r.seconds, modelo=r.model)
+        return _erro(502, "O serviço de respostas está indisponível de momento.")
+    resposta = Resposta(resposta=r.answer, ferramentas=r.tool_calls, segundos=r.seconds, modelo=r.model)
+    return JSONResponse(resposta.model_dump())
+
+
+async def post_ask(request: Request) -> JSONResponse:
+    pergunta = await _ler_pergunta(request)
+    if isinstance(pergunta, JSONResponse):
+        return pergunta
+    # ask() blocks on network calls: run it off the event loop.
+    return await run_in_threadpool(_responder, pergunta, client_ip(request))
+
+
+app.add_api_route("/ask", post_ask, methods=["POST"])
 
 
 @app.get("/health")
