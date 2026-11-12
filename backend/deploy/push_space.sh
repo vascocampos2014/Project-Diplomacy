@@ -3,7 +3,9 @@
 #
 # One-time setup (you):
 #   1. Create the Space at https://huggingface.co/new-space
-#      (name: votoclaro-rag, SDK: Docker, hardware: CPU Basic, public).
+#      (name: votoclaro-rag, SDK: Gradio, template: Blank, hardware: ZeroGPU, public).
+#      Docker and CPU Basic Spaces are paid since 2026; ZeroGPU is free for
+#      accounts older than 30 days with a verified email.
 #   2. In the Space: Settings > Variables and secrets > New secret
 #      GROQ_API_KEY = a key made just for the Space.
 #   3. Log in from this machine with a token that can write:
@@ -12,8 +14,9 @@
 # Then, from backend/:   deploy/push_space.sh [owner/space]
 # To only assemble the files and inspect them:   STAGE_ONLY=/some/dir deploy/push_space.sh
 #
-# It copies only what the Space needs into a temporary folder: the Dockerfile,
-# the Space README, the Python package and the SQLite database. It never
+# It copies only what the Space needs into a temporary folder: app.py,
+# requirements.txt, the Space README, the Python package and the SQLite
+# database. (For a Docker host instead, add deploy/docker/Dockerfile.) It never
 # uploads .env, the downloaded PDFs, evals or tests.
 set -euo pipefail
 
@@ -27,7 +30,7 @@ fi
 
 test -f "$BACKEND/data/votoclaro.db" || { echo "Missing data/votoclaro.db: run 'votoclaro ingest' and 'votoclaro index' first." >&2; exit 1; }
 
-cp "$BACKEND/deploy/hf-space/Dockerfile" "$BACKEND/deploy/hf-space/README.md" "$BACKEND/pyproject.toml" "$STAGE/"
+cp "$BACKEND/deploy/hf-space/app.py" "$BACKEND/deploy/hf-space/requirements.txt" "$BACKEND/deploy/hf-space/README.md" "$BACKEND/pyproject.toml" "$STAGE/"
 cp -r "$BACKEND/src" "$STAGE/src"
 find "$STAGE/src" -name '__pycache__' -prune -exec rm -rf {} +
 mkdir -p "$STAGE/data"

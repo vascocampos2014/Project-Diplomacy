@@ -135,7 +135,10 @@ _THINK = re.compile(r"<think>.*?</think>", re.DOTALL)
 
 def tidy_answer(text: str) -> str:
     # Qwen-style reasoning models can put their reasoning in <think> tags.
-    return _THINK.sub("", text).translate(_TIDY).strip()
+    text = _THINK.sub("", text).translate(_TIDY)
+    # Some answers wrap citations twice: [[Projeto de Lei n.º 511, ...]].
+    text = re.sub(r"\[\[([^\[\]]+)\]\]", r"[\1]", text)
+    return text.strip()
 
 
 def ask(question: str, model: str | None = None) -> AskResult:

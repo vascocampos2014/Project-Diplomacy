@@ -94,14 +94,19 @@ each individual deputy.
 
 ## Deploying to a Hugging Face Space
 
-`deploy/hf-space/` holds the Space's Dockerfile and README. The image is CPU-only PyTorch with bge-m3
-baked in (offline at runtime) and the SQLite database copied in, and it uses about 2.1 GB RAM. Production
-settings: no `/docs`, 10 questions per minute per visitor (real IP from `X-Forwarded-For`), and 300 per day
-for the whole server.
+Hugging Face charges for Docker and CPU Basic Spaces since 2026. The free option is **Gradio on ZeroGPU**
+hardware, available to accounts older than 30 days with a verified email. `deploy/hf-space/app.py` serves
+the JSON API (`POST /ask`, `GET /health`) and a Gradio chat page from one server. Both share the limits: 10
+per minute per visitor (real IP from `X-Forwarded-For`) and 300 a day for the whole server. `/docs` is off.
+Embeddings run on CPU (`EMBED_DEVICE=cpu`), so the daily GPU quota is never used, and bge-m3 is
+preloaded at build time.
 
-1. Create a public Space: SDK **Docker**, hardware **CPU Basic**, name `votoclaro-rag`.
+1. Create a public Space: SDK **Gradio** (Blank), hardware **ZeroGPU**, name `votoclaro-rag`.
 2. In the Space settings, add the secret `GROQ_API_KEY`. Use a key made just for the Space.
-3. Run `.venv/bin/hf auth login` with a write token, then `deploy/push_space.sh`. Only the Dockerfile, the
-   README, `src/` and the database are uploaded, and the script refuses anything that looks like a key.
+3. Run `.venv/bin/hf auth login` with a write token, then `deploy/push_space.sh`. Only `app.py`,
+   `requirements.txt`, the README, `src/` and the database are uploaded, and the script refuses anything
+   that looks like a key.
 4. In the app, set `EXPO_PUBLIC_RAG_API_URL=https://vscocmp-votoclaro-rag.hf.space`. The CSP in
    `votoclaro/vercel.json` already allows it.
+
+`deploy/docker/Dockerfile` builds the same API as a plain container for paid hosts (Cloud Run, Fly.io).

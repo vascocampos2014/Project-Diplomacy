@@ -19,6 +19,7 @@ LEGISLATURA = os.getenv("VOTOCLARO_LEGISLATURA", "XVII")
 # outputs 1024-dim vectors. Free and unlimited, unlike the LLM.
 EMBED_MODEL = os.getenv("EMBED_MODEL", "BAAI/bge-m3")
 EMBED_DIM = 1024
+EMBED_DEVICE = os.getenv("EMBED_DEVICE")  # "cpu" or "cuda"; unset = GPU if available
 
 # Any OpenAI-compatible endpoint works. Groq by default (free tier); switch to
 # Gemini, OpenRouter, a local Ollama, etc. by changing these three values.

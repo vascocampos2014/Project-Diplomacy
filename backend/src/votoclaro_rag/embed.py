@@ -4,7 +4,7 @@ from functools import lru_cache
 
 import numpy as np
 
-from votoclaro_rag.config import EMBED_MODEL
+from votoclaro_rag.config import EMBED_DEVICE, EMBED_MODEL
 
 
 @lru_cache(maxsize=1)
@@ -12,7 +12,10 @@ def _model():
     import torch
     from sentence_transformers import SentenceTransformer
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    # EMBED_DEVICE=cpu on Hugging Face ZeroGPU: there torch reports CUDA as
+    # available (emulated outside @spaces.GPU), but a query embeds in 0.15 s
+    # on CPU, so we never spend GPU quota on it.
+    device = EMBED_DEVICE or ("cuda" if torch.cuda.is_available() else "cpu")
     model = SentenceTransformer(EMBED_MODEL, device=device)
     if device == "cuda":
         model.half()  # fp16: half the VRAM, same retrieval quality

@@ -3,9 +3,16 @@ title: VotoClaro RAG
 emoji: 🏛️
 colorFrom: indigo
 colorTo: gray
-sdk: docker
-app_port: 7860
+sdk: gradio
+sdk_version: 6.25.0
+python_version: "3.12"
+app_file: app.py
 pinned: false
+models:
+- BAAI/bge-m3
+# Download the embedding model while building, not on the first question.
+preload_from_hub:
+- BAAI/bge-m3 config.json,config_sentence_transformers.json,modules.json,sentence_bert_config.json,special_tokens_map.json,tokenizer.json,tokenizer_config.json,sentencepiece.bpe.model,pytorch_model.bin,1_Pooling/config.json
 short_description: Ask in Portuguese how the Portuguese Parliament voted
 ---
 
@@ -36,7 +43,10 @@ answers only from the official bill texts and roll-call votes of the XVII legisl
   - 10 questions per minute per visitor, and a daily cap for the whole server.
   - No interactive docs in production.
 
-## API
+## Try it
+
+Use the chat on this page, or call the API:
+
 
 ```
 POST /ask      {"pergunta": "Como votou o PS no Projeto de Lei 511?"}
@@ -44,6 +54,8 @@ POST /ask      {"pergunta": "Como votou o PS no Projeto de Lei 511?"}
 GET  /health   {"ok": true}
 ```
 
-Only the VotoClaro web app is allowed to call it from a browser (CORS).
+Browsers can only call it from the VotoClaro web app (CORS). The chat page and the API share the same limits.
+The Space runs on ZeroGPU hardware but never uses the GPU: embedding a question takes about 0.15 s on CPU, and the
+LLM runs on Groq.
 
 Data: [openAR](https://openar.pt), built on the Assembleia da República's open data.

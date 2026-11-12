@@ -91,14 +91,28 @@ def _allow_today() -> bool:
 TRUSTED_PROXY_HOPS = int(os.getenv("TRUSTED_PROXY_HOPS", "0"))
 
 
-def client_ip(request: Request) -> str:
-    socket_ip = request.client.host if request.client else "unknown"
+def client_ip_from(forwarded_for: str | None, socket_ip: str) -> str:
     if TRUSTED_PROXY_HOPS <= 0:
         return socket_ip
-    chain = [h.strip() for h in request.headers.get("x-forwarded-for", "").split(",") if h.strip()]
+    chain = [h.strip() for h in (forwarded_for or "").split(",") if h.strip()]
     if len(chain) < TRUSTED_PROXY_HOPS:
         return socket_ip
     return chain[-TRUSTED_PROXY_HOPS]
+
+
+def client_ip(request: Request) -> str:
+    socket_ip = request.client.host if request.client else "unknown"
+    return client_ip_from(request.headers.get("x-forwarded-for"), socket_ip)
+
+
+def check_limits(client: str) -> str | None:
+    """The message to show if this client may not ask now, else None.
+    Shared by POST /ask and the Space's chat page."""
+    if not _allow(client):
+        return "Demasiadas perguntas seguidas. Espera um minuto."
+    if not _allow_today():
+        return "O limite diário de perguntas foi atingido. Volta amanhã."
+    return None
 
 
 def _allow(client: str) -> bool:
@@ -126,10 +140,9 @@ class Resposta(BaseModel):
 
 @app.post("/ask", response_model=Resposta)
 def post_ask(body: Pergunta, request: Request) -> Resposta:
-    if not _allow(client_ip(request)):
-        raise HTTPException(429, "Demasiadas perguntas seguidas. Espera um minuto.")
-    if not _allow_today():
-        raise HTTPException(429, "O limite diário de perguntas foi atingido. Volta amanhã.")
+    bloqueio = check_limits(client_ip(request))
+    if bloqueio:
+        raise HTTPException(429, bloqueio)
     try:
         r = ask(body.pergunta)
     except RateLimitError:

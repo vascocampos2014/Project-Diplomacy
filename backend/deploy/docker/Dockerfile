@@ -1,5 +1,6 @@
-# VotoClaro RAG API on a Hugging Face Space (Docker SDK, CPU Basic).
-# Build context: the folder that deploy/push_space.sh assembles.
+# VotoClaro RAG API as a plain Docker image (for hosts like Cloud Run or Fly.io).
+# Build context: the folder that deploy/push_space.sh assembles (STAGE_ONLY).
+# Hugging Face now charges for Docker Spaces; the free Space uses app.py (Gradio).
 FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
