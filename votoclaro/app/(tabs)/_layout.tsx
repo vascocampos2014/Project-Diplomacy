@@ -47,6 +47,10 @@ export default function TabLayout() {
         options={{ title: 'Deputados', tabBarAccessibilityLabel: 'Lista de deputados', tabBarIcon: icone('people') }}
       />
       <Tabs.Screen
+        name="perguntar"
+        options={{ title: 'Perguntar', tabBarAccessibilityLabel: 'Perguntar sobre leis e votações', tabBarIcon: icone('question-answer') }}
+      />
+      <Tabs.Screen
         name="comparar"
         options={{ title: 'Comparar', tabBarAccessibilityLabel: 'Comparar partidos', tabBarIcon: icone('compare-arrows') }}
       />

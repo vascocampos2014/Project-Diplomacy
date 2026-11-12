@@ -13,6 +13,9 @@ checked the preview.
 | `53dde48` | Web security: CSP and headers, dependency fixes |
 | `1a6b0d4` | UI overhaul, quiz on real votes, Compare tab, bug fixes |
 | `c2d4477` | Web tests (80) |
+| `edb6273` | RAG: correct vote stage, tidy citations (answer eval 12/12) |
+| `d0df5be` | RAG: model fallback chain when a model hits its Groq quota |
+| (next) | App: Perguntar tab (ask the RAG backend), 20 tests |
 
 ## Bugs found and fixed
 
@@ -89,10 +92,9 @@ cd backend && .venv/bin/votoclaro eval retrieval # recall@5 100%, MRR 0.88 (hybr
 
 ## Not done or needs you
 
-- **The answer eval and the live `ask` command need a Groq key.** Put
-  `GROQ_API_KEY=` in `backend/.env`. I didn't run the LLM end to end.
-- **The backend isn't deployed,** and the app has no "Perguntar" screen yet.
-  Once the backend has a URL, add it to the CSP `connect-src`.
+- **The backend isn't deployed.** The Perguntar tab shows "Disponível em
+  breve" until `EXPO_PUBLIC_RAG_API_URL` is set in Vercel. Then also add that
+  URL to the CSP `connect-src`.
 - **The Expo SDK 58 upgrade** would clear the remaining audit advisories.
 - **Topic tagging** still puts most bills in "Outros". The plan is to classify
   them with the LLM.

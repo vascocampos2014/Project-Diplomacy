@@ -1,0 +1,232 @@
+import { MaterialIcons } from '@expo/vector-icons';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { EcraVazio } from '@/components/EcraVazio';
+import { RespostaRag } from '@/components/RespostaRag';
+import { Aviso, Botao, CabecalhoEcra, Cartao, Chip, Contentor, useCores } from '@/components/ui';
+import { Radii, Spacing } from '@/constants/Spacing';
+import { Fonts, Typography } from '@/constants/Typography';
+import {
+  ErroPergunta,
+  MAX_PERGUNTA,
+  MENSAGENS_ERRO,
+  perguntar as perguntarApi,
+  RAG_API_URL,
+  SUGESTOES,
+  validarPergunta,
+  type RespostaRag as Resposta,
+} from '@/lib/perguntar';
+
+type Entrada =
+  | { id: number; pergunta: string; estado: 'a-carregar' }
+  | { id: number; pergunta: string; estado: 'ok'; resposta: Resposta }
+  | { id: number; pergunta: string; estado: 'erro'; erro: string };
+
+export default function PerguntarScreen({ apiUrl = RAG_API_URL, perguntar = perguntarApi }: { apiUrl?: string; perguntar?: typeof perguntarApi }) {
+  const cores = useCores();
+  const [texto, setTexto] = useState('');
+  const [conversa, setConversa] = useState<Entrada[]>([]);
+  const scroll = useRef<ScrollView>(null);
+  const proximoId = useRef(1);
+  const montado = useRef(true);
+  useEffect(() => () => void (montado.current = false), []);
+
+  const aCarregar = conversa.some((e) => e.estado === 'a-carregar');
+  const valida = validarPergunta(texto) !== null;
+
+  const enviar = useCallback(
+    async (pergunta: string) => {
+      const p = validarPergunta(pergunta);
+      if (!p || aCarregar) return;
+      const id = proximoId.current++;
+      setConversa((c) => [...c, { id, pergunta: p, estado: 'a-carregar' }]);
+      setTexto('');
+      let nova: Entrada;
+      try {
+        nova = { id, pergunta: p, estado: 'ok', resposta: await perguntar(p, { baseUrl: apiUrl }) };
+      } catch (e) {
+        nova = { id, pergunta: p, estado: 'erro', erro: e instanceof ErroPergunta ? e.message : MENSAGENS_ERRO.indisponivel };
+      }
+      if (montado.current) setConversa((c) => c.map((x) => (x.id === id ? nova : x)));
+    },
+    [aCarregar, apiUrl, perguntar]
+  );
+
+  if (!apiUrl) {
+    return (
+      <SafeAreaView style={[styles.ecra, { backgroundColor: cores.background }]} edges={['top']}>
+        <Contentor style={styles.conteudo}>
+          <CabecalhoEcra titulo="Perguntar" subtitulo="Pergunta sobre leis e votações do Parlamento." />
+          <EcraVazio
+            icone="question-answer"
+            titulo="Disponível em breve"
+            descricao="O assistente que responde a perguntas sobre as votações ainda não está ligado nesta versão da app."
+          />
+        </Contentor>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={[styles.ecra, { backgroundColor: cores.background }]} edges={['top']}>
+      <KeyboardAvoidingView style={styles.ecra} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView
+          ref={scroll}
+          contentContainerStyle={styles.scroll}
+          keyboardShouldPersistTaps="handled"
+          onContentSizeChange={() => conversa.length > 0 && scroll.current?.scrollToEnd({ animated: true })}
+        >
+          <Contentor style={styles.conteudo}>
+            <CabecalhoEcra
+              titulo="Perguntar"
+              subtitulo="Respostas com base nos textos das iniciativas e nas votações da XVII legislatura."
+            />
+            <Aviso>
+              Respostas geradas por IA a partir de dados públicos. Podem ter erros: confirma nas fontes indicadas. O
+              assistente não dá opiniões nem recomendações de voto.
+            </Aviso>
+
+            {conversa.length === 0 ? (
+              <View style={styles.sugestoes}>
+                <Text style={[Typography.eyebrow, { color: cores.textMuted }]}>EXPERIMENTA PERGUNTAR</Text>
+                {SUGESTOES.map((s) => (
+                  <Cartao key={s} onPress={() => enviar(s)} accessibilityLabel={`Perguntar: ${s}`} style={styles.sugestao}>
+                    <Text style={[Typography.bodySm, styles.sugestaoTexto, { color: cores.text }]}>{s}</Text>
+                    <MaterialIcons name="north-east" size={16} color={cores.textMuted} accessible={false} />
+                  </Cartao>
+                ))}
+              </View>
+            ) : (
+              <View style={styles.conversa} accessibilityLiveRegion="polite">
+                {conversa.map((e) => (
+                  <View key={e.id} style={styles.troca}>
+                    <View style={[styles.pergunta, { backgroundColor: cores.tint }]}>
+                      <Text style={[Typography.bodySm, { color: cores.onTint }]}>{e.pergunta}</Text>
+                    </View>
+                    <Cartao style={styles.resposta}>
+                      {e.estado === 'a-carregar' ? (
+                        <View style={styles.aCarregar} accessibilityLabel="A procurar a resposta">
+                          <ActivityIndicator color={cores.tint} />
+                          <Text style={[Typography.bodySm, { color: cores.textMuted }]}>
+                            A procurar nas iniciativas e votações…
+                          </Text>
+                        </View>
+                      ) : e.estado === 'erro' ? (
+                        <View style={styles.erro}>
+                          <Text style={[Typography.bodySm, { color: cores.text }]}>{e.erro}</Text>
+                          <Chip label="Tentar de novo" onPress={() => enviar(e.pergunta)} />
+                        </View>
+                      ) : (
+                        <RespostaRag texto={e.resposta.resposta} />
+                      )}
+                    </Cartao>
+                  </View>
+                ))}
+                {conversa.length > 0 && !aCarregar ? (
+                  <Botao
+                    label="Nova conversa"
+                    variante="secundario"
+                    icone="refresh"
+                    onPress={() => setConversa([])}
+                    style={styles.limpar}
+                  />
+                ) : null}
+              </View>
+            )}
+          </Contentor>
+        </ScrollView>
+
+        <View style={[styles.barra, { backgroundColor: cores.surface, borderTopColor: cores.border }]}>
+          <Contentor style={styles.barraLinha}>
+            <TextInput
+              value={texto}
+              onChangeText={setTexto}
+              placeholder="Escreve a tua pergunta…"
+              placeholderTextColor={cores.textMuted}
+              maxLength={MAX_PERGUNTA}
+              multiline
+              accessibilityLabel="Pergunta"
+              accessibilityHint="Cada pergunta é respondida separadamente"
+              style={[styles.input, { color: cores.text, backgroundColor: cores.background, borderColor: cores.border }]}
+              onKeyPress={(ev) => {
+                // Web: Enter envia, Shift+Enter muda de linha.
+                const n = ev.nativeEvent as { key: string; shiftKey?: boolean };
+                if (Platform.OS === 'web' && n.key === 'Enter' && !n.shiftKey) {
+                  (ev as unknown as { preventDefault: () => void }).preventDefault();
+                  enviar(texto);
+                }
+              }}
+            />
+            <Pressable
+              onPress={() => enviar(texto)}
+              disabled={!valida || aCarregar}
+              accessibilityRole="button"
+              accessibilityLabel="Enviar pergunta"
+              accessibilityState={{ disabled: !valida || aCarregar }}
+              style={({ pressed }) => [
+                styles.enviar,
+                { backgroundColor: cores.tint },
+                (!valida || aCarregar) && styles.desativado,
+                pressed && styles.premido,
+              ]}
+            >
+              <MaterialIcons name="arrow-upward" size={22} color={cores.onTint} />
+            </Pressable>
+          </Contentor>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  ecra: { flex: 1 },
+  scroll: { flexGrow: 1, paddingBottom: Spacing.xl },
+  conteudo: { paddingHorizontal: Spacing.lg },
+  sugestoes: { marginTop: Spacing.xxl, gap: Spacing.sm },
+  sugestao: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, paddingVertical: Spacing.md },
+  sugestaoTexto: { flex: 1 },
+  conversa: { marginTop: Spacing.xl, gap: Spacing.xl },
+  troca: { gap: Spacing.sm },
+  pergunta: {
+    alignSelf: 'flex-end',
+    maxWidth: '85%',
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderRadius: Radii.card,
+    borderBottomRightRadius: Radii.badge,
+  },
+  resposta: { borderTopLeftRadius: Radii.badge },
+  aCarregar: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
+  erro: { gap: Spacing.md, alignItems: 'flex-start' },
+  limpar: { alignSelf: 'center' },
+  barra: { borderTopWidth: StyleSheet.hairlineWidth, paddingVertical: Spacing.sm },
+  barraLinha: { flexDirection: 'row', alignItems: 'flex-end', gap: Spacing.sm, paddingHorizontal: Spacing.lg },
+  input: {
+    flex: 1,
+    minHeight: 44,
+    maxHeight: 120,
+    borderWidth: 1,
+    borderRadius: 22,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: 11,
+    paddingBottom: 11,
+    fontFamily: Fonts.regular,
+    fontSize: 16,
+  },
+  enviar: { width: 44, height: 44, borderRadius: Radii.pill, alignItems: 'center', justifyContent: 'center' },
+  desativado: { opacity: 0.4 },
+  premido: { opacity: 0.85, transform: [{ scale: 0.96 }] },
+});
