@@ -139,3 +139,43 @@ def test_oversized_body_is_refused_before_reading(client):
     r = client.post("/ask", content=b'{"pergunta": "' + b"x" * 10_000 + b'"}', headers={"Content-Type": "application/json"})
     assert r.status_code == 413
     assert len(r.content) < 100
+
+
+def test_ipv6_visitors_are_limited_per_64_block(monkeypatch):
+    assert api.limit_key("2001:db8:1:2:aaaa::1") == api.limit_key("2001:db8:1:2:ffff:1:2:3") == "2001:db8:1:2::/64"
+    assert api.limit_key("2001:db8:1:3::1") != api.limit_key("2001:db8:1:2::1")
+    assert api.limit_key("::ffff:1.2.3.4") == "1.2.3.4"
+    assert api.limit_key("5.6.7.8") == "5.6.7.8" and api.limit_key("unknown") == "unknown"
+    monkeypatch.setattr(api, "RATE_LIMIT", 3)
+    api._hits.clear()
+    # Rotating addresses inside one /64 does not reset the limit.
+    assert [api._allow(f"2001:db8:9:9::{i:x}") for i in range(1, 6)] == [True, True, True, False, False]
+
+
+def test_limiter_forgets_idle_clients(monkeypatch):
+    monkeypatch.setattr(api, "MAX_TRACKED_CLIENTS", 100)
+    api._hits.clear()
+    for i in range(150):
+        api._hits[f"10.0.{i // 256}.{i % 256}"]  # idle entries, as left by past visitors
+    api._allow("1.1.1.1")
+    assert len(api._hits) <= 2
+
+
+def test_provider_connection_failure_is_a_clean_502(client, monkeypatch):
+    from openai import APIConnectionError
+
+    def boom(q):
+        raise APIConnectionError(request=httpx.Request("POST", "http://x"))
+
+    monkeypatch.setattr(api, "ask", boom)
+    r = client.post("/ask", json={"pergunta": "pergunta válida"})
+    assert r.status_code == 502 and "indisponível" in r.json()["detail"]
+
+
+def test_unexpected_errors_do_not_leak_details(client, monkeypatch):
+    def boom(q):
+        raise RuntimeError("segredo interno /app/src/ficheiro.py")
+
+    monkeypatch.setattr(api, "ask", boom)
+    r = client.post("/ask", json={"pergunta": "pergunta válida"})
+    assert r.status_code == 500 and "segredo" not in r.text

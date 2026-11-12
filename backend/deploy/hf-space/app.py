@@ -37,7 +37,7 @@ except ImportError:  # outside Hugging Face
     pass
 
 import gradio as gr  # noqa: E402
-from openai import APIStatusError, RateLimitError  # noqa: E402
+from openai import APIError, RateLimitError  # noqa: E402
 
 from votoclaro_rag import api  # noqa: E402
 from votoclaro_rag.agent import ask  # noqa: E402
@@ -71,8 +71,11 @@ def responder(mensagem: str, _historico, request: gr.Request) -> str:
         return ask(pergunta).answer
     except RateLimitError:
         return "Limite de pedidos ao modelo atingido. Tenta daqui a pouco."
-    except APIStatusError:
+    except APIError:  # error responses, timeouts, connection failures
         return "O serviço de respostas está indisponível de momento."
+    except Exception:
+        api.log.exception("unexpected error answering a question")
+        return "Ocorreu um erro inesperado. Tenta de novo."
 
 
 demo = gr.ChatInterface(

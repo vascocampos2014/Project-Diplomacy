@@ -134,3 +134,41 @@ def test_openar_download_refuses_other_hosts(monkeypatch):
         client.download("http://169.254.169.254/latest/meta-data")
     with pytest.raises(ValueError, match="fora de"):
         client.download("https://app.parlamento.pt.evil.example/doc.pdf")
+
+
+def test_openar_download_follows_redirects_only_within_parliament(monkeypatch):
+    monkeypatch.setattr(openar, "_MIN_INTERVAL", 0)
+    fetched = []
+
+    def handler(req):
+        fetched.append(str(req.url))
+        if req.url.path == "/old.pdf":
+            return httpx.Response(302, headers={"Location": "https://www.parlamento.pt/new.pdf"})
+        if req.url.path == "/evil.pdf":
+            return httpx.Response(302, headers={"Location": "https://attacker.example/steal"})
+        if req.url.path == "/to-http.pdf":
+            return httpx.Response(302, headers={"Location": "http://app.parlamento.pt/x.pdf"})
+        return httpx.Response(200, content=b"%PDF ok")
+
+    client = _transport(handler)
+    assert client.download("https://app.parlamento.pt/old.pdf") == b"%PDF ok"
+    with pytest.raises(ValueError, match="fora de"):
+        client.download("https://app.parlamento.pt/evil.pdf")
+    with pytest.raises(ValueError, match="fora de"):
+        client.download("https://app.parlamento.pt/to-http.pdf")
+    assert not any("attacker" in u for u in fetched)
+
+
+def test_openar_download_stops_at_the_size_limit(monkeypatch):
+    monkeypatch.setattr(openar, "_MIN_INTERVAL", 0)
+    monkeypatch.setattr(openar, "MAX_DOC_BYTES", 1000)
+    big = _transport(lambda req: httpx.Response(200, content=b"x" * 5000))
+    with pytest.raises(ValueError, match="demasiado grande"):
+        big.download("https://app.parlamento.pt/big.pdf")
+
+
+def test_openar_download_refuses_redirect_loops(monkeypatch):
+    monkeypatch.setattr(openar, "_MIN_INTERVAL", 0)
+    loop = _transport(lambda req: httpx.Response(302, headers={"Location": "https://app.parlamento.pt/loop.pdf"}))
+    with pytest.raises(ValueError, match="redirecionamentos"):
+        loop.download("https://app.parlamento.pt/loop.pdf")

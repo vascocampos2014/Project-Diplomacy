@@ -10,8 +10,15 @@ import pypdf
 # ---------------------------------------------------------------- extraction
 
 
+MAX_PDF_PAGES = 1500
+
+
 def extract_pdf(data: bytes) -> str:
     reader = pypdf.PdfReader(io.BytesIO(data))
+    # Bills are tens of pages (the State Budget a few hundred). A cap keeps a
+    # malformed or hostile PDF from tying up the job.
+    if len(reader.pages) > MAX_PDF_PAGES:
+        raise ValueError(f"PDF com {len(reader.pages)} páginas (máximo {MAX_PDF_PAGES})")
     pages = [(p.extract_text() or "") for p in reader.pages]
     return clean(pages)
 

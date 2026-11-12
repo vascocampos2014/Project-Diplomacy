@@ -1,13 +1,12 @@
-# Gradio and `spaces` come with the Space's SDK; these are the rest.
+# Exact versions, tested together with the Space's Gradio 6.25: a new
+# release (or a hijacked one) can't slip in on the next rebuild. Gradio,
+# FastAPI, uvicorn, httpx, numpy and huggingface_hub come with the Gradio SDK.
 # PyTorch 2.11 is on ZeroGPU's supported list.
 torch==2.11.0
-sentence-transformers>=3.3
-sqlite-vec>=0.1.6
-numpy>=1.26
-openai>=1.60
-fastapi>=0.115
-uvicorn>=0.32
-python-dotenv>=1.0
-httpx>=0.27
-pypdf>=5.0
-python-docx>=1.1
+sentence-transformers==6.3.0
+transformers==5.22.2
+sqlite-vec==0.1.9
+openai==3.49.0
+python-dotenv==1.2.4
+pypdf==7.0.1
+python-docx==1.2.0

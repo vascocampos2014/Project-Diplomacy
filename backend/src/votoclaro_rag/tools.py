@@ -81,8 +81,8 @@ def run_tool(name: str, args: dict) -> str:
         return json.dumps({"erro": f"ferramenta desconhecida: {name}"})
     try:
         return json.dumps(fn(**args), ensure_ascii=False)
-    except TypeError as e:  # the model invented or mistyped an argument
-        return json.dumps({"erro": f"argumentos inválidos: {e}"})
+    except (TypeError, ValueError) as e:  # the model invented or mistyped an argument
+        return json.dumps({"erro": f"argumentos inválidos: {e}"}, ensure_ascii=False)
 
 
 def search_bills(query: str, k: int = 6) -> dict:
@@ -220,4 +220,6 @@ def find_votes(
             item.update(pos)
         out.append(item)
     total = len(out)
-    return {"total": total, "votacoes": out[: max(1, min(int(limite), 40))]}
+    # 25 rows is about 4K tokens: more would hit Groq's per-minute token
+    # budget on a single question.
+    return {"total": total, "votacoes": out[: max(1, min(int(limite), 25))]}

@@ -88,3 +88,29 @@ describe('montarDeputadoDetalhe', () => {
     expect(montarDeputadoDetalhe({ id: 1, depId: null, nomeParlamentar: 'X', nomeCompleto: 'X' })).toMatchObject({ partido: '—', circulo: '—' });
   });
 });
+
+describe('ids from the address bar', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { idNumerico, fotoUrl, fetchVotacao, fetchDeputado } = require('@/lib/parlamento-api');
+
+  it('only plain numbers can become part of an API path', () => {
+    expect(idNumerico('193246')).toBe('193246');
+    expect(idNumerico(42)).toBe('42');
+    for (const mau of ['../deputados', '1?legislatura=X', '1/../../x', '%2e%2e', '', ' ', 'abc', '1e9', '-1', undefined, null]) {
+      expect(() => idNumerico(mau)).toThrow('Identificador inválido');
+    }
+  });
+
+  it('crafted links never reach the network', async () => {
+    const spy = jest.spyOn(global, 'fetch' as never).mockImplementation((() => Promise.reject(new Error('should not fetch'))) as never);
+    await expect(fetchVotacao('../deputados', '1')).rejects.toThrow('Identificador inválido');
+    await expect(fetchDeputado('1?x=1')).rejects.toThrow('Identificador inválido');
+    expect(spy).not.toHaveBeenCalled();
+    spy.mockRestore();
+  });
+
+  it('a bad photo id means no photo, not a crash', () => {
+    expect(fotoUrl(5)).toBe('https://cdn.openar.pt/fotos/5');
+    expect(fotoUrl('x/../y')).toBeUndefined();
+  });
+});

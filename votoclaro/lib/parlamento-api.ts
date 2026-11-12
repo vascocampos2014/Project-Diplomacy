@@ -111,8 +111,17 @@ export function fetchVotacoes(params: { page?: number; limit?: number; sort?: 'a
   });
 }
 
-export function fetchVotacao(id: string, iniciativaId: number | string) {
-  return apiGet<ApiVotacaoDetail>(`/votacoes/${id}`, { iniciativa_id: iniciativaId });
+// Ids come from the address bar (/votacao/:id, /deputado/:id), so they are
+// untrusted: only plain numbers may become part of an API path. Otherwise a
+// crafted link could load a different openAR resource and show it as a vote.
+export function idNumerico(id: number | string | undefined | null): string {
+  const s = String(id ?? '').trim();
+  if (!/^\d{1,12}$/.test(s)) throw new Error('Identificador inválido');
+  return s;
+}
+
+export async function fetchVotacao(id: string, iniciativaId: number | string) {
+  return apiGet<ApiVotacaoDetail>(`/votacoes/${idNumerico(id)}`, { iniciativa_id: idNumerico(iniciativaId) });
 }
 
 export function fetchDeputados(params: { page?: number; limit?: number; situacao?: string } = {}) {
@@ -124,10 +133,16 @@ export function fetchDeputados(params: { page?: number; limit?: number; situacao
   });
 }
 
-export function fetchDeputado(id: number | string) {
-  return apiGet<ApiDeputadoDetail>(`/deputados/${id}`);
+export async function fetchDeputado(id: number | string) {
+  return apiGet<ApiDeputadoDetail>(`/deputados/${idNumerico(id)}`);
 }
 
-export function fotoUrl(deputadoId: number | string): string {
-  return `https://cdn.openar.pt/fotos/${deputadoId}`;
+// Never throws (it runs while rendering lists): an odd id just means no photo,
+// and the avatar falls back to initials.
+export function fotoUrl(deputadoId: number | string): string | undefined {
+  try {
+    return `https://cdn.openar.pt/fotos/${idNumerico(deputadoId)}`;
+  } catch {
+    return undefined;
+  }
 }

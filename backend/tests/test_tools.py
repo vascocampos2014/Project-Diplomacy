@@ -89,3 +89,19 @@ def test_find_votes_underscore_is_literal(seeded_db):
     seeded_db.commit()
     assert find_votes(palavras="abcXdef")["total"] == 1
     assert find_votes(palavras="abc_def")["total"] == 0  # "_" must not match "X"
+
+
+def test_non_numeric_arguments_return_an_error_instead_of_crashing(seeded_db):
+    import json as _json
+
+    from votoclaro_rag.tools import run_tool
+
+    for name, args in [("find_votes", {"limite": "todas"}), ("search_bills", {"query": "x", "k": "muitos"})]:
+        out = _json.loads(run_tool(name, args))
+        assert "erro" in out
+
+
+def test_find_votes_never_returns_more_than_25(seeded_db):
+    from votoclaro_rag.tools import find_votes
+
+    assert len(find_votes(limite=10_000)["votacoes"]) <= 25

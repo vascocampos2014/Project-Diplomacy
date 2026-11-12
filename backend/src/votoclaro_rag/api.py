@@ -1,5 +1,6 @@
 """HTTP API for the app: POST /ask. Run with `uvicorn votoclaro_rag.api:app`."""
 
+import ipaddress
 import logging
 import os
 import threading
@@ -12,7 +13,7 @@ from fastapi import FastAPI, Request
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from openai import APIStatusError, RateLimitError
+from openai import APIError, RateLimitError
 from pydantic import BaseModel, Field, ValidationError
 
 from votoclaro_rag.agent import ask
@@ -117,10 +118,34 @@ def check_limits(client: str) -> str | None:
     return None
 
 
+MAX_TRACKED_CLIENTS = 20_000
+
+
+def limit_key(client: str) -> str:
+    """The unit a visitor is limited by. One IPv6 connection usually owns a
+    whole /64 (about 1.8e19 addresses), so per-address limits would be free
+    to dodge by rotating addresses: limit the /64 instead."""
+    try:
+        ip = ipaddress.ip_address(client)
+    except ValueError:
+        return client
+    if ip.version == 4:
+        return str(ip)
+    if ip.ipv4_mapped is not None:  # ::ffff:1.2.3.4 is just an IPv4 visitor
+        return str(ip.ipv4_mapped)
+    return str(ipaddress.ip_network(f"{ip}/64", strict=False))
+
+
 def _allow(client: str) -> bool:
     now = time.monotonic()
+    key = limit_key(client)
     with _hits_lock:
-        q = _hits[client]
+        if len(_hits) > MAX_TRACKED_CLIENTS:
+            # Forget clients with no recent questions, so many addresses
+            # can't grow this dict until the server runs out of memory.
+            for k in [k for k, q in _hits.items() if not q or now - q[-1] > 60]:
+                del _hits[k]
+        q = _hits[key]
         while q and now - q[0] > 60:
             q.popleft()
         if len(q) >= RATE_LIMIT:
@@ -174,9 +199,12 @@ def _responder(pergunta: str, client: str) -> JSONResponse:
         r = ask(pergunta)
     except RateLimitError:
         return _erro(429, "Limite de pedidos ao modelo atingido. Tenta daqui a pouco.")
-    except APIStatusError as e:
-        log.warning("LLM provider error %s", e.status_code)
+    except APIError as e:  # error responses, timeouts, connection failures
+        log.warning("LLM provider error: %s", type(e).__name__)
         return _erro(502, "O serviço de respostas está indisponível de momento.")
+    except Exception:
+        log.exception("unexpected error answering a question")
+        return _erro(500, "Ocorreu um erro inesperado. Tenta de novo.")
     resposta = Resposta(resposta=r.answer, ferramentas=r.tool_calls, segundos=r.seconds, modelo=r.model)
     return JSONResponse(resposta.model_dump())
 
