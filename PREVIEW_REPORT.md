@@ -92,9 +92,12 @@ cd backend && .venv/bin/votoclaro eval retrieval # recall@5 100%, MRR 0.88 (hybr
 
 ## Not done or needs you
 
-- **The backend isn't deployed.** The Perguntar tab shows "Disponível em
-  breve" until `EXPO_PUBLIC_RAG_API_URL` is set in Vercel. Then also add that
-  URL to the CSP `connect-src`.
+- **The backend is live** at https://huggingface.co/spaces/vscocmp/votoclaro-rag
+  (Gradio on free ZeroGPU, which never uses the GPU). The app reads its URL from
+  `votoclaro/.env.production`, and the CSP allows it. Verified live:
+  - answers with citations;
+  - `/docs` hidden;
+  - 10 questions per minute per visitor, which faked IP headers can't get around.
 - **The Expo SDK 58 upgrade** would clear the remaining audit advisories.
 - **Topic tagging** still puts most bills in "Outros". The plan is to classify
   them with the LLM.
