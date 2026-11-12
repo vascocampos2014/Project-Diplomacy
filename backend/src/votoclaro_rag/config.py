@@ -25,3 +25,13 @@ EMBED_DIM = 1024
 LLM_BASE_URL = os.getenv("LLM_BASE_URL", "https://api.groq.com/openai/v1")
 LLM_API_KEY = os.getenv("LLM_API_KEY") or os.getenv("GROQ_API_KEY")
 LLM_MODEL = os.getenv("LLM_MODEL", "openai/gpt-oss-120b")
+
+# Fallback chain. On Groq each model has its own free quota (e.g. 8K tokens/min,
+# 200K tokens/day), so when one is exhausted the next one usually still works.
+# Comma-separated; empty disables fallback.
+LLM_FALLBACK_MODELS = [
+    m.strip()
+    for m in os.getenv("LLM_FALLBACK_MODELS", "qwen/qwen3.8-27b,openai/gpt-oss-20b").split(",")
+    if m.strip() and m.strip() != LLM_MODEL
+]
+LLM_MODELS = [LLM_MODEL, *dict.fromkeys(LLM_FALLBACK_MODELS)]

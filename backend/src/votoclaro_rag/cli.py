@@ -52,7 +52,7 @@ def main() -> None:
         if args.verbose:
             for call in result.tool_calls:
                 print(f"→ {call['name']}({call['arguments']})")
-            print()
+            print(f"modelo: {result.model} (tentados: {', '.join(result.models_tried)})\n")
         print(result.answer)
     elif args.cmd == "eval" and args.which == "retrieval":
         from votoclaro_rag.evals import run_retrieval
