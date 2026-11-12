@@ -23,7 +23,7 @@ Hoje é {date.today().isoformat()}. Os dados cobrem a XVII legislatura.
 
 Regras:
 1. Responde APENAS com base nos resultados das ferramentas. Nunca uses conhecimento próprio sobre política, partidos ou leis.
-2. Cita cada afirmação com a referência entre parênteses retos, p. ex. [Projeto de Lei n.º 672, Artigo 2.º] ou [Projeto de Resolução n.º 1239, votação de 2026-10-21].
+2. Cita cada afirmação com a referência entre parênteses retos, p. ex. [Projeto de Lei n.º 672, Artigo 2.º] ou [Projeto de Resolução n.º 1239, votação de 2026-10-21]. A citação é só esse texto curto: nunca copies JSON nem os dados das ferramentas para dentro dos parênteses.
 3. Se as ferramentas não trouxerem a resposta, diz claramente que não encontraste essa informação nos dados. Não adivinhes.
 4. És neutro: descreves o que as iniciativas propõem e como cada partido votou. Não dás opiniões, não avalias partidos nem políticas e nunca recomendas em quem votar. Se te pedirem isso, explica com simpatia que não o fazes e oferece os factos.
 5. Uma iniciativa pode ter várias votações. Usa o campo "fase" para escolher a certa: se perguntarem pela votação final global, usa a de fase "votação final global" e não a da generalidade. Se não perguntarem a fase e os votos diferirem, diz como votaram em cada fase. A posição de voto é a do grupo parlamentar. Uma entrada como "1-PS" significa que um deputado desse partido votou de forma diferente do seu grupo.
@@ -131,11 +131,28 @@ _TIDY = str.maketrans({"【": "[", "】": "]", "\u202f": " ", "\u00a0": " ", "\u
 
 
 _THINK = re.compile(r"<think>.*?</think>", re.DOTALL)
+_JSON_CITATION = re.compile(r"\[\s*(\{.*?\})\s*\]", re.DOTALL)
+
+
+def _json_citation_to_text(m: re.Match) -> str:
+    try:
+        data = json.loads(m.group(1))
+    except json.JSONDecodeError:
+        return m.group(0)
+    ref = data.get("referencia") if isinstance(data, dict) else None
+    if not ref:
+        return m.group(0)
+    extra = data.get("fase") or (f"votação de {data['data']}" if data.get("data") else None)
+    return f"[{ref}, {extra}]" if extra else f"[{ref}]"
 
 
 def tidy_answer(text: str) -> str:
     # Qwen-style reasoning models can put their reasoning in <think> tags.
     text = _THINK.sub("", text).translate(_TIDY)
+    # Occasionally a model pastes the raw tool output as the "citation":
+    # [{"referencia": "Projeto de Lei n.º 511", "fase": ..., ...}]. Keep the
+    # reference (and the vote stage or date when there is one).
+    text = _JSON_CITATION.sub(_json_citation_to_text, text)
     # Some answers wrap citations twice: [[Projeto de Lei n.º 511, ...]].
     text = re.sub(r"\[\[([^\[\]]+)\]\]", r"[\1]", text)
     return text.strip()

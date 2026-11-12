@@ -25,3 +25,11 @@ def test_double_brackets_become_single():
     assert tidy_answer("absteve-se[[Projeto de Lei n.º 511, votação na generalidade]].") == (
         "absteve-se[Projeto de Lei n.º 511, votação na generalidade]."
     )
+
+
+def test_raw_json_citation_becomes_a_short_reference():
+    raw = 'O PS absteve-se[{"referencia":"Projeto de Lei n.º 511","fase":"generalidade ou votação única","resultado":"Rejeitado","a_favor":["L"],"abstencao":["PS"]}].'
+    assert tidy_answer(raw) == "O PS absteve-se[Projeto de Lei n.º 511, generalidade ou votação única]."
+    assert tidy_answer('x [{"referencia": "Projeto de Lei n.º 1", "data": "2026-01-02"}]') == "x [Projeto de Lei n.º 1, votação de 2026-01-02]"
+    # Anything that isn't a reference is left alone.
+    assert tidy_answer('lista [{"a": 1}] e [nota]') == 'lista [{"a": 1}] e [nota]'
