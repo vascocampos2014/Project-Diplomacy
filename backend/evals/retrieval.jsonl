@@ -14,7 +14,7 @@
 {"q": "estatutos da agência de notícias do Estado", "expect": ["Projeto de Lei n.º 555"]}
 {"q": "escolas com bandeira verde e educação ambiental", "expect": ["Projeto de Resolução n.º 1217"]}
 {"q": "preparar os edifícios para um terramoto", "expect": ["Projeto de Resolução n.º 314"]}
-{"q": "acabar com o valor mínimo do imposto sobre os combustíveis", "expect": ["Projeto de Lei n.º 796"]}
+{"q": "acabar com o valor mínimo do imposto sobre os combustíveis", "expect": ["Projeto de Lei n.º 796", "Proposta de Lei n.º 109"]}
 {"q": "professores contratados sem formação pedagógica conseguirem profissionalizar-se", "expect": ["Projeto de Resolução n.º 1245"]}
 {"q": "tribunais e edifícios da justiça em mau estado", "expect": ["Projeto de Resolução n.º 1167"]}
 {"q": "terminais de autocarros degradados e sem condições", "expect": ["Projeto de Resolução n.º 439"]}

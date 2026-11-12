@@ -25,3 +25,9 @@ def test_quality_gate_blocks_low_recall_and_missing_vectors(seeded_db):
     problems = refresh.quality_problems(seeded_db, {**s, "vetores": s["chunks"] - 1}, recall=0.5)
     assert any("vetores" in p for p in problems)
     assert any("recall" in p for p in problems)
+
+
+def test_quality_gate_compares_with_before(seeded_db):
+    s = refresh.stats(seeded_db)
+    assert refresh.quality_problems(seeded_db, s, recall=0.955, recall_before=1.0) == []  # one question of 22
+    assert any("caiu" in p for p in refresh.quality_problems(seeded_db, s, recall=0.9, recall_before=1.0))

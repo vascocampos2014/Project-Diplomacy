@@ -4,8 +4,9 @@
 2. Top it up: new votes from openAR, texts of bills that don't have one yet
    (newest first, so coverage also grows into older bills), and embeddings
    for the new passages only.
-3. Quality gate: database integrity, every passage has a vector, and the
-   retrieval eval still passes. If anything fails, nothing is uploaded.
+3. Quality gate: database integrity, every passage has a vector, and search
+   quality on the retrieval eval doesn't drop compared with before the
+   refresh. If anything fails, nothing is uploaded.
 4. Upload the database only if something changed. The Space then restarts
    with it.
 
@@ -26,7 +27,12 @@ from pathlib import Path
 
 SPACE = os.getenv("HF_SPACE", "vscocmp/votoclaro-rag")
 DB_IN_SPACE = "data/votoclaro.db"
-MIN_RECALL = float(os.getenv("MIN_RECALL", "0.95"))  # hybrid recall@5 on evals/retrieval.jsonl
+# Hybrid recall@5 on evals/retrieval.jsonl. Compared with the same eval run
+# before the refresh, because newly added bills can be correct answers the
+# eval doesn't list yet: losing one question (1/22) is tolerated, more is
+# not, and nothing goes out below the absolute floor.
+MAX_RECALL_DROP = float(os.getenv("MAX_RECALL_DROP", "0.05"))
+MIN_RECALL = float(os.getenv("MIN_RECALL", "0.85"))
 
 
 def _hash_votes(conn) -> str:
@@ -52,7 +58,7 @@ def stats(conn) -> dict:
     }
 
 
-def quality_problems(conn, after: dict, recall: float | None) -> list[str]:
+def quality_problems(conn, after: dict, recall: float | None, recall_before: float | None = None) -> list[str]:
     problems = []
     if conn.execute("PRAGMA integrity_check").fetchone()[0] != "ok":
         problems.append("a base de dados falhou o integrity_check")
@@ -60,6 +66,8 @@ def quality_problems(conn, after: dict, recall: float | None) -> list[str]:
         problems.append(f"{after['chunks']} chunks mas {after['vetores']} vetores")
     if recall is not None and recall < MIN_RECALL:
         problems.append(f"recall@5 híbrido {recall:.0%} abaixo do mínimo {MIN_RECALL:.0%}")
+    if recall is not None and recall_before is not None and recall < recall_before - MAX_RECALL_DROP:
+        problems.append(f"recall@5 híbrido caiu de {recall_before:.0%} para {recall:.0%}")
     return problems
 
 
@@ -89,6 +97,8 @@ def main() -> int:
     conn = connect()
     before = stats(conn)
     print(f"   antes: {before}")
+    recall_before = run_retrieval()["hybrid"]["recall"]
+    print(f"   recall@5 híbrido antes: {recall_before:.0%}")
 
     print("2. A atualizar")
     api = OpenAR()
@@ -105,8 +115,8 @@ def main() -> int:
 
     print("3. Verificação de qualidade")
     recall = run_retrieval()["hybrid"]["recall"]
-    print(f"   recall@5 híbrido: {recall:.0%} (mínimo {MIN_RECALL:.0%})")
-    problems = quality_problems(conn, after, recall)
+    print(f"   recall@5 híbrido: {recall_before:.0%} -> {recall:.0%} (mínimo {MIN_RECALL:.0%}, queda máxima {MAX_RECALL_DROP:.0%})")
+    problems = quality_problems(conn, after, recall, recall_before)
     if problems:
         print("Falhou a verificação, nada foi enviado:\n - " + "\n - ".join(problems), file=sys.stderr)
         return 1
