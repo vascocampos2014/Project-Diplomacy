@@ -110,3 +110,15 @@ preloaded at build time.
    `votoclaro/vercel.json` already allows it.
 
 `deploy/docker/Dockerfile` builds the same API as a plain container for paid hosts (Cloud Run, Fly.io).
+
+### Weekly data refresh
+
+`.github/workflows/refresh-rag.yml` runs `deploy/refresh_space.py` every Monday at 05:00 UTC:
+1. Download the database the Space serves.
+2. Sync all votes from openAR and fetch up to 15 more bill texts, newest first, so coverage grows into older bills.
+3. Embed only the new passages on CPU.
+4. Run a quality gate: SQLite integrity, every passage has a vector, and hybrid retrieval recall@5 ≥ 95%.
+5. Upload only if something changed.
+
+Run it by hand with `python deploy/refresh_space.py --dry-run`, or from the Actions tab ("Run workflow"). It
+needs the repository secret `HF_TOKEN`: a fine-grained token with write access to the Space only.

@@ -1,0 +1,52 @@
+# Weekly refresh of the RAG data on the Hugging Face Space
+# (backend/deploy/refresh_space.py): new votes, a few more bill texts, a
+# quality gate, and an upload only if something changed.
+#
+# Needs one repository secret: HF_TOKEN, a fine-grained Hugging Face token
+# with write access to the Space vscocmp/votoclaro-rag only.
+#
+# Scheduled runs only happen once this file is on the default branch (main).
+# GitHub emails you if a run fails.
+name: Refresh RAG data
+
+on:
+  schedule:
+    - cron: "0 5 * * 1" # Mondays 05:00 UTC
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Do everything except the upload"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: refresh-rag
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install (CPU-only PyTorch)
+        run: |
+          pip install torch==2.11.0 --index-url https://download.pytorch.org/whl/cpu
+          pip install -e .
+
+      - name: Refresh and upload
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          EMBED_DEVICE: cpu
+        run: python deploy/refresh_space.py ${{ inputs.dry_run && '--dry-run' || '' }}
