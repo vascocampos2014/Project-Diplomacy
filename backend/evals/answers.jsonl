@@ -1,4 +1,4 @@
-{"id": "votos-ps-511", "kind": "votes", "q": "Como votou o PS no Projeto de Lei 511, sobre o crédito à habitação?", "must": ["absten|abstev"], "cite": true}
+{"id": "votos-ps-511", "kind": "votes", "q": "Como votou o PS no Projeto de Lei 511, sobre o crédito à habitação?", "must": ["absten|abstev|abst[eé]m"], "cite": true}
 {"id": "resultado-796", "kind": "votes", "q": "A proposta para remover os limites mínimos do ISP foi aprovada?", "must": ["rejeitad|chumbad|não foi aprovad"], "cite": true}
 {"id": "votos-portagens-259", "kind": "votes", "q": "Que partidos votaram a favor de acabar com as portagens da A1 em Vila Franca de Xira?", "must": ["CH|Chega", "BE|Bloco", "JPP"], "cite": true}
 {"id": "votos-pensoes-1292", "kind": "votes", "q": "Quem votou contra o aumento suplementar das pensões de menor valor?", "must": ["PSD", "IL|Iniciativa Liberal", "CDS"], "cite": true}

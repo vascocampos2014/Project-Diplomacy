@@ -113,6 +113,23 @@ def _ref(row) -> str:
     return f"{row['tipo_desc']} n.º {row['numero']}"
 
 
+def fase_votacao(descricao: str | None) -> str:
+    """Name the stage of a vote from openAR's description, so the model can
+    tell a first-reading vote from the final one (they often differ)."""
+    d = (descricao or "").strip().lower()
+    if not d:
+        return "generalidade ou votação única"
+    if d.startswith("texto final"):
+        return "votação final global"
+    if d.startswith("texto de substituição"):
+        return "texto de substituição (comissão)"
+    if d.startswith("requerimento"):
+        return "requerimento (procedimental)"
+    if "artigo" in d or "especialidade" in d:
+        return "especialidade"
+    return "outra"
+
+
 def get_votes(iniciativa_id: int | None = None, tipo: str | None = None, numero: str | None = None) -> dict:
     conn = connect()
     if iniciativa_id is None:
@@ -140,7 +157,13 @@ def get_votes(iniciativa_id: int | None = None, tipo: str | None = None, numero:
         "titulo": ini["titulo"],
         "estado": ini["estado"],
         "votacoes": [
-            {"data": v["data"], "resultado": v["resultado"], "descricao": v["descricao"], **_posicoes(v)} for v in votos
+            {
+                "data": v["data"],
+                "fase": fase_votacao(v["descricao"]),
+                "resultado": v["resultado"],
+                "descricao": v["descricao"],
+                **_posicoes(v),
+            } for v in votos
         ],
     }
 
