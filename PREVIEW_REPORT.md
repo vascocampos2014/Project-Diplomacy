@@ -15,7 +15,7 @@ checked the preview.
 | `c2d4477` | Web tests (80) |
 | `edb6273` | RAG: correct vote stage, tidy citations (answer eval 12/12) |
 | `d0df5be` | RAG: model fallback chain when a model hits its Groq quota |
-| (next) | App: Perguntar tab (ask the RAG backend), 20 tests |
+| `0a33769` | App: Perguntar tab (ask the RAG backend), 20 tests |
 
 ## Bugs found and fixed
 
