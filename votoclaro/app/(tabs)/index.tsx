@@ -31,7 +31,7 @@ export default function FeedScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       <FlatList
         data={itensFiltrados}
-        keyExtractor={(item) => item.iniciativa.id}
+        keyExtractor={(item) => item.votacaoId}
         contentContainerStyle={styles.list}
         ListHeaderComponent={
           <View style={[styles.header, { borderBottomColor: colors.border }]}>
@@ -53,6 +53,7 @@ export default function FeedScreen() {
         renderItem={({ item }) => (
           <VotacaoCard
             titulo={item.iniciativa.titulo}
+            referencia={item.referencia}
             tema={item.iniciativa.tema}
             data={item.iniciativa.dataVoto}
             resultado={item.iniciativa.resultado}

@@ -102,6 +102,41 @@ export function votacaoParaIniciativa(
   };
 }
 
+const TIPOS_INICIATIVA: Record<string, string> = {
+  J: 'Projeto de Lei',
+  P: 'Proposta de Lei',
+  R: 'Projeto de Resolução',
+  D: 'Projeto de Deliberação',
+  S: 'Proposta de Resolução',
+};
+
+// Votações sobre o procedimento (dispensa de redação final, baixa à comissão,
+// confirmação de votações indiciárias…) e não sobre o conteúdo da iniciativa.
+export function eVotacaoProcedimental(descricao: string | null | undefined): boolean {
+  if (!descricao) return false;
+  return /^Requerimento/i.test(descricao) || /assunção pelo Plenário/i.test(descricao);
+}
+
+// Linha de referência mostrada no cartão, p. ex. "Projeto de Lei n.º 672 · CDS-PP · Votação final global".
+// Distingue iniciativas diferentes com o mesmo título (comum quando vários partidos
+// apresentam propostas parecidas) e as várias fases de votação de uma mesma iniciativa.
+export function referenciaVotacao(v: {
+  iniciativaTipo: string;
+  iniciativaNumero: string;
+  descricao?: string | null;
+}): string {
+  const tipo = TIPOS_INICIATIVA[v.iniciativaTipo] ?? 'Iniciativa';
+  const partes = [`${tipo} n.º ${v.iniciativaNumero}`];
+
+  const autor = v.descricao?.match(/\(([A-Z][A-Za-z-]*)\)\s*$/)?.[1];
+  if (autor) partes.push(autor);
+
+  if (v.descricao?.startsWith('Texto final')) partes.push('Votação final global');
+  else if (v.descricao?.startsWith('Texto de substituição')) partes.push('Texto de substituição');
+
+  return partes.join(' · ');
+}
+
 export function deputadoApiParaDeputado(d: ApiDeputado): Deputado {
   return {
     id: String(d.id),

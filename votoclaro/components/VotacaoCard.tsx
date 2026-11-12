@@ -10,6 +10,7 @@ import type { Resultado } from '@/types';
 
 interface VotacaoCardProps {
   titulo: string;
+  referencia?: string;
   tema: string;
   data: string;
   resultado: Resultado;
@@ -28,6 +29,7 @@ const RESULTADO_LABELS: Record<Resultado, string> = {
 
 export function VotacaoCard({
   titulo,
+  referencia,
   tema,
   data,
   resultado,
@@ -53,7 +55,7 @@ export function VotacaoCard({
       activeOpacity={0.7}
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`${titulo}, ${tema}, ${data}, ${RESULTADO_LABELS[resultado]}`}
+      accessibilityLabel={`${titulo}, ${referencia ? `${referencia}, ` : ''}${tema}, ${data}, ${RESULTADO_LABELS[resultado]}`}
       accessibilityHint="Abre o detalhe da votação"
     >
       <View style={styles.headerRow}>
@@ -64,6 +66,12 @@ export function VotacaoCard({
       <Text style={[Typography.displaySm, styles.titulo, { color: colors.text }]} numberOfLines={2}>
         {titulo}
       </Text>
+
+      {referencia ? (
+        <Text style={[Typography.caption, styles.referencia, { color: colors.tabIconDefault }]} numberOfLines={1}>
+          {referencia}
+        </Text>
+      ) : null}
 
       <View style={styles.barraWrapper}>
         <BarraProgresso favor={pct(favor)} contra={pct(contra)} abstencao={pct(abstencao)} animated={false} />
@@ -96,6 +104,10 @@ const styles = StyleSheet.create({
   },
   titulo: {
     marginTop: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
+  referencia: {
+    marginTop: -Spacing.sm,
     marginBottom: Spacing.md,
   },
   barraWrapper: {
