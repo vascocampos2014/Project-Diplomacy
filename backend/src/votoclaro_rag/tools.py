@@ -158,8 +158,9 @@ def find_votes(
     where, params = [], []
     for w in re.findall(r"\w+", palavras or ""):
         if len(w) > 2:
-            where.append("i.titulo LIKE ?")
-            params.append(f"%{w}%")
+            # "_" is a word character but a LIKE wildcard: escape it so it matches literally.
+            where.append("i.titulo LIKE ? ESCAPE '\\'")
+            params.append("%" + w.replace("\\", "\\\\").replace("_", "\\_") + "%")
     if resultado:
         where.append("v.resultado = ?")
         params.append(resultado)

@@ -7,6 +7,9 @@ import httpx
 
 from votoclaro_rag.config import LEGISLATURA, OPENAR_URL
 
+ALLOWED_DOC_HOSTS = {"app.parlamento.pt", "www.parlamento.pt", "parlamento.pt"}
+MAX_DOC_BYTES = 30 * 1024 * 1024  # the State Budget is the largest bill, at a few MB
+
 # The API allows 100 requests per window; stay well below it.
 _MIN_INTERVAL = 0.4
 
@@ -48,4 +51,12 @@ class OpenAR:
 
     def download(self, url: str) -> bytes:
         # The API links over http and the server redirects to https; go straight there.
-        return self._get(url.replace("http://", "https://", 1)).content
+        url = url.replace("http://", "https://", 1)
+        # Only fetch documents from Parliament's own server: the URL comes from
+        # API data, and following arbitrary URLs would be a server-side request forgery risk.
+        if httpx.URL(url).host not in ALLOWED_DOC_HOSTS:
+            raise ValueError(f"documento fora de {ALLOWED_DOC_HOSTS}: {url[:80]}")
+        res = self._get(url)
+        if len(res.content) > MAX_DOC_BYTES:
+            raise ValueError(f"documento demasiado grande ({len(res.content)} bytes)")
+        return res.content
