@@ -17,6 +17,7 @@ from openai import APIError, RateLimitError
 from pydantic import BaseModel, Field, ValidationError
 
 from votoclaro_rag.agent import ask
+from votoclaro_rag.fontes import resolver_fontes
 
 log = logging.getLogger(__name__)
 
@@ -171,6 +172,9 @@ class Resposta(BaseModel):
     ferramentas: list[dict]
     segundos: float
     modelo: str
+    # Where each citation in the answer points (see fontes.py), so the app
+    # can make them tappable. Unresolved citations are left out.
+    fontes: list[dict] = Field(default_factory=list)
 
 
 # The body is read and validated by hand (not by FastAPI's automatic
@@ -213,7 +217,12 @@ def _responder(pergunta: str, client: str, historico: list[dict] | None = None) 
     except Exception:
         log.exception("unexpected error answering a question")
         return _erro(500, "Ocorreu um erro inesperado. Tenta de novo.")
-    resposta = Resposta(resposta=r.answer, ferramentas=r.tool_calls, segundos=r.seconds, modelo=r.model)
+    try:
+        fontes = resolver_fontes(r.answer)
+    except Exception:  # links are a bonus: never lose the answer over them
+        log.exception("could not resolve citations")
+        fontes = []
+    resposta = Resposta(resposta=r.answer, ferramentas=r.tool_calls, segundos=r.seconds, modelo=r.model, fontes=fontes)
     return JSONResponse(resposta.model_dump())
 
 

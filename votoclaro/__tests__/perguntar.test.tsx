@@ -3,7 +3,20 @@ import React from 'react';
 
 import PerguntarScreen from '@/app/(tabs)/perguntar';
 import { RespostaRag } from '@/components/RespostaRag';
-import { citacoes, ErroPergunta, formatarResposta, perguntar, validarPergunta, type RespostaRag as Resposta } from '@/lib/perguntar';
+import {
+  citacoes,
+  ErroPergunta,
+  formatarResposta,
+  lerFontes,
+  perguntar,
+  urlOficial,
+  validarPergunta,
+  type Fonte,
+  type RespostaRag as Resposta,
+} from '@/lib/perguntar';
+
+const mockPush = jest.fn();
+jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockPush }) }));
 
 jest.mock('react-native-safe-area-context', () => {
   const { View } = require('react-native');
@@ -24,7 +37,7 @@ describe('perguntar (API client)', () => {
     );
     const r = await perguntar('  Como votou o PS?  ', { baseUrl: 'http://api/', fetchImpl });
     expect(fetchImpl).toHaveBeenCalledWith('http://api//ask', expect.objectContaining({ method: 'POST', body: JSON.stringify({ pergunta: 'Como votou o PS?', historico: [] }) }));
-    expect(r).toEqual({ resposta: 'ok', ferramentas: [{ name: 'get_votes', arguments: {} }], segundos: 3, modelo: 'm' });
+    expect(r).toEqual({ resposta: 'ok', ferramentas: [{ name: 'get_votes', arguments: {} }], segundos: 3, modelo: 'm', fontes: [] });
   });
 
   it.each([
@@ -99,6 +112,54 @@ describe('formatting the answer', () => {
     expect(screen.getByText('FONTES')).toBeTruthy();
   });
 
+  const ARTIGO: Fonte = {
+    citacao: 'Proposta de Lei n.º 110, Artigo 45.º',
+    iniciativaId: 377352,
+    referencia: 'Proposta de Lei n.º 110',
+    titulo: 'Orçamento do Estado para 2027',
+    secao: 'Artigo 45.º',
+    excerto: 'Transferência de imposto sobre o valor acrescentado para a segurança social',
+    votacaoId: null,
+    urlDocumento: 'https://app.parlamento.pt/webutils/docs/doc.pdf?x=1',
+    urlIniciativa: 'https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheIniciativa.aspx?BID=377352',
+  };
+
+  it('opens the cited passage when a resolved citation is tapped', () => {
+    render(<RespostaRag texto="O IVA vai para a SS [Proposta de Lei n.º 110, Artigo 45.º]." fontes={[ARTIGO]} />);
+    fireEvent.press(screen.getByLabelText('Abrir fonte 1: Proposta de Lei n.º 110, Artigo 45.º'));
+    expect(screen.getByText(/Transferência de imposto/)).toBeTruthy();
+    expect(screen.getByLabelText('Abrir documento oficial')).toBeTruthy();
+    expect(screen.getByLabelText('Página da iniciativa')).toBeTruthy();
+  });
+
+  it('opens the vote screen for a vote citation', () => {
+    mockPush.mockClear();
+    const voto: Fonte = { ...ARTIGO, citacao: 'Proposta de Lei n.º 110, votação final global', secao: null, excerto: null, votacaoId: 42 };
+    render(<RespostaRag texto="Aprovada [Proposta de Lei n.º 110, votação final global]." fontes={[voto]} />);
+    fireEvent.press(screen.getByLabelText('fonte 1: Proposta de Lei n.º 110, votação final global'));
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/votacao/[id]', params: { id: '42', iniciativaId: '377352' } });
+  });
+
+  it('keeps unresolved citations as plain text', () => {
+    render(<RespostaRag texto="[Projeto de Lei n.º 1, Artigo 1.º]" />);
+    expect(screen.queryByLabelText(/Abrir fonte/)).toBeNull();
+  });
+
+  it('only accepts official https links from the server', () => {
+    expect(urlOficial('https://app.parlamento.pt/doc.pdf')).toBe('https://app.parlamento.pt/doc.pdf');
+    expect(urlOficial('http://app.parlamento.pt/doc.pdf')).toBeNull();
+    expect(urlOficial('https://app.parlamento.pt.evil.com/x')).toBeNull();
+    expect(urlOficial('https://user@evil.com/?https://app.parlamento.pt/')).toBeNull();
+    expect(urlOficial('javascript:alert(1)')).toBeNull();
+    const [f] = lerFontes([
+      { citacao: 'Projeto de Lei n.º 1', iniciativa_id: 7, url_documento: 'https://evil.com/x', votacao_id: '3' },
+      { citacao: '', iniciativa_id: 8 },
+      'lixo',
+    ]);
+    expect(f).toMatchObject({ iniciativaId: 7, urlDocumento: null, votacaoId: null });
+    expect(lerFontes(null)).toEqual([]);
+  });
+
   it('shows no sources section when the answer cites nothing', () => {
     render(<RespostaRag texto="Não encontrei essa informação nos dados." />);
     expect(screen.queryByText('FONTES')).toBeNull();
@@ -106,7 +167,7 @@ describe('formatting the answer', () => {
 });
 
 describe('Perguntar screen', () => {
-  const ok = (resposta = RESPOSTA): Resposta => ({ resposta, ferramentas: [], segundos: 1, modelo: 'm' });
+  const ok = (resposta = RESPOSTA): Resposta => ({ resposta, ferramentas: [], segundos: 1, modelo: 'm', fontes: [] });
 
   it('says "em breve" when no backend is configured', () => {
     render(<PerguntarScreen apiUrl="" />);

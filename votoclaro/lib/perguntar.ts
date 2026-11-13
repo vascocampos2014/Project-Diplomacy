@@ -16,11 +16,64 @@ export const MAX_PERGUNTA = 500;
 // atingir o limite, troca para outro); acima disto desistimos.
 export const TIMEOUT_MS = 90_000;
 
+// Para onde aponta cada citação da resposta (backend: fontes.py). Tocar numa
+// citação abre a votação na app ou o excerto citado, com ligação ao documento
+// oficial.
+export interface Fonte {
+  citacao: string; // texto exato entre [ ] na resposta
+  iniciativaId: number;
+  referencia: string;
+  titulo: string;
+  secao: string | null;
+  excerto: string | null;
+  votacaoId: number | null;
+  urlDocumento: string | null;
+  urlIniciativa: string | null;
+}
+
 export interface RespostaRag {
   resposta: string;
   ferramentas: { name: string; arguments: Record<string, unknown> }[];
   segundos: number;
   modelo: string;
+  fontes: Fonte[];
+}
+
+// Só abrimos ligações https do parlamento: o resto da resposta vem de um
+// serviço externo e não deve poder mandar o utilizador para outro sítio.
+const HOSTS_OFICIAIS = ['app.parlamento.pt', 'www.parlamento.pt', 'parlamento.pt'];
+
+export function urlOficial(u: unknown): string | null {
+  if (typeof u !== 'string') return null;
+  const m = /^https:\/\/([^/?#:@]+)(?:[/?#]|$)/i.exec(u);
+  return m && HOSTS_OFICIAIS.includes(m[1].toLowerCase()) ? u : null;
+}
+
+const texto = (v: unknown, max: number) => (typeof v === 'string' && v.trim() ? v.slice(0, max) : null);
+const inteiro = (v: unknown) => (typeof v === 'number' && Number.isInteger(v) && v > 0 ? v : null);
+
+export function lerFontes(v: unknown): Fonte[] {
+  if (!Array.isArray(v)) return [];
+  const out: Fonte[] = [];
+  for (const f of v.slice(0, 20)) {
+    if (!f || typeof f !== 'object') continue;
+    const o = f as Record<string, unknown>;
+    const citacao = texto(o.citacao, 300);
+    const iniciativaId = inteiro(o.iniciativa_id);
+    if (!citacao || !iniciativaId) continue;
+    out.push({
+      citacao: citacao.trim(),
+      iniciativaId,
+      referencia: texto(o.referencia, 200) ?? citacao,
+      titulo: texto(o.titulo, 500) ?? '',
+      secao: texto(o.secao, 100),
+      excerto: texto(o.excerto, 4000),
+      votacaoId: inteiro(o.votacao_id),
+      urlDocumento: urlOficial(o.url_documento),
+      urlIniciativa: urlOficial(o.url_iniciativa),
+    });
+  }
+  return out;
 }
 
 export type TipoErro = 'limite' | 'indisponivel' | 'rede' | 'tempo' | 'invalida';
@@ -98,13 +151,14 @@ export async function perguntar(
   if (res.status === 422) throw new ErroPergunta('invalida', MENSAGENS_ERRO.invalida);
   if (!res.ok) throw new ErroPergunta('indisponivel', MENSAGENS_ERRO.indisponivel);
 
-  const corpo = (await res.json().catch(() => null)) as Partial<RespostaRag> | null;
+  const corpo = (await res.json().catch(() => null)) as (Partial<RespostaRag> & { fontes?: unknown }) | null;
   if (!corpo || typeof corpo.resposta !== 'string') throw new ErroPergunta('indisponivel', MENSAGENS_ERRO.indisponivel);
   return {
     resposta: corpo.resposta,
     ferramentas: Array.isArray(corpo.ferramentas) ? corpo.ferramentas : [],
     segundos: typeof corpo.segundos === 'number' ? corpo.segundos : 0,
     modelo: typeof corpo.modelo === 'string' ? corpo.modelo : '',
+    fontes: lerFontes(corpo.fontes),
   };
 }
 

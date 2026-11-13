@@ -132,7 +132,7 @@ export default function PerguntarScreen({ apiUrl = RAG_API_URL, perguntar = perg
                           <Chip label="Tentar de novo" onPress={() => enviar(e.pergunta)} />
                         </View>
                       ) : (
-                        <RespostaRag texto={e.resposta.resposta} />
+                        <RespostaRag texto={e.resposta.resposta} fontes={e.resposta.fontes} />
                       )}
                     </Cartao>
                   </View>
