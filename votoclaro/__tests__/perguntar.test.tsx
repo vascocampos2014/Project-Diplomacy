@@ -23,7 +23,7 @@ describe('perguntar (API client)', () => {
       jsonResponse(200, { resposta: 'ok', ferramentas: [{ name: 'get_votes', arguments: {} }], segundos: 3, modelo: 'm' })
     );
     const r = await perguntar('  Como votou o PS?  ', { baseUrl: 'http://api/', fetchImpl });
-    expect(fetchImpl).toHaveBeenCalledWith('http://api//ask', expect.objectContaining({ method: 'POST', body: JSON.stringify({ pergunta: 'Como votou o PS?' }) }));
+    expect(fetchImpl).toHaveBeenCalledWith('http://api//ask', expect.objectContaining({ method: 'POST', body: JSON.stringify({ pergunta: 'Como votou o PS?', historico: [] }) }));
     expect(r).toEqual({ resposta: 'ok', ferramentas: [{ name: 'get_votes', arguments: {} }], segundos: 3, modelo: 'm' });
   });
 
@@ -120,7 +120,7 @@ describe('Perguntar screen', () => {
     expect(screen.getByText(/geradas por IA/)).toBeTruthy();
     expect(screen.getByText(/não escrevas dados pessoais/)).toBeTruthy();
     fireEvent.press(screen.getByRole('button', { name: 'Perguntar: O que propõe o Projeto de Lei 672?' }));
-    expect(fake).toHaveBeenCalledWith('O que propõe o Projeto de Lei 672?', { baseUrl: 'http://api' });
+    expect(fake).toHaveBeenCalledWith('O que propõe o Projeto de Lei 672?', { baseUrl: 'http://api', historico: [] });
     expect(await screen.findByText('FONTES')).toBeTruthy();
   });
 
@@ -178,5 +178,38 @@ describe('Perguntar screen', () => {
     fireEvent.press(screen.getByRole('button', { name: 'Nova conversa' }));
     await waitFor(() => expect(screen.queryByText('Resposta.')).toBeNull());
     expect(screen.getByText('EXPERIMENTA PERGUNTAR')).toBeTruthy();
+  });
+});
+
+describe('conversation context', () => {
+  it('sends only the last answered turns, trimmed', async () => {
+    const fetchImpl = jest.fn().mockResolvedValue(jsonResponse(200, { resposta: 'ok', ferramentas: [], segundos: 1, modelo: 'm' }));
+    const turnos = [1, 2, 3, 4].map((i) => ({ pergunta: `p${i}`, resposta: `r${i}`.padEnd(3000, 'x') }));
+    await perguntar('e como se tivesse 10 anos?', { baseUrl: 'http://api', fetchImpl, historico: [...turnos, { pergunta: 'sem resposta', resposta: ' ' }] });
+    const body = JSON.parse(fetchImpl.mock.calls[0][1].body);
+    expect(body.historico.map((t: { pergunta: string }) => t.pergunta)).toEqual(['p2', 'p3', 'p4']);
+    expect(body.historico.every((t: { resposta: string }) => t.resposta.length === 1500)).toBe(true);
+  });
+
+  it('a follow-up question carries the earlier answer; a new conversation does not', async () => {
+    const fake = jest
+      .fn()
+      .mockResolvedValueOnce({ resposta: 'O OE define receitas e despesas.', ferramentas: [], segundos: 1, modelo: 'm' })
+      .mockResolvedValue({ resposta: 'Versão simples.', ferramentas: [], segundos: 1, modelo: 'm' });
+    render(<PerguntarScreen apiUrl="http://api" perguntar={fake} />);
+    fireEvent.changeText(screen.getByLabelText('Pergunta'), 'o que é o orkamento de estado');
+    fireEvent.press(screen.getByRole('button', { name: 'Enviar pergunta' }));
+    await screen.findByText('O OE define receitas e despesas.');
+
+    fireEvent.changeText(screen.getByLabelText('Pergunta'), 'explica como se tivesse 10 anos');
+    fireEvent.press(screen.getByRole('button', { name: 'Enviar pergunta' }));
+    await screen.findByText('Versão simples.');
+    expect(fake.mock.calls[1][1].historico).toEqual([{ pergunta: 'o que é o orkamento de estado', resposta: 'O OE define receitas e despesas.' }]);
+
+    fireEvent.press(screen.getByRole('button', { name: 'Nova conversa' }));
+    fireEvent.changeText(screen.getByLabelText('Pergunta'), 'outra pergunta');
+    fireEvent.press(screen.getByRole('button', { name: 'Enviar pergunta' }));
+    await waitFor(() => expect(fake).toHaveBeenCalledTimes(3));
+    expect(fake.mock.calls[2][1].historico).toEqual([]);
   });
 });

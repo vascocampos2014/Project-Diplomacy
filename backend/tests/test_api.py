@@ -136,7 +136,7 @@ def test_errors_are_short_and_never_echo_the_request(client):
 
 
 def test_oversized_body_is_refused_before_reading(client):
-    r = client.post("/ask", content=b'{"pergunta": "' + b"x" * 10_000 + b'"}', headers={"Content-Type": "application/json"})
+    r = client.post("/ask", content=b'{"pergunta": "' + b"x" * 60_000 + b'"}', headers={"Content-Type": "application/json"})
     assert r.status_code == 413
     assert len(r.content) < 100
 
@@ -179,3 +179,22 @@ def test_unexpected_errors_do_not_leak_details(client, monkeypatch):
     monkeypatch.setattr(api, "ask", boom)
     r = client.post("/ask", json={"pergunta": "pergunta válida"})
     assert r.status_code == 500 and "segredo" not in r.text
+
+
+def test_ask_passes_history_to_the_agent(client, monkeypatch):
+    seen = {}
+
+    def fake_ask(q, historico=None):
+        seen["historico"] = historico
+        return AskResult(answer="ok", seconds=0.1)
+
+    monkeypatch.setattr(api, "ask", fake_ask)
+    body = {"pergunta": "e como se tivesse 10 anos?", "historico": [{"pergunta": "O que é o OE?", "resposta": "Uma lei."}]}
+    assert client.post("/ask", json=body).status_code == 200
+    assert seen["historico"] == [{"pergunta": "O que é o OE?", "resposta": "Uma lei."}]
+
+
+def test_history_is_validated(client):
+    too_many = [{"pergunta": "q", "resposta": "r"}] * 11
+    assert client.post("/ask", json={"pergunta": "pergunta válida", "historico": too_many}).status_code == 422
+    assert client.post("/ask", json={"pergunta": "pergunta válida", "historico": "texto"}).status_code == 422

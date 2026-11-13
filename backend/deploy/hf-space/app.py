@@ -58,6 +58,25 @@ DESCRICAO = (
 )
 
 
+def _turnos(historico) -> list[dict]:
+    """Gradio's chat history (messages with role/content) as question/answer
+    pairs for the agent, which keeps only the last few."""
+    turnos, pendente = [], None
+    for m in historico or []:
+        role = m.get("role") if isinstance(m, dict) else None
+        content = m.get("content") if isinstance(m, dict) else None
+        if isinstance(content, list):  # Gradio 6 can send content as blocks
+            content = " ".join(b.get("text", "") for b in content if isinstance(b, dict))
+        if not isinstance(content, str) or not content.strip():
+            continue
+        if role == "user":
+            pendente = content
+        elif role == "assistant" and pendente is not None:
+            turnos.append({"pergunta": pendente, "resposta": content})
+            pendente = None
+    return turnos
+
+
 def responder(mensagem: str, _historico, request: gr.Request) -> str:
     pergunta = (mensagem or "").strip()
     if not 3 <= len(pergunta) <= 500:
@@ -67,8 +86,7 @@ def responder(mensagem: str, _historico, request: gr.Request) -> str:
     if bloqueio:
         return bloqueio
     try:
-        # Each question is answered on its own (the API is stateless too).
-        return ask(pergunta).answer
+        return ask(pergunta, historico=_turnos(_historico)).answer
     except RateLimitError:
         return "Limite de pedidos ao modelo atingido. Tenta daqui a pouco."
     except APIError:  # error responses, timeouts, connection failures

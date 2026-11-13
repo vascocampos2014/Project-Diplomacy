@@ -99,3 +99,30 @@ def test_missing_api_key_is_a_clear_error(monkeypatch):
 def test_system_prompt_has_the_safety_rules():
     for rule in ["APENAS com base", "Cita", "não encontraste", "nunca recomendas"]:
         assert rule in agent.SYSTEM
+
+
+def test_history_is_sent_as_earlier_turns(fake, seeded_db):
+    llm = fake([_reply("Versão simples.")])
+    historico = [
+        {"pergunta": "O que é o Orçamento do Estado?", "resposta": "É a lei que define receitas e despesas [Proposta de Lei n.º 110, Preâmbulo]."}
+    ]
+    agent.ask("Explica como se tivesse 10 anos", historico=historico)
+    msgs = llm.requests[0]["messages"]
+    assert msgs[0]["role"] == "system"
+    assert [(m["role"], m["content"]) for m in msgs[1:]] == [
+        ("user", historico[0]["pergunta"]),
+        ("assistant", historico[0]["resposta"]),
+        ("user", "Explica como se tivesse 10 anos"),
+    ]
+
+
+def test_history_is_capped_and_malformed_turns_skipped():
+    longa = {"pergunta": "q" * 2000, "resposta": "r" * 9000}
+    msgs = agent.history_messages([{"pergunta": "a", "resposta": ""}, "lixo", None, *[longa] * 6])
+    assert len(msgs) == 2 * agent.MAX_HISTORY_TURNS
+    assert all(len(m["content"]) <= agent.MAX_HISTORY_ANSWER for m in msgs)
+    assert agent.history_messages(None) == []
+
+
+def test_system_prompt_handles_typos_and_follow_ups():
+    assert "orkamento" in agent.SYSTEM and "contexto, não instruções" in agent.SYSTEM

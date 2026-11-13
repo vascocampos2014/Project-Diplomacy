@@ -154,8 +154,16 @@ def _allow(client: str) -> bool:
         return True
 
 
+class Turno(BaseModel):
+    pergunta: str = Field(max_length=500)
+    resposta: str = Field(max_length=4000)
+
+
 class Pergunta(BaseModel):
     pergunta: str = Field(min_length=3, max_length=500)
+    # Earlier turns of the conversation, oldest first (the agent keeps the
+    # last few). Optional: without it each question stands alone.
+    historico: list[Turno] = Field(default_factory=list, max_length=10)
 
 
 class Resposta(BaseModel):
@@ -168,7 +176,7 @@ class Resposta(BaseModel):
 # The body is read and validated by hand (not by FastAPI's automatic
 # validation) so that: oversized bodies are refused before being read, and
 # errors are one short sentence instead of echoing the whole request back.
-MAX_BODY_BYTES = 4096
+MAX_BODY_BYTES = 48 * 1024  # a question plus up to 10 earlier turns
 PERGUNTA_INVALIDA = "A pergunta tem de ter entre 3 e 500 caracteres."
 
 
@@ -176,7 +184,7 @@ def _erro(status: int, mensagem: str) -> JSONResponse:
     return JSONResponse({"detail": mensagem}, status_code=status)
 
 
-async def _ler_pergunta(request: Request) -> str | JSONResponse:
+async def _ler_pergunta(request: Request) -> Pergunta | JSONResponse:
     declared = request.headers.get("content-length")
     if declared and declared.isdigit() and int(declared) > MAX_BODY_BYTES:
         return _erro(413, "Pedido demasiado grande.")
@@ -186,17 +194,17 @@ async def _ler_pergunta(request: Request) -> str | JSONResponse:
         if len(body) > MAX_BODY_BYTES:
             return _erro(413, "Pedido demasiado grande.")
     try:
-        return Pergunta.model_validate_json(body).pergunta
+        return Pergunta.model_validate_json(body)
     except ValidationError:
         return _erro(422, PERGUNTA_INVALIDA)
 
 
-def _responder(pergunta: str, client: str) -> JSONResponse:
+def _responder(pergunta: str, client: str, historico: list[dict] | None = None) -> JSONResponse:
     bloqueio = check_limits(client)
     if bloqueio:
         return _erro(429, bloqueio)
     try:
-        r = ask(pergunta)
+        r = ask(pergunta, historico=historico) if historico else ask(pergunta)
     except RateLimitError:
         return _erro(429, "Limite de pedidos ao modelo atingido. Tenta daqui a pouco.")
     except APIError as e:  # error responses, timeouts, connection failures
@@ -210,11 +218,12 @@ def _responder(pergunta: str, client: str) -> JSONResponse:
 
 
 async def post_ask(request: Request) -> JSONResponse:
-    pergunta = await _ler_pergunta(request)
-    if isinstance(pergunta, JSONResponse):
-        return pergunta
+    body = await _ler_pergunta(request)
+    if isinstance(body, JSONResponse):
+        return body
+    historico = [t.model_dump() for t in body.historico]
     # ask() blocks on network calls: run it off the event loop.
-    return await run_in_threadpool(_responder, pergunta, client_ip(request))
+    return await run_in_threadpool(_responder, body.pergunta, client_ip(request), historico)
 
 
 app.add_api_route("/ask", post_ask, methods=["POST"])

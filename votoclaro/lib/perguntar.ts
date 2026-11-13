@@ -49,9 +49,29 @@ export function validarPergunta(texto: string): string | null {
   return t;
 }
 
+// Earlier turns sent with each question, so follow-ups like "explica isso
+// como se tivesse 10 anos" have context. The server keeps only the last 3.
+export interface Turno {
+  pergunta: string;
+  resposta: string;
+}
+export const MAX_TURNOS = 3;
+
+export function historicoParaEnvio(turnos: Turno[]): Turno[] {
+  return turnos
+    .filter((t) => t.pergunta.trim() && t.resposta.trim())
+    .slice(-MAX_TURNOS)
+    .map((t) => ({ pergunta: t.pergunta.slice(0, 500), resposta: t.resposta.slice(0, 1500) }));
+}
+
 export async function perguntar(
   texto: string,
-  { baseUrl = RAG_API_URL, fetchImpl = fetch, timeoutMs = TIMEOUT_MS }: { baseUrl?: string; fetchImpl?: typeof fetch; timeoutMs?: number } = {}
+  {
+    baseUrl = RAG_API_URL,
+    fetchImpl = fetch,
+    timeoutMs = TIMEOUT_MS,
+    historico = [],
+  }: { baseUrl?: string; fetchImpl?: typeof fetch; timeoutMs?: number; historico?: Turno[] } = {}
 ): Promise<RespostaRag> {
   const pergunta = validarPergunta(texto);
   if (!pergunta) throw new ErroPergunta('invalida', MENSAGENS_ERRO.invalida);
@@ -64,7 +84,7 @@ export async function perguntar(
     res = await fetchImpl(`${baseUrl}/ask`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pergunta }),
+      body: JSON.stringify({ pergunta, historico: historicoParaEnvio(historico) }),
       signal: controlador.signal,
     });
   } catch (e) {

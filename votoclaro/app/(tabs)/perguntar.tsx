@@ -51,17 +51,19 @@ export default function PerguntarScreen({ apiUrl = RAG_API_URL, perguntar = perg
       const p = validarPergunta(pergunta);
       if (!p || aCarregar) return;
       const id = proximoId.current++;
+      // Answered turns so far, so the assistant understands follow-ups.
+      const historico = conversa.flatMap((e) => (e.estado === 'ok' ? [{ pergunta: e.pergunta, resposta: e.resposta.resposta }] : []));
       setConversa((c) => [...c, { id, pergunta: p, estado: 'a-carregar' }]);
       setTexto('');
       let nova: Entrada;
       try {
-        nova = { id, pergunta: p, estado: 'ok', resposta: await perguntar(p, { baseUrl: apiUrl }) };
+        nova = { id, pergunta: p, estado: 'ok', resposta: await perguntar(p, { baseUrl: apiUrl, historico }) };
       } catch (e) {
         nova = { id, pergunta: p, estado: 'erro', erro: e instanceof ErroPergunta ? e.message : MENSAGENS_ERRO.indisponivel };
       }
       if (montado.current) setConversa((c) => c.map((x) => (x.id === id ? nova : x)));
     },
-    [aCarregar, apiUrl, perguntar]
+    [aCarregar, apiUrl, conversa, perguntar]
   );
 
   if (!apiUrl) {
@@ -159,7 +161,7 @@ export default function PerguntarScreen({ apiUrl = RAG_API_URL, perguntar = perg
               maxLength={MAX_PERGUNTA}
               multiline
               accessibilityLabel="Pergunta"
-              accessibilityHint="Cada pergunta é respondida separadamente"
+              accessibilityHint="O assistente tem em conta as perguntas anteriores desta conversa"
               style={[styles.input, { color: cores.text, backgroundColor: cores.background, borderColor: cores.border }]}
               onKeyPress={(ev) => {
                 // Web: Enter envia, Shift+Enter muda de linha.

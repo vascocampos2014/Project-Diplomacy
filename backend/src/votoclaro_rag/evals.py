@@ -63,7 +63,7 @@ def run_answers(model: str = LLM_MODEL, only: str | None = None, pause: float = 
     rows = []
     for case in cases:
         try:
-            r = ask(case["q"], model=model)
+            r = ask(case["q"], model=model, historico=case.get("historico"))
             checks = _check(case, r.answer)
             rows.append(
                 {
