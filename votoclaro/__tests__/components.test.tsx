@@ -1,7 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import React from 'react';
 
-import { AfinidadeQuestaoCard } from '@/components/AfinidadeQuestaoCard';
 import { ContagemVotos, ResultadoBadge } from '@/components/ContagemVotos';
 import { DeputadoRow } from '@/components/DeputadoRow';
 import { EcraVazio } from '@/components/EcraVazio';
@@ -149,17 +148,6 @@ describe('filters', () => {
     render(<FiltroPosicao selecionado={null} onSelecionar={onSelecionar} />);
     fireEvent.press(screen.getByRole('button', { name: 'Mostrar votações: Contra' }));
     expect(onSelecionar).toHaveBeenCalledWith('contra');
-  });
-});
-
-describe('AfinidadeQuestaoCard', () => {
-  it('offers three answers as radio buttons and reports the choice', () => {
-    const onResponder = jest.fn();
-    render(<AfinidadeQuestaoCard tema="Habitação" afirmacao="Uma afirmação." respostaSelecionada="neutro" onResponder={onResponder} />);
-    expect(screen.getAllByRole('radio')).toHaveLength(3);
-    expect(screen.getByRole('radio', { name: 'Neutro' }).props.accessibilityState.checked).toBe(true);
-    fireEvent.press(screen.getByRole('radio', { name: 'Discordo' }));
-    expect(onResponder).toHaveBeenCalledWith('discordo');
   });
 });
 

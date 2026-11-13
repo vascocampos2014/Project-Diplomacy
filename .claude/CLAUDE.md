@@ -41,7 +41,9 @@
 - Alerta quando um deputado que segues vota
 - Resumo semanal: "Esta semana o parlamento votou X leis"
 
-### 5. Teste de afinidade partidária (gamificação)
+### 5. Teste de afinidade partidária (gamificação) — REMOVIDO da app em 2026-11-13
+> O separador Quiz foi retirado. Não reconstruir sem pedido explícito.
+
 - O utilizador responde a um conjunto de afirmações por tema (saúde, habitação, ambiente, etc.) e a app compara as respostas com o historial real de votos de cada partido nesses temas, devolvendo uma % de afinidade por partido
 - Resultado apresentado sempre como "com base nos dados públicos de votação, estes partidos votaram de forma semelhante às tuas respostas" — nunca como recomendação de voto
 - Sem perguntas de opinião sobre líderes/partidos, só sobre políticas concretas já votadas
@@ -358,7 +360,7 @@ Esta app é apartidária. Regras de design:
 
 ## Próximos passos sugeridos
 
-- [x] Construir o tab de Quiz (teste de afinidade partidária)
+- [x] ~~Construir o tab de Quiz (teste de afinidade partidária)~~ — removido em 2026-11-13
 - [ ] Criar conta Supabase e aplicar o esquema SQL
 - [ ] Explorar a API do parlamento e mapear os endpoints reais
 - [ ] Construir o componente `VotacaoCard` com dados mock

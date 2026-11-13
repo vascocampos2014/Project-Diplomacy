@@ -37,20 +37,3 @@ export interface Votacao {
   posicao: Posicao;
 }
 
-// Resposta do utilizador a uma afirmação do teste de afinidade partidária
-export type RespostaAfinidade = 'concordo' | 'neutro' | 'discordo';
-
-export interface PerguntaAfinidade {
-  id: string;
-  tema: string;
-  afirmacao: string;
-  // a votação real com que a resposta é comparada
-  referencia: string; // "Projeto de Lei n.º 511"
-  iniciativaId: number;
-  votacaoId: string;
-}
-
-export interface ResultadoAfinidade {
-  partido: string;
-  pontuacao: number; // 0-100, % de afinidade com base nas respostas
-}

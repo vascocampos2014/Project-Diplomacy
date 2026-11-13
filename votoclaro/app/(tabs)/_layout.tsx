@@ -54,10 +54,6 @@ export default function TabLayout() {
         name="comparar"
         options={{ title: 'Comparar', tabBarAccessibilityLabel: 'Comparar partidos', tabBarIcon: icone('compare-arrows') }}
       />
-      <Tabs.Screen
-        name="quiz"
-        options={{ title: 'Quiz', tabBarAccessibilityLabel: 'Teste de afinidade partidária', tabBarIcon: icone('quiz') }}
-      />
     </Tabs>
   );
 }
