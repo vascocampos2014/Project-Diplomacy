@@ -109,7 +109,7 @@ describe('formatting the answer', () => {
     render(<RespostaRag texto={'<script>alert(1)</script> **ok** [Projeto de Lei n.º 1, Artigo 1.º]'} />);
     expect(screen.getByText(/<script>alert\(1\)<\/script>/)).toBeTruthy();
     expect(screen.getByLabelText('fonte 1: Projeto de Lei n.º 1, Artigo 1.º')).toBeTruthy();
-    expect(screen.getByText('FONTES')).toBeTruthy();
+    expect(screen.getByText('Fontes')).toBeTruthy();
   });
 
   const ARTIGO: Fonte = {
@@ -162,7 +162,7 @@ describe('formatting the answer', () => {
 
   it('shows no sources section when the answer cites nothing', () => {
     render(<RespostaRag texto="Não encontrei essa informação nos dados." />);
-    expect(screen.queryByText('FONTES')).toBeNull();
+    expect(screen.queryByText('Fontes')).toBeNull();
   });
 });
 
@@ -182,7 +182,7 @@ describe('Perguntar screen', () => {
     expect(screen.getByText(/não escrevas dados pessoais/)).toBeTruthy();
     fireEvent.press(screen.getByRole('button', { name: 'Perguntar: O que propõe o Projeto de Lei 672?' }));
     expect(fake).toHaveBeenCalledWith('O que propõe o Projeto de Lei 672?', { baseUrl: 'http://api', historico: [] });
-    expect(await screen.findByText('FONTES')).toBeTruthy();
+    expect(await screen.findByText('Fontes')).toBeTruthy();
   });
 
   it('sends a typed question, shows loading, then the answer with sources', async () => {
@@ -238,7 +238,7 @@ describe('Perguntar screen', () => {
     await screen.findByText('Resposta.');
     fireEvent.press(screen.getByRole('button', { name: 'Nova conversa' }));
     await waitFor(() => expect(screen.queryByText('Resposta.')).toBeNull());
-    expect(screen.getByText('EXPERIMENTA PERGUNTAR')).toBeTruthy();
+    expect(screen.getByText('Experimenta perguntar')).toBeTruthy();
   });
 });
 

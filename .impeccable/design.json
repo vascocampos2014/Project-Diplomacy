@@ -1,0 +1,865 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-13T19:07:48.879028+00:00",
+  "title": "Design System: VotoClaro",
+  "extensions": {
+    "colorMeta": {
+      "bright-snow": {
+        "role": "primary",
+        "displayName": "Bright Snow",
+        "canonical": "#F8F9FA",
+        "tonalRamp": [
+          "#0B0B0B",
+          "#252525",
+          "#414243",
+          "#606162",
+          "#818283",
+          "#A4A5A6",
+          "#C8C9CA",
+          "#EEEEEF"
+        ]
+      },
+      "carbon": {
+        "role": "secondary",
+        "displayName": "Carbon Black",
+        "canonical": "#232323",
+        "tonalRamp": [
+          "#0B0B0B",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#A5A5A5",
+          "#C9C9C9",
+          "#EEEEEE"
+        ]
+      },
+      "ultramarine": {
+        "role": "tertiary",
+        "displayName": "Dark Ultramarine",
+        "canonical": "#120A8F",
+        "tonalRamp": [
+          "#030629",
+          "#101D58",
+          "#23388C",
+          "#3854C4",
+          "#5678EB",
+          "#80A0FE",
+          "#ACC7FF",
+          "#DAEEFF"
+        ]
+      },
+      "blue-bell": {
+        "role": "tertiary",
+        "displayName": "Blue Bell",
+        "canonical": "#449DD1",
+        "tonalRamp": [
+          "#000D1B",
+          "#002940",
+          "#004769",
+          "#0E6895",
+          "#3C8BB9",
+          "#71ADD4",
+          "#A3D0EE",
+          "#D5F4FF"
+        ]
+      },
+      "slip-white": {
+        "role": "neutral",
+        "displayName": "Slip White",
+        "canonical": "#FFFFFF",
+        "tonalRamp": [
+          "#0B0B0B",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#A5A5A5",
+          "#C9C9C9",
+          "#EEEEEE"
+        ]
+      },
+      "shaded-paper": {
+        "role": "neutral",
+        "displayName": "Shaded Paper",
+        "canonical": "#EEF0F3",
+        "tonalRamp": [
+          "#0B0B0C",
+          "#242526",
+          "#414244",
+          "#606164",
+          "#818285",
+          "#A4A5A7",
+          "#C8C9CB",
+          "#EEEEF0"
+        ]
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Hairline Grey",
+        "canonical": "#DADDE2",
+        "tonalRamp": [
+          "#0A0B0C",
+          "#242527",
+          "#404245",
+          "#5F6165",
+          "#808287",
+          "#A3A5A9",
+          "#C7C9CC",
+          "#EDEEF0"
+        ]
+      },
+      "graphite": {
+        "role": "neutral",
+        "displayName": "Graphite",
+        "canonical": "#585D64",
+        "tonalRamp": [
+          "#0A0B0D",
+          "#232529",
+          "#3F4247",
+          "#5D6268",
+          "#7E8389",
+          "#A1A5AB",
+          "#C6C9CE",
+          "#ECEFF2"
+        ]
+      },
+      "ultramarine-wash": {
+        "role": "neutral",
+        "displayName": "Ultramarine Wash",
+        "canonical": "#E8E7F4",
+        "tonalRamp": [
+          "#0B0B0E",
+          "#25242A",
+          "#424149",
+          "#61606A",
+          "#82818C",
+          "#A4A4AD",
+          "#C9C8CF",
+          "#EEEEF3"
+        ]
+      },
+      "selection-wash": {
+        "role": "neutral",
+        "displayName": "Selection Wash",
+        "canonical": "#C9E2F2",
+        "tonalRamp": [
+          "#060C10",
+          "#1C272D",
+          "#35444E",
+          "#506471",
+          "#718693",
+          "#97A8B3",
+          "#BECBD4",
+          "#E7F0F6"
+        ]
+      },
+      "favor": {
+        "role": "data",
+        "displayName": "Favor Green",
+        "canonical": "#15803D",
+        "tonalRamp": [
+          "#001102",
+          "#002F0F",
+          "#065023",
+          "#177438",
+          "#429759",
+          "#75B783",
+          "#A6D8AF",
+          "#D7F9DD"
+        ]
+      },
+      "contra": {
+        "role": "data",
+        "displayName": "Contra Red",
+        "canonical": "#B91C1C",
+        "tonalRamp": [
+          "#220000",
+          "#4C0103",
+          "#7C1211",
+          "#AE2622",
+          "#D64E44",
+          "#F08074",
+          "#FFAFA3",
+          "#FFDDD4"
+        ]
+      },
+      "abstencao": {
+        "role": "data",
+        "displayName": "Abstenção Amber",
+        "canonical": "#B45309",
+        "tonalRamp": [
+          "#1C0300",
+          "#421500",
+          "#6D2C00",
+          "#9A4400",
+          "#C06731",
+          "#DB9068",
+          "#F5BA9B",
+          "#FFE5CF"
+        ]
+      },
+      "ausente": {
+        "role": "data",
+        "displayName": "Ausente Grey",
+        "canonical": "#9CA3AF",
+        "tonalRamp": [
+          "#090B0E",
+          "#22252A",
+          "#3E424A",
+          "#5C626B",
+          "#7D838D",
+          "#A0A5AE",
+          "#C5C9D0",
+          "#ECEFF3"
+        ]
+      },
+      "favor-wash": {
+        "role": "data",
+        "displayName": "Favor Wash",
+        "canonical": "#E3F3E8",
+        "tonalRamp": [
+          "#080C0A",
+          "#202722",
+          "#3B453E",
+          "#58655C",
+          "#79867D",
+          "#9DA8A1",
+          "#C3CCC6",
+          "#EAF0EC"
+        ]
+      },
+      "contra-wash": {
+        "role": "data",
+        "displayName": "Contra Wash",
+        "canonical": "#FBE7E7",
+        "tonalRamp": [
+          "#0E0A0A",
+          "#2B2323",
+          "#4A3F3F",
+          "#6C5D5D",
+          "#8E7E7E",
+          "#AFA1A1",
+          "#D1C6C6",
+          "#F4ECEC"
+        ]
+      },
+      "abstencao-wash": {
+        "role": "data",
+        "displayName": "Abstenção Wash",
+        "canonical": "#FBEEDD",
+        "tonalRamp": [
+          "#0E0B07",
+          "#29241D",
+          "#484137",
+          "#6A6052",
+          "#8B8173",
+          "#ACA498",
+          "#CFC8BF",
+          "#F3EEE7"
+        ]
+      },
+      "ausente-ink": {
+        "role": "data",
+        "displayName": "Ausente Ink",
+        "canonical": "#4B5563",
+        "tonalRamp": [
+          "#090B0F",
+          "#21252C",
+          "#3C434C",
+          "#59626F",
+          "#798391",
+          "#9DA6B1",
+          "#C3CAD3",
+          "#EAEFF5"
+        ]
+      },
+      "carbon-slip": {
+        "role": "neutral",
+        "displayName": "Carbon Slip (dark paper)",
+        "canonical": "#2C2C2D",
+        "tonalRamp": [
+          "#0B0B0B",
+          "#252525",
+          "#424243",
+          "#616162",
+          "#828283",
+          "#A5A5A6",
+          "#C9C9CA",
+          "#EEEEEF"
+        ]
+      },
+      "carbon-shaded": {
+        "role": "neutral",
+        "displayName": "Carbon Shaded (dark hover)",
+        "canonical": "#343537",
+        "tonalRamp": [
+          "#0B0B0C",
+          "#242526",
+          "#414243",
+          "#606163",
+          "#818284",
+          "#A4A5A7",
+          "#C8C9CA",
+          "#EEEEEF"
+        ]
+      },
+      "night-text": {
+        "role": "neutral",
+        "displayName": "Night Text",
+        "canonical": "#F1F2F4",
+        "tonalRamp": [
+          "#0B0B0C",
+          "#252526",
+          "#414243",
+          "#606163",
+          "#818284",
+          "#A4A5A6",
+          "#C8C9CA",
+          "#EEEEEF"
+        ]
+      },
+      "night-muted": {
+        "role": "neutral",
+        "displayName": "Night Muted",
+        "canonical": "#A9AEB5",
+        "tonalRamp": [
+          "#0A0B0D",
+          "#232528",
+          "#3F4247",
+          "#5D6267",
+          "#7E8389",
+          "#A2A5AA",
+          "#C6C9CD",
+          "#EDEFF1"
+        ]
+      },
+      "night-rule": {
+        "role": "neutral",
+        "displayName": "Night Rule",
+        "canonical": "#8D9299",
+        "tonalRamp": [
+          "#0A0B0D",
+          "#232528",
+          "#3F4247",
+          "#5D6267",
+          "#7E8389",
+          "#A2A5AB",
+          "#C6C9CD",
+          "#ECEFF1"
+        ]
+      },
+      "night-hairline": {
+        "role": "neutral",
+        "displayName": "Night Hairline",
+        "canonical": "#424448",
+        "tonalRamp": [
+          "#0B0B0C",
+          "#242527",
+          "#404245",
+          "#5F6165",
+          "#808286",
+          "#A3A5A8",
+          "#C8C9CC",
+          "#EDEEF0"
+        ]
+      },
+      "blue-bell-ink": {
+        "role": "tertiary",
+        "displayName": "Light Blue Bell (dark pen text)",
+        "canonical": "#7FBFE6",
+        "tonalRamp": [
+          "#000D17",
+          "#092839",
+          "#1B475F",
+          "#2F6888",
+          "#518AAB",
+          "#7FACC8",
+          "#ACCFE5",
+          "#DBF3FF"
+        ]
+      },
+      "blue-bell-wash": {
+        "role": "tertiary",
+        "displayName": "Blue Bell Wash (dark selected)",
+        "canonical": "#1F3A4D",
+        "tonalRamp": [
+          "#050C12",
+          "#192731",
+          "#314553",
+          "#4B6578",
+          "#6C869A",
+          "#92A8B9",
+          "#BBCCD9",
+          "#E4F0FA"
+        ]
+      },
+      "night-selection": {
+        "role": "neutral",
+        "displayName": "Night Selection",
+        "canonical": "#2F5A75",
+        "tonalRamp": [
+          "#030D14",
+          "#132835",
+          "#284659",
+          "#40667F",
+          "#6088A2",
+          "#8AAAC0",
+          "#B4CDDE",
+          "#E0F1FE"
+        ]
+      },
+      "favor-night": {
+        "role": "data",
+        "displayName": "Favor Night Ink",
+        "canonical": "#4ADE80",
+        "tonalRamp": [
+          "#001200",
+          "#003106",
+          "#005417",
+          "#007A2A",
+          "#009D4C",
+          "#5DBD7A",
+          "#97DCA8",
+          "#CDFCD8"
+        ]
+      },
+      "contra-night": {
+        "role": "data",
+        "displayName": "Contra Night Ink",
+        "canonical": "#F87171",
+        "tonalRamp": [
+          "#1F0002",
+          "#48090F",
+          "#751D22",
+          "#A63237",
+          "#CD5657",
+          "#E78582",
+          "#FFB2AE",
+          "#FFDFDB"
+        ]
+      },
+      "abstencao-night": {
+        "role": "data",
+        "displayName": "Abstenção Night Ink",
+        "canonical": "#FBBF24",
+        "tonalRamp": [
+          "#170700",
+          "#391F00",
+          "#5F3900",
+          "#885600",
+          "#AC7800",
+          "#C89E41",
+          "#E5C583",
+          "#FFECC0"
+        ]
+      },
+      "party-ps": {
+        "role": "data",
+        "displayName": "Party PS",
+        "canonical": "#F0385C",
+        "tonalRamp": [
+          "#240002",
+          "#500010",
+          "#820024",
+          "#B60039",
+          "#DF3C59",
+          "#F87683",
+          "#FFA8AF",
+          "#FFD9DC"
+        ]
+      },
+      "party-psd": {
+        "role": "data",
+        "displayName": "Party PSD",
+        "canonical": "#F97316",
+        "tonalRamp": [
+          "#200000",
+          "#4A0A00",
+          "#771F00",
+          "#A93500",
+          "#D05A00",
+          "#EA8854",
+          "#FFB58E",
+          "#FFE1C6"
+        ]
+      },
+      "party-ch": {
+        "role": "data",
+        "displayName": "Party CH",
+        "canonical": "#003399",
+        "tonalRamp": [
+          "#000826",
+          "#082153",
+          "#193D84",
+          "#2C5BB9",
+          "#4C7EE0",
+          "#79A4F4",
+          "#A7CAFF",
+          "#D7F0FF"
+        ]
+      },
+      "party-il": {
+        "role": "data",
+        "displayName": "Party IL",
+        "canonical": "#60A5FA",
+        "tonalRamp": [
+          "#000A21",
+          "#03254A",
+          "#124278",
+          "#2461A9",
+          "#4784CF",
+          "#77A8E6",
+          "#A6CCFD",
+          "#D6F1FF"
+        ]
+      },
+      "party-be": {
+        "role": "data",
+        "displayName": "Party BE",
+        "canonical": "#BE123C",
+        "tonalRamp": [
+          "#220002",
+          "#4D0010",
+          "#7D0925",
+          "#B01C3A",
+          "#D8485A",
+          "#F27C84",
+          "#FFACB0",
+          "#FFDBDD"
+        ]
+      },
+      "party-pcp": {
+        "role": "data",
+        "displayName": "Party PCP",
+        "canonical": "#DC2626",
+        "tonalRamp": [
+          "#240000",
+          "#510000",
+          "#820005",
+          "#B70C14",
+          "#DF413A",
+          "#F8796D",
+          "#FFAA9E",
+          "#FFDAD1"
+        ]
+      },
+      "party-pan": {
+        "role": "data",
+        "displayName": "Party PAN",
+        "canonical": "#16A34A",
+        "tonalRamp": [
+          "#001200",
+          "#003006",
+          "#005316",
+          "#007829",
+          "#269B4B",
+          "#68BB79",
+          "#9EDBA8",
+          "#D1FBD8"
+        ]
+      },
+      "party-livre": {
+        "role": "data",
+        "displayName": "Party LIVRE",
+        "canonical": "#7C3AED",
+        "tonalRamp": [
+          "#10002D",
+          "#2C065F",
+          "#4B1C96",
+          "#6D32D1",
+          "#8C5AF9",
+          "#AB8BFF",
+          "#CDB8FF",
+          "#F0E3FF"
+        ]
+      },
+      "party-cds-pp": {
+        "role": "data",
+        "displayName": "Party CDS-PP",
+        "canonical": "#0EA5E9",
+        "tonalRamp": [
+          "#000D1F",
+          "#002947",
+          "#004874",
+          "#0069A3",
+          "#008CC8",
+          "#5CAFE1",
+          "#96D2F8",
+          "#CCF5FF"
+        ]
+      },
+      "party-jpp": {
+        "role": "data",
+        "displayName": "Party JPP",
+        "canonical": "#0D9488",
+        "tonalRamp": [
+          "#00100D",
+          "#002E29",
+          "#004F47",
+          "#007268",
+          "#2C9589",
+          "#6AB5AB",
+          "#9FD6CE",
+          "#D2F8F2"
+        ]
+      },
+      "party-default": {
+        "role": "data",
+        "displayName": "Party Default",
+        "canonical": "#9CA3AF",
+        "tonalRamp": [
+          "#090B0E",
+          "#22252A",
+          "#3E424A",
+          "#5C626B",
+          "#7D838D",
+          "#A0A5AE",
+          "#C5C9D0",
+          "#ECEFF3"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Screen titles (CabecalhoEcra)."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Vote or deputy title on detail screens."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Law title on each feed slip."
+      },
+      "body-lg": {
+        "displayName": "Body Large",
+        "purpose": "Reading text on detail screens and answers."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Subtitles and supporting copy."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Ballot options and ballot row labels."
+      },
+      "section-head": {
+        "displayName": "Section Head",
+        "purpose": "Uppercase TituloSecao and day headings on a 1.5px ink rule; the heading itself, never above one."
+      },
+      "ballot-head": {
+        "displayName": "Ballot Head",
+        "purpose": "Column headers of the full ballot."
+      },
+      "stamp": {
+        "displayName": "Stamp",
+        "purpose": "Result stamp text."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Meta lines, seat counts, notes."
+      },
+      "data": {
+        "displayName": "Data",
+        "purpose": "Large tabular counts."
+      },
+      "tally": {
+        "displayName": "Tally",
+        "purpose": "Vote counts in the slip tally."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "state-change",
+        "value": "200ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "The single transition for border colour, background and opacity on every state change."
+      },
+      {
+        "name": "x-stroke",
+        "value": "210ms ease-out cubic",
+        "purpose": "Each of the two strokes of the ✕ drawn into its box."
+      },
+      {
+        "name": "x-beat",
+        "value": "80ms",
+        "purpose": "Pause between the first and second ✕ stroke (500ms total)."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "0.01ms",
+        "purpose": "prefers-reduced-motion collapses transitions; the ✕ appears already drawn."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "content-max",
+        "value": "760px"
+      },
+      {
+        "name": "desktop-nav",
+        "value": "900px"
+      }
+    ],
+    "borders": [
+      {
+        "name": "ink",
+        "value": "1.5px solid #232323",
+        "purpose": "Slip frames, top/tab bar rules, section rules, buttons, search field."
+      },
+      {
+        "name": "line",
+        "value": "1px solid #232323",
+        "purpose": "Plain section containers."
+      },
+      {
+        "name": "hairline",
+        "value": "hairline #DADDE2",
+        "purpose": "Dividers between ballot rows."
+      }
+    ],
+    "focus": {
+      "value": "2px solid #449DD1, offset 2px",
+      "purpose": "Keyboard focus ring on web, both themes."
+    }
+  },
+  "components": [
+    {
+      "name": "Ballot Slip",
+      "kind": "card",
+      "refersTo": "slip",
+      "description": "The feed's unit: a vote drawn as a ballot slip with title, meta, stamp, tally, seat bar and three ballot rows.",
+      "html": "<a class=\"ds-slip\" href=\"#\"><div class=\"ds-slip-head\"><div class=\"ds-slip-title\">Alteração ao regime do arrendamento urbano</div><div class=\"ds-slip-meta\"><span>PJL 123/XVII</span><span>Habitação</span><span>28 Out</span></div><div class=\"ds-slip-res\"><span class=\"ds-stamp ds-stamp-ok\"><svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\"><path fill=\"currentColor\" d=\"M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z\"/></svg>Aprovada</span><span class=\"ds-tally\"><b style=\"color:#15803D\">91</b> a favor <b style=\"color:#B91C1C\">79</b> contra <b style=\"color:#B45309\">60</b> abstenção</span></div><div class=\"ds-seatbar\"><i style=\"flex:91;background:#15803D\"></i><i style=\"flex:79;background:#B91C1C\"></i><i style=\"flex:60;background:#B45309\"></i></div></div><div class=\"ds-slip-rows\"><div class=\"ds-row\"><span class=\"ds-xbox\"><svg viewBox=\"0 0 18 18\" width=\"18\" height=\"18\"><path d=\"M5 5L13 13M13 5L5 13\" stroke=\"#120A8F\" stroke-width=\"2.2\" stroke-linecap=\"round\"/></svg></span><span class=\"ds-rowlabel\">A favor</span><span class=\"ds-parties\"><i class=\"ds-dot\" style=\"background:#F0385C\"></i>PS <i class=\"ds-dot\" style=\"background:#7C3AED\"></i>L</span></div><div class=\"ds-row\"><span class=\"ds-xbox\"><svg viewBox=\"0 0 18 18\" width=\"18\" height=\"18\"><path d=\"M5 5L13 13M13 5L5 13\" stroke=\"#120A8F\" stroke-width=\"2.2\" stroke-linecap=\"round\"/></svg></span><span class=\"ds-rowlabel\">Contra</span><span class=\"ds-parties\"><i class=\"ds-dot\" style=\"background:#F97316\"></i>PSD</span></div><div class=\"ds-row\"><span class=\"ds-xbox\"></span><span class=\"ds-rowlabel\" style=\"color:#585D64\">Abstenção</span><span class=\"ds-parties\" style=\"color:#585D64;font-weight:400\">Nenhum partido</span></div></div></a>",
+      "css": ".ds-slip{display:block;max-width:420px;background:#FFFFFF;border:1.5px solid #232323;border-radius:3px;color:#232323;text-decoration:none;font-family:'Public Sans',system-ui,sans-serif;transition:border-color 200ms cubic-bezier(0.16,1,0.3,1),background-color 200ms cubic-bezier(0.16,1,0.3,1);}.ds-slip:hover,.ds-slip:focus-visible{border-color:#120A8F}.ds-slip:focus-visible{outline:2px solid #449DD1;outline-offset:2px}.ds-slip-head{padding:16px;display:flex;flex-direction:column;gap:8px}.ds-slip-title{font-size:17px;font-weight:600;line-height:23px;letter-spacing:-0.15px}.ds-slip-meta{display:flex;gap:12px;font-size:13px;color:#585D64}.ds-slip-res{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.ds-stamp{display:inline-flex;gap:4px;padding:3px 8px 3px 6px;border:1.5px solid;border-radius:2px;font-size:12px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase}.ds-stamp-ok{background:#120A8F;border-color:#120A8F;color:#FFFFFF}.ds-tally{font-size:13px;color:#585D64}.ds-tally b{font-size:16px;font-variant-numeric:tabular-nums;margin:0 2px 0 8px}.ds-seatbar{display:flex;gap:2px;height:6px;background:#DADDE2}.ds-slip-rows{border-top:1px solid #DADDE2;padding:0 16px}.ds-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:0.5px solid #DADDE2}.ds-row:first-child{border-top:0}.ds-xbox{display:inline-flex;width:18px;height:18px;border:1.5px solid #232323;border-radius:2px;box-sizing:border-box;align-items:center;justify-content:center;overflow:hidden}.ds-xbox svg{width:15px;height:15px}.ds-rowlabel{width:76px;font-size:14px;font-weight:600}.ds-parties{font-size:13px;font-weight:600;display:flex;align-items:center;gap:5px}.ds-dot{display:inline-block;width:8px;height:8px;border-radius:999px;margin-left:7px}"
+    },
+    {
+      "name": "Result Stamp",
+      "kind": "custom",
+      "refersTo": "stamp-aprovada",
+      "description": "Square stamp for the result: filled pen for aprovada, outlined Carbon for chumbada.",
+      "html": "<span class=\"ds-stamp ds-stamp-ok\"><svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\"><path fill=\"currentColor\" d=\"M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z\"/></svg>Aprovada</span> <span class=\"ds-stamp ds-stamp-no\"><svg viewBox=\"0 0 24 24\" width=\"14\" height=\"14\"><path fill=\"currentColor\" d=\"M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z\"/></svg>Chumbada</span>",
+      "css": ".ds-stamp{display:inline-flex;gap:4px;padding:3px 8px 3px 6px;border:1.5px solid;border-radius:2px;font-family:'Public Sans',system-ui,sans-serif;font-size:12px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase}.ds-stamp-ok{background:#120A8F;border-color:#120A8F;color:#FFFFFF}.ds-stamp-no{background:transparent;border-color:#232323;color:#232323}"
+    },
+    {
+      "name": "X Box",
+      "kind": "custom",
+      "refersTo": "x-box",
+      "description": "The square ballot box with the ✕ stroked in by the pen (two 210ms strokes, 80ms beat).",
+      "html": "<span class=\"ds-xb\"><svg viewBox=\"0 0 22 22\" width=\"22\" height=\"22\"><path class=\"ds-s1\" d=\"M6 6L16 16\" /><path class=\"ds-s2\" d=\"M16 6L6 16\"/></svg></span>",
+      "css": ".ds-xb{display:inline-flex;width:22px;height:22px;border:1.5px solid #232323;border-radius:2px;background:#FFFFFF;box-sizing:border-box;align-items:center;justify-content:center}.ds-xb svg{width:19px;height:19px}.ds-xb path{stroke:#120A8F;stroke-width:2.6;stroke-linecap:round;stroke-dasharray:15;stroke-dashoffset:15;animation:ds-draw 210ms cubic-bezier(0.33,1,0.68,1) forwards}.ds-xb .ds-s2{animation-delay:290ms}@keyframes ds-draw{to{stroke-dashoffset:0}}@media (prefers-reduced-motion:reduce){.ds-xb path{animation:none;stroke-dashoffset:0}}"
+    },
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The pen-coloured action: ultramarine fill, near-square, 48px.",
+      "html": "<button class=\"ds-btn-primary\">Tentar de novo</button>",
+      "css": ".ds-btn-primary{min-height:48px;padding:0 20px;background:#120A8F;color:#FFFFFF;border:1.5px solid #120A8F;border-radius:3px;font-family:'Public Sans',system-ui,sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:border-color 200ms cubic-bezier(0.16,1,0.3,1),background-color 200ms cubic-bezier(0.16,1,0.3,1);}.ds-btn-primary:active{opacity:0.8}.ds-btn-primary:focus-visible{outline:2px solid #449DD1;outline-offset:2px}.ds-btn-primary:disabled{opacity:0.45}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "White paper with an ink border; hover shades the paper and turns the border to pen.",
+      "html": "<button class=\"ds-btn-secondary\">Ver todas</button>",
+      "css": ".ds-btn-secondary{min-height:48px;padding:0 20px;background:#FFFFFF;color:#232323;border:1.5px solid #232323;border-radius:3px;font-family:'Public Sans',system-ui,sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:border-color 200ms cubic-bezier(0.16,1,0.3,1),background-color 200ms cubic-bezier(0.16,1,0.3,1);}.ds-btn-secondary:hover{background:#EEF0F3;border-color:#120A8F}.ds-btn-secondary:active{opacity:0.8}.ds-btn-secondary:focus-visible{outline:2px solid #449DD1;outline-offset:2px}"
+    },
+    {
+      "name": "Ballot Option",
+      "kind": "chip",
+      "refersTo": "ballot-option",
+      "description": "Filters as ballot options: a small ✕ box plus label; selected gets the pen frame and wash.",
+      "html": "<button class=\"ds-opt ds-opt-on\"><span class=\"ds-ob\"><svg viewBox=\"0 0 14 14\" width=\"14\" height=\"14\"><path d=\"M4 4L10 10M10 4L4 10\" stroke=\"#120A8F\" stroke-width=\"2\" stroke-linecap=\"round\"/></svg></span>Habitação</button><button class=\"ds-opt\"><span class=\"ds-ob\"></span>Saúde</button>",
+      "css": ".ds-opt{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 8px;margin-right:4px;background:transparent;border:1px solid transparent;border-radius:3px;color:#232323;font-family:'Public Sans',system-ui,sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:border-color 200ms cubic-bezier(0.16,1,0.3,1),background-color 200ms cubic-bezier(0.16,1,0.3,1);}.ds-opt:hover{background:#EEF0F3}.ds-opt-on,.ds-opt-on:hover{background:#E8E7F4;border-color:#120A8F;color:#120A8F}.ds-opt:focus-visible{outline:2px solid #449DD1;outline-offset:2px}.ds-ob{display:inline-flex;width:14px;height:14px;border:1.25px solid #232323;border-radius:2px;box-sizing:border-box;align-items:center;justify-content:center;overflow:hidden;background:#FFFFFF}.ds-ob svg{width:12px;height:12px}"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "search-field",
+      "description": "The one search field: white paper, ink border, pen caret, Blue Bell focus ring.",
+      "html": "<label class=\"ds-search\"><svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\"><path fill=\"#585D64\" d=\"M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z\"/></svg><input placeholder=\"Procurar deputado\" /></label>",
+      "css": ".ds-search{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 12px;background:#FFFFFF;border:1.5px solid #232323;border-radius:3px;max-width:360px}.ds-search:focus-within{outline:2px solid #449DD1;outline-offset:2px}.ds-search input{flex:1;border:0;outline:0;background:transparent;font-family:'Public Sans',system-ui,sans-serif;font-size:16px;color:#232323;caret-color:#120A8F}.ds-search input::placeholder{color:#585D64}"
+    },
+    {
+      "name": "Top Bar with Desktop Nav",
+      "kind": "nav",
+      "refersTo": "top-bar",
+      "description": "56px paper bar on a 1.5px ink rule: logo and wordmark, text nav with a Blue Bell underline on the active item.",
+      "html": "<nav class=\"ds-top\"><span class=\"ds-word\"><b>Voto</b>Claro</span><a class=\"ds-nav ds-nav-on\" href=\"#\" aria-current=\"page\">Votações</a><a class=\"ds-nav\" href=\"#\">Deputados</a><a class=\"ds-nav\" href=\"#\">Perguntar</a><a class=\"ds-nav\" href=\"#\">Comparar</a></nav>",
+      "css": ".ds-top{display:flex;align-items:stretch;gap:20px;height:56px;padding:0 16px;background:#FFFFFF;border-bottom:1.5px solid #232323;font-family:'Public Sans',system-ui,sans-serif;}.ds-word{display:flex;align-items:center;margin-right:4px;font-size:20px;font-weight:400;letter-spacing:-0.3px;color:#232323}.ds-word b{font-weight:800}.ds-nav{display:flex;align-items:center;padding-top:3px;border-bottom:3px solid transparent;font-size:15px;font-weight:500;color:#585D64;text-decoration:none;transition:border-color 200ms cubic-bezier(0.16,1,0.3,1),background-color 200ms cubic-bezier(0.16,1,0.3,1);}.ds-nav:hover{color:#232323}.ds-nav-on{color:#232323;font-weight:600;border-bottom-color:#449DD1}.ds-nav:focus-visible{outline:2px solid #449DD1;outline-offset:2px}"
+    },
+    {
+      "name": "Section Heading",
+      "kind": "custom",
+      "refersTo": "section-head",
+      "description": "Printed-ballot heading: tracked caps on a 1.5px ink rule, optional note at right. The heading itself, never a label above one.",
+      "html": "<div class=\"ds-sec\"><h2>28 Out</h2><span>6 votações</span></div>",
+      "css": ".ds-sec{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:8px;border-bottom:1.5px solid #232323;font-family:'Public Sans',system-ui,sans-serif;}.ds-sec h2{margin:0;font-size:14px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#232323}.ds-sec span{font-size:13px;color:#585D64}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Ballot Slip",
+    "overview": "Every vote in VotoClaro is drawn as the paper every Portuguese voter has held: a white slip with square corners, ruled in ink, with a row per option, a square box at the start of each row, and a ✕ made with a pen. The visitor reads a vote the way they would read a boletim de voto, without needing to know parliamentary procedure. The interface is that paper and nothing else. Hierarchy comes from ink weight, rule weight and type size, never from shadows, gradients or coloured tiles.\n\nThe world is bright, flat and quiet, so the votes carry the colour. Bright Snow is the table the slips lie on; white slips sit on it, ruled in Carbon. Dark Ultramarine is the pen: it marks the ✕, the links, the primary action and the \"aprovada\" stamp. Blue Bell is the \"you are here\" marker: the active tab, the focus ring, the text selection, and the logo. Vote colours (favor, contra, abstenção) live only inside data: the tally numbers and the 230-seat bar. Party colours live only in the small dots beside party acronyms.\n\nThe one authored motion is the pen: the ✕ is stroked into its box in two strokes when a slip comes into view and on the vote detail. Every other state change is a single 200ms ease-out. It rejects the civic-tech card stack: pill chips, stat tiles, coloured edge stripes and soft shadows.",
+    "keyCharacteristics": [
+      "White slips with near-square corners (3px) and 1.5px Carbon ink frames on a Bright Snow ground.",
+      "Hairline dividers between ballot rows; a 1.5px ink rule under section and day headings.",
+      "Dark Ultramarine as the single pen colour; Blue Bell only for location and focus.",
+      "One family, Public Sans, with tabular figures for every count.",
+      "The ✕ drawn into a square box is the signature mark and the only authored animation.",
+      "No shadows anywhere. Depth is paper on table, drawn with rules."
+    ],
+    "rules": [
+      {
+        "name": "The One Pen Rule",
+        "body": "Dark Ultramarine is the only ink that marks: the ✕, links, the primary action, the \"aprovada\" stamp. Nothing decorative is ever ultramarine.",
+        "section": "colors"
+      },
+      {
+        "name": "The Marker Rule",
+        "body": "Blue Bell says only \"you are here\": active tab, focus ring, selection, logo. In light mode it is never text (2.85:1 on Bright Snow).",
+        "section": "colors"
+      },
+      {
+        "name": "The Data-Only Colour Rule",
+        "body": "Vote colours appear only in tallies and the seat bar; party colours only as dots beside acronyms. Never text on a party colour, never a party colour as a fill, edge stripe or background.",
+        "section": "colors"
+      },
+      {
+        "name": "The Heading-Is-The-Heading Rule",
+        "body": "Tracked caps exist only as the heading itself (section heads, day heads), as ballot column headers, and inside the stamp. Nothing ever sits above a heading as a label: no eyebrow, no kicker.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tabular Rule",
+        "body": "Every count is set in tabular figures so tallies line up across slips.",
+        "section": "typography"
+      },
+      {
+        "name": "The Paper-Not-Plastic Rule",
+        "body": "No box-shadow, no glow, no blur. If something needs separating, draw a rule.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do draw every vote as a slip: white paper, 3px corners, 1.5px Carbon frame, hairline rows, square ✕ boxes.",
+      "Do keep Dark Ultramarine (#120A8F) for the pen only: ✕ marks, links, primary action, \"aprovada\" stamp.",
+      "Do keep Blue Bell (#449DD1) for \"you are here\": active tab, focus ring, selection, logo; switch the pen to Blue Bell in dark mode.",
+      "Do pair every result and position with a word and an icon or mark, never colour alone.",
+      "Do use one 200ms ease-out (cubic-bezier(0.16, 1, 0.3, 1)) for every state change, and keep the two-stroke ✕ (210ms + 80ms + 210ms) as the only authored motion.",
+      "Do show the 230-seat bar at a fixed scale and without animation.",
+      "Do set counts in tabular figures.",
+      "Do use the logo image from votoclaro/assets/brand/ as supplied."
+    ],
+    "donts": [
+      "Don't add shadows, glows or blur; separate with rules.",
+      "Don't put a label, eyebrow or kicker above a heading; tracked caps are only the heading itself, ballot column headers and the stamp.",
+      "Don't use pill-shaped chips, stat tiles or coloured edge stripes; filters are ballot options with ✕ boxes.",
+      "Don't set Blue Bell as text in light mode, or Dark Ultramarine on Carbon in dark mode.",
+      "Don't put text on a party colour or use a party colour as a fill or background; give no party more colour weight, size or position than its data warrants.",
+      "Don't redraw, recolour or restyle the logo.",
+      "Don't use vote colours outside tallies, the seat bar and the position indicator."
+    ]
+  }
+}

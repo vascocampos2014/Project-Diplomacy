@@ -1,12 +1,32 @@
 import type { ApiVotacaoList } from '@/lib/parlamento-api';
-import { eVotacaoProcedimental, referenciaVotacao, votacaoParaIniciativa } from '@/lib/parlamentoAdapters';
+import { agregarPosicaoPartidos, eVotacaoProcedimental, referenciaVotacao, votacaoParaIniciativa } from '@/lib/parlamentoAdapters';
 import type { Iniciativa } from '@/types';
+
+// Os partidos em cada posição, do maior para o menor grupo parlamentar.
+export interface PartidosPorPosicao {
+  favor: string[];
+  contra: string[];
+  abstencao: string[];
+}
 
 export interface ItemFeed {
   iniciativa: Iniciativa;
   referencia: string;
   votacaoId: string;
   iniciativaId: number;
+  partidos: PartidosPorPosicao;
+}
+
+export function partidosPorPosicao(
+  votacao: Parameters<typeof agregarPosicaoPartidos>[0],
+  lugaresPorPartido: Record<string, number>
+): PartidosPorPosicao {
+  const ordem = Object.keys(lugaresPorPartido).sort((a, b) => lugaresPorPartido[b] - lugaresPorPartido[a] || a.localeCompare(b));
+  const out: PartidosPorPosicao = { favor: [], contra: [], abstencao: [] };
+  for (const [partido, posicao] of agregarPosicaoPartidos(votacao, ordem)) {
+    if (posicao !== 'ausente') out[posicao].push(partido);
+  }
+  return out;
 }
 
 // Uma iniciativa pode ser votada várias vezes no mesmo dia (texto final,
@@ -28,6 +48,7 @@ export function montarFeed(
       referencia: referenciaVotacao(v),
       votacaoId: v.id,
       iniciativaId: v.iniciativaId,
+      partidos: partidosPorPosicao(v, lugaresPorPartido),
     });
     if (itens.length === maximo) break;
   }

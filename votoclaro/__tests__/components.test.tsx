@@ -4,7 +4,6 @@ import React from 'react';
 import { ContagemVotos, ResultadoBadge } from '@/components/ContagemVotos';
 import { DeputadoRow } from '@/components/DeputadoRow';
 import { EcraVazio } from '@/components/EcraVazio';
-import { EstatisticasVotacao } from '@/components/EstatisticasVotacao';
 import { FiltroPosicao } from '@/components/FiltroPosicao';
 import { FiltroTemas } from '@/components/FiltroTemas';
 import { PartidoBar } from '@/components/PartidoBar';
@@ -14,14 +13,14 @@ import { VotoIndicator } from '@/components/VotoIndicator';
 
 describe('VotoIndicator', () => {
   it.each([
-    ['favor', '✓', 'Voto a favor'],
-    ['contra', '✗', 'Voto contra'],
-    ['abstencao', '—', 'Abstenção'],
-    ['ausente', '·', 'Ausente'],
-  ] as const)('%s always has a symbol and an accessible label', (posicao, simbolo, label) => {
+    ['favor', 'check', 'Voto a favor'],
+    ['contra', 'close', 'Voto contra'],
+    ['abstencao', 'remove', 'Abstenção'],
+    ['ausente', 'more-horiz', 'Ausente'],
+  ] as const)('%s always has an icon and an accessible label', (posicao, icone, label) => {
     render(<VotoIndicator posicao={posicao} />);
     expect(screen.getByLabelText(label)).toBeTruthy();
-    expect(screen.getByText(simbolo)).toBeTruthy();
+    expect(screen.getByTestId(`icon-${icone}`)).toBeTruthy();
   });
 
   it('shows the text label on request', () => {
@@ -71,7 +70,7 @@ describe('VotacaoCard', () => {
 
   it('renders title, reference, theme, date and result', () => {
     render(<VotacaoCard {...props} onPress={() => {}} />);
-    for (const t of ['Orçamento do Estado para 2027', 'Proposta de Lei n.º 110', 'ECONOMIA', '28 Out 2026', 'Aprovada']) {
+    for (const t of ['Orçamento do Estado para 2027', 'Proposta de Lei n.º 110', 'Economia', '28 Out 2026', 'Aprovada']) {
       expect(screen.getByText(t)).toBeTruthy();
     }
   });
@@ -84,22 +83,16 @@ describe('VotacaoCard', () => {
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 
+  it('marks the ballot rows with the parties in each position', () => {
+    render(<VotacaoCard {...props} partidos={{ favor: ['PSD', 'CDS-PP'], contra: ['CH'], abstencao: [] }} onPress={() => {}} />);
+    expect(screen.getByLabelText('A favor: PSD, CDS-PP')).toBeTruthy();
+    expect(screen.getByLabelText('Contra: CH')).toBeTruthy();
+    expect(screen.getByLabelText('Abstenção: nenhum partido')).toBeTruthy();
+  });
+
   it('hides counts when there are no votes recorded', () => {
     render(<VotacaoCard {...props} favor={0} contra={0} abstencao={0} onPress={() => {}} />);
     expect(screen.queryByLabelText(/a favor$/)).toBeNull();
-  });
-});
-
-describe('EstatisticasVotacao', () => {
-  it('shows counts and percentages', () => {
-    render(<EstatisticasVotacao favor={91} contra={79} abstencao={60} ausentes={0} />);
-    expect(screen.getByLabelText('A favor: 91 votos, 39.6%')).toBeTruthy();
-    expect(screen.getByLabelText('Ausente: 0 votos, 0.0%')).toBeTruthy();
-  });
-
-  it('does not divide by zero', () => {
-    render(<EstatisticasVotacao favor={0} contra={0} abstencao={0} ausentes={0} />);
-    expect(screen.getAllByText('0.0%')).toHaveLength(4);
   });
 });
 

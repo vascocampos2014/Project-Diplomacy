@@ -1,13 +1,13 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DeputadoRow } from '@/components/DeputadoRow';
 import { EcraVazio } from '@/components/EcraVazio';
-import { MenuTresPontos } from '@/components/MenuTresPontos';
-import { CabecalhoEcra, Chip, Contentor, useCores } from '@/components/ui';
+import { LinhaOpcoes } from '@/components/LinhaOpcoes';
+import { CampoPesquisa, CabecalhoEcra, Chip, Contentor, useCores } from '@/components/ui';
 import { getCorPartido } from '@/constants/CORES_PARTIDOS';
 import { Radii, Spacing } from '@/constants/Spacing';
 import { Fonts, Typography } from '@/constants/Typography';
@@ -28,7 +28,7 @@ export default function DeputadosScreen() {
   const deputados = useMemo(() => filtrarDeputados(data?.deputados ?? [], pesquisa, partido), [data, pesquisa, partido]);
 
   return (
-    <SafeAreaView style={[styles.ecra, { backgroundColor: cores.background }]} edges={['top']}>
+    <SafeAreaView style={[styles.ecra, { backgroundColor: cores.background }]} edges={[]}>
       <FlatList
         data={deputados}
         keyExtractor={(item) => item.id}
@@ -39,24 +39,16 @@ export default function DeputadosScreen() {
             <CabecalhoEcra
               titulo="Deputados"
               subtitulo={data ? `${data.deputados.length} deputados em funções` : undefined}
-              direita={<MenuTresPontos />}
             />
-            <View style={[styles.pesquisa, { backgroundColor: cores.surface, borderColor: cores.border }]}>
-              <MaterialIcons name="search" size={20} color={cores.textMuted} accessible={false} />
-              <TextInput
-                style={[styles.input, { color: cores.text }]}
-                placeholder="Nome, partido ou círculo"
-                placeholderTextColor={cores.textMuted}
-                value={pesquisa}
-                onChangeText={setPesquisa}
-                accessibilityLabel="Procurar deputado"
-                accessibilityHint="Filtra a lista por nome, partido ou círculo eleitoral"
-                autoCorrect={false}
-                clearButtonMode="while-editing"
-                maxLength={60}
-              />
-            </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.partidos}>
+            <CampoPesquisa
+              valor={pesquisa}
+              onMudar={setPesquisa}
+              placeholder="Nome, partido ou círculo…"
+              accessibilityLabel="Procurar deputado"
+              accessibilityHint="Filtra a lista por nome, partido ou círculo eleitoral"
+            />
+            <View style={styles.partidos}>
+            <LinhaOpcoes>
               <Chip label="Todos" selecionado={partido === null} onPress={() => setPartido(null)} />
               {partidos.map(([sigla, n]) => (
                 <Chip
@@ -68,7 +60,8 @@ export default function DeputadosScreen() {
                   accessibilityLabel={`Filtrar por ${sigla}, ${n} deputados`}
                 />
               ))}
-            </ScrollView>
+            </LinhaOpcoes>
+            </View>
             {data && (pesquisa || partido) ? (
               <Text style={[Typography.caption, styles.contagem, { color: cores.textMuted }]}>
                 {deputados.length} {deputados.length === 1 ? 'resultado' : 'resultados'}
@@ -81,7 +74,7 @@ export default function DeputadosScreen() {
             <View
               style={[
                 styles.linha,
-                { backgroundColor: cores.surface, borderColor: cores.border },
+                { backgroundColor: cores.surface, borderColor: cores.rule, borderBottomColor: index === deputados.length - 1 ? cores.rule : cores.border },
                 index === 0 && styles.primeira,
                 index === deputados.length - 1 && styles.ultima,
               ]}
@@ -134,9 +127,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.sm,
-    borderWidth: 1,
-    borderRadius: Radii.pill,
-    paddingHorizontal: Spacing.lg,
+    borderWidth: 1.5,
+    borderRadius: Radii.chip,
+    paddingHorizontal: Spacing.md,
   },
   input: {
     flex: 1,
@@ -145,24 +138,24 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   partidos: {
-    gap: Spacing.sm,
-    paddingVertical: Spacing.md,
+    paddingVertical: Spacing.sm,
   },
   contagem: {
     marginBottom: Spacing.sm,
   },
   linha: {
     paddingHorizontal: Spacing.lg,
-    borderLeftWidth: StyleSheet.hairlineWidth,
-    borderRightWidth: StyleSheet.hairlineWidth,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   primeira: {
-    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopWidth: 1,
     borderTopLeftRadius: Radii.card,
     borderTopRightRadius: Radii.card,
   },
   ultima: {
+    borderBottomWidth: 1,
     borderBottomLeftRadius: Radii.card,
     borderBottomRightRadius: Radii.card,
   },

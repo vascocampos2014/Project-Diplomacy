@@ -1,9 +1,10 @@
 import { Stack } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { EcraVazio } from '@/components/EcraVazio';
+import { CabecalhoEcra, CampoPesquisa, Contentor } from '@/components/ui';
 import { GlossarioItem } from '@/components/GlossarioItem';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
@@ -28,31 +29,30 @@ export default function GlossarioScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
       <Stack.Screen options={{ title: 'Glossário' }} />
-      <View style={styles.header}>
-        <Text style={[Typography.bodySm, styles.descricao, { color: colors.textMuted }]}>
-          Termos comuns do processo legislativo, explicados de forma simples.
-        </Text>
-        <TextInput
-          style={[
-            styles.input,
-            { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text },
-          ]}
-          placeholder="Procurar termo"
-          placeholderTextColor={colors.textMuted}
-          value={pesquisa}
-          onChangeText={setPesquisa}
+      <Contentor style={styles.header}>
+        <CabecalhoEcra titulo="Glossário" subtitulo="Termos comuns do processo legislativo, explicados de forma simples." />
+        <CampoPesquisa
+          valor={pesquisa}
+          onMudar={setPesquisa}
+          placeholder="Procurar termo…"
           accessibilityLabel="Procurar termo no glossário"
           accessibilityHint="Filtra a lista por termo ou definição"
-          autoCorrect={false}
-          clearButtonMode="while-editing"
         />
-      </View>
+      </Contentor>
       <FlatList
         data={termos}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
-        ItemSeparatorComponent={() => <View style={[styles.separator, { backgroundColor: colors.border }]} />}
-        renderItem={({ item }) => <GlossarioItem termo={item.termo} definicao={item.definicao} />}
+        ItemSeparatorComponent={() => (
+          <Contentor>
+            <View style={[styles.separator, { backgroundColor: colors.border }]} />
+          </Contentor>
+        )}
+        renderItem={({ item }) => (
+          <Contentor>
+            <GlossarioItem termo={item.termo} definicao={item.definicao} />
+          </Contentor>
+        )}
         ListEmptyComponent={
           <EcraVazio icone="search-off" titulo="Nenhum resultado" descricao="Tenta com outra palavra." />
         }
@@ -67,7 +67,6 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.lg,
     paddingBottom: Spacing.md,
   },
   descricao: {
@@ -75,10 +74,10 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: Radii.pill,
+    borderRadius: Radii.chip,
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.sm,
-    fontFamily: 'Inter_400Regular',
+    fontFamily: 'PublicSans_400Regular',
     fontSize: Typography.bodyLg.fontSize,
   },
   list: {

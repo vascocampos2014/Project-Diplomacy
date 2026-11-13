@@ -4,7 +4,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { EcraVazio } from '@/components/EcraVazio';
-import { MenuTresPontos } from '@/components/MenuTresPontos';
+import { LinhaOpcoes } from '@/components/LinhaOpcoes';
 import { PartidoBar } from '@/components/PartidoBar';
 import { Aviso, CabecalhoEcra, Cartao, Chip, Contentor, TituloSecao, useCores } from '@/components/ui';
 import { VotoIndicator } from '@/components/VotoIndicator';
@@ -48,13 +48,12 @@ export default function CompararScreen() {
   const erro = stats.isError || deputados.isError;
 
   return (
-    <SafeAreaView style={[styles.ecra, { backgroundColor: cores.background }]} edges={['top']}>
+    <SafeAreaView style={[styles.ecra, { backgroundColor: cores.background }]} edges={[]}>
       <ScrollView contentContainerStyle={styles.conteudo}>
         <Contentor>
           <CabecalhoEcra
             titulo="Comparar"
             subtitulo="Com que frequência dois partidos votam da mesma forma."
-            direita={<MenuTresPontos />}
           />
 
           {carregando ? (
@@ -76,24 +75,24 @@ export default function CompararScreen() {
 
               {resultado && resultado.percentagem !== null ? (
                 <>
-                  <Cartao style={styles.destaque}>
+                  <Cartao tinta style={styles.destaque}>
                     <View style={styles.duelo}>
                       <Sigla partido={partidoA} />
-                      <Text style={[Typography.caption, { color: cores.textMuted }]}>vs</Text>
+                      <Text style={[Typography.bodySm, { color: cores.textMuted }]}>e</Text>
                       <Sigla partido={partidoB} />
                     </View>
                     <Text
-                      style={[styles.percentagem, { color: cores.text }]}
+                      style={[Typography.displaySm, styles.frase, { color: cores.text }]}
                       accessibilityLabel={`Votaram da mesma forma em ${resultado.percentagem}% das votações`}
                     >
-                      {resultado.percentagem}%
+                      Votaram da mesma forma em <Text style={[styles.percentagem, { color: cores.tintInk }]}>{resultado.percentagem}%</Text> das votações.
                     </Text>
-                    <Text style={[Typography.bodySm, styles.centrado, { color: cores.textMuted }]}>
-                      votaram da mesma forma em {resultado.iguais} de {resultado.comparaveis} votações
-                    </Text>
-                    <View style={[styles.trilho, { backgroundColor: cores.contraBg }]}>
-                      <View style={[styles.preenchido, { width: `${resultado.percentagem}%`, backgroundColor: cores.favor }]} />
+                    <View style={[styles.trilho, { backgroundColor: cores.border }]}>
+                      <View style={[styles.preenchido, { width: `${resultado.percentagem}%`, backgroundColor: cores.tint }]} />
                     </View>
+                    <Text style={[Typography.caption, styles.escala, { color: cores.textMuted }]}>
+                      {resultado.iguais} de {resultado.comparaveis} votações em que os dois estiveram presentes.
+                    </Text>
                   </Cartao>
 
                   <TituloSecao nota="Percentagem de votações com a mesma posição, por tema.">Por tema</TituloSecao>
@@ -105,7 +104,9 @@ export default function CompararScreen() {
                           <View style={[styles.temaBarra, { width: `${Math.max(t.percentagem, 1)}%`, backgroundColor: cores.tint }]} />
                         </View>
                         <Text style={[Typography.label, styles.temaValor, { color: cores.text }]}>{t.percentagem}%</Text>
-                        <Text style={[Typography.caption, styles.temaN, { color: cores.textMuted }]}>{t.comparaveis}</Text>
+                        <Text style={[Typography.caption, styles.temaN, { color: cores.textMuted }]} numberOfLines={1}>
+                          {t.comparaveis}
+                        </Text>
                       </View>
                     ))}
                   </Cartao>
@@ -185,14 +186,14 @@ function SeletorPartido({
   const cores = useCores();
   return (
     <View style={styles.seletor}>
-      <Text style={[Typography.eyebrow, { color: cores.textMuted }]}>{rotulo}</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+      <Text style={[Typography.label, { color: cores.textMuted }]}>{rotulo}</Text>
+      <LinhaOpcoes>
         {partidos
           .filter((p) => p !== outro)
           .map((p) => (
             <Chip key={p} label={p} cor={getCorPartido(p)} selecionado={p === selecionado} onPress={() => onSelecionar(p)} accessibilityLabel={`${rotulo}: ${p}`} />
           ))}
-      </ScrollView>
+      </LinhaOpcoes>
     </View>
   );
 }
@@ -200,7 +201,7 @@ function SeletorPartido({
 function Sigla({ partido }: { partido: string }) {
   const cores = useCores();
   return (
-    <View style={[styles.sigla, { borderColor: getCorPartido(partido) }]}>
+    <View style={[styles.sigla, { borderColor: cores.rule }]}>
       <View style={[styles.ponto, { backgroundColor: getCorPartido(partido) }]} />
       <Text style={[styles.siglaTexto, { color: cores.text }]}>{partido}</Text>
     </View>
@@ -239,9 +240,8 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.xs,
   },
   destaque: {
-    alignItems: 'center',
     marginTop: Spacing.md,
-    paddingVertical: Spacing.xxl,
+    paddingVertical: Spacing.xl,
   },
   duelo: {
     flexDirection: 'row',
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     borderWidth: 1.5,
-    borderRadius: Radii.pill,
+    borderRadius: Radii.chip,
     paddingHorizontal: Spacing.md,
     paddingVertical: 4,
   },
@@ -267,25 +267,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   percentagem: {
-    fontFamily: Fonts.black,
-    fontSize: 64,
-    letterSpacing: -2,
-    marginTop: Spacing.md,
+    fontFamily: Fonts.bold,
     fontVariant: ['tabular-nums'],
+  },
+  frase: {
+    marginTop: Spacing.md,
+  },
+  escala: {
+    marginTop: Spacing.sm,
   },
   centrado: {
     textAlign: 'center',
   },
   trilho: {
     width: '100%',
-    height: 10,
-    borderRadius: Radii.pill,
+    height: 8,
     overflow: 'hidden',
     marginTop: Spacing.lg,
   },
   preenchido: {
     height: '100%',
-    borderRadius: Radii.pill,
   },
   temaLinha: {
     flexDirection: 'row',
@@ -299,12 +300,10 @@ const styles = StyleSheet.create({
   temaTrilho: {
     flex: 1,
     height: 8,
-    borderRadius: Radii.pill,
     overflow: 'hidden',
   },
   temaBarra: {
     height: '100%',
-    borderRadius: Radii.pill,
   },
   temaValor: {
     width: 40,
@@ -312,8 +311,9 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   temaN: {
-    width: 28,
+    width: 44,
     textAlign: 'right',
+    fontVariant: ['tabular-nums'],
   },
   semPadding: {
     paddingVertical: 0,

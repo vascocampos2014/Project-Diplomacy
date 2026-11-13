@@ -21,8 +21,9 @@ export function EcraVazio({ icone, titulo, descricao, accao }: EcraVazioProps) {
   const cores = useCores();
   return (
     <View style={styles.container}>
-      <View style={[styles.icone, { backgroundColor: cores.tintBg }]}>
-        <MaterialIcons name={icone} size={28} color={cores.tintInk} accessible={false} />
+      {/* Um boletim em branco: a caixa por marcar, com o ícone do motivo. */}
+      <View style={[styles.icone, { borderColor: cores.rule }]}>
+        <MaterialIcons name={icone} size={22} color={cores.textMuted} accessible={false} />
       </View>
       <Text style={[Typography.title, styles.titulo, { color: cores.text }]} accessibilityRole="header">
         {titulo}
@@ -40,9 +41,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xxl,
   },
   icone: {
-    width: 56,
-    height: 56,
-    borderRadius: Radii.pill,
+    width: 48,
+    height: 48,
+    borderWidth: 1.5,
+    borderRadius: Radii.badge,
     alignItems: 'center',
     justifyContent: 'center',
   },

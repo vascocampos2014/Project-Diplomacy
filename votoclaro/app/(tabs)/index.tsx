@@ -1,28 +1,28 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { EcraVazio } from '@/components/EcraVazio';
 import { FiltroTemas } from '@/components/FiltroTemas';
-import { MenuTresPontos } from '@/components/MenuTresPontos';
 import { CabecalhoEcra, Contentor, useCores } from '@/components/ui';
 import { VotacaoCard } from '@/components/VotacaoCard';
-import { Radii, Spacing } from '@/constants/Spacing';
-import { Typography } from '@/constants/Typography';
+import { Spacing } from '@/constants/Spacing';
+import { Fonts, Typography } from '@/constants/Typography';
 import { useVotacoesFeed } from '@/hooks/useVotacoesFeed';
-import { resumirFeed } from '@/lib/feed';
 import { TEMAS } from '@/lib/temas';
 
 export default function FeedScreen() {
   const cores = useCores();
   const router = useRouter();
-  const [tema, setTema] = useState<string | null>(null);
+  // O tema escolhido fica no URL (?tema=Saúde), para a ligação poder ser partilhada.
+  const params = useLocalSearchParams<{ tema?: string }>();
+  const tema = params.tema && TEMAS.includes(params.tema) ? params.tema : null;
+  const setTema = (t: string | null) => router.setParams({ tema: t ?? undefined });
   const [aAtualizar, setAAtualizar] = useState(false);
   const { itens, isLoading, isError, refetch } = useVotacoesFeed();
 
   const filtrados = useMemo(() => (itens ?? []).filter((i) => !tema || i.iniciativa.tema === tema), [itens, tema]);
-  const resumo = itens ? resumirFeed(itens) : null;
 
   async function atualizar() {
     setAAtualizar(true);
@@ -30,7 +30,7 @@ export default function FeedScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.ecra, { backgroundColor: cores.background }]} edges={['top']}>
+    <SafeAreaView style={[styles.ecra, { backgroundColor: cores.background }]} edges={[]}>
       <FlatList
         data={filtrados}
         keyExtractor={(item) => item.votacaoId}
@@ -38,47 +38,43 @@ export default function FeedScreen() {
         refreshControl={<RefreshControl refreshing={aAtualizar} onRefresh={atualizar} tintColor={cores.tint} />}
         ListHeaderComponent={
           <Contentor>
-            <CabecalhoEcra
-              titulo="Votações"
-              subtitulo="O que a Assembleia da República votou, partido a partido."
-              direita={<MenuTresPontos />}
-            />
-            {resumo && resumo.total > 0 ? (
-              <View style={[styles.resumo, { backgroundColor: cores.surface, borderColor: cores.border }]}>
-                <Resumo valor={resumo.total} legenda="votações recentes" cor={cores.text} />
-                <View style={[styles.divisor, { backgroundColor: cores.border }]} />
-                <Resumo valor={resumo.aprovadas} legenda="aprovadas" cor={cores.favorInk} />
-                <View style={[styles.divisor, { backgroundColor: cores.border }]} />
-                <Resumo valor={resumo.chumbadas} legenda="chumbadas" cor={cores.contraInk} />
-              </View>
-            ) : null}
+            <CabecalhoEcra titulo="Votações" subtitulo="O que o Parlamento votou nos últimos dias e como votou cada partido." />
             <View style={styles.filtros}>
               <FiltroTemas temas={TEMAS} selecionado={tema} onSelecionar={setTema} />
             </View>
           </Contentor>
         }
-        ItemSeparatorComponent={() => <View style={{ height: Spacing.md }} />}
-        renderItem={({ item }) => (
-          <Contentor>
-            <VotacaoCard
-              titulo={item.iniciativa.titulo}
-              referencia={item.referencia}
-              tema={item.iniciativa.tema}
-              data={item.iniciativa.dataVoto}
-              resultado={item.iniciativa.resultado}
-              favor={item.iniciativa.favor}
-              contra={item.iniciativa.contra}
-              abstencao={item.iniciativa.abstencao}
-              ausentes={item.iniciativa.ausentes}
-              onPress={() =>
-                router.push({
-                  pathname: '/votacao/[id]',
-                  params: { id: item.votacaoId, iniciativaId: String(item.iniciativaId) },
-                })
-              }
-            />
-          </Contentor>
-        )}
+        renderItem={({ item, index }) => {
+          const novoDia = index === 0 || filtrados[index - 1].iniciativa.dataVoto !== item.iniciativa.dataVoto;
+          const doDia = novoDia ? filtrados.filter((i) => i.iniciativa.dataVoto === item.iniciativa.dataVoto).length : 0;
+          return (
+            <Contentor style={styles.item}>
+              {novoDia ? (
+                <View style={[styles.dia, { borderBottomColor: cores.rule }]}>
+                  <Text style={[styles.diaTitulo, { color: cores.text }]} accessibilityRole="header">
+                    {item.iniciativa.dataVoto}
+                  </Text>
+                  <Text style={[Typography.caption, { color: cores.textMuted }]}>
+                    {doDia} {doDia === 1 ? 'votação' : 'votações'}
+                  </Text>
+                </View>
+              ) : null}
+              <VotacaoCard
+                titulo={item.iniciativa.titulo}
+                referencia={item.referencia}
+                tema={item.iniciativa.tema}
+                data={item.iniciativa.dataVoto}
+                resultado={item.iniciativa.resultado}
+                favor={item.iniciativa.favor}
+                contra={item.iniciativa.contra}
+                abstencao={item.iniciativa.abstencao}
+                ausentes={item.iniciativa.ausentes}
+                partidos={item.partidos}
+                href={{ pathname: '/votacao/[id]', params: { id: item.votacaoId, iniciativaId: String(item.iniciativaId) } }}
+              />
+            </Contentor>
+          );
+        }}
         ListEmptyComponent={
           isLoading ? (
             <View style={styles.carregar}>
@@ -107,16 +103,6 @@ export default function FeedScreen() {
   );
 }
 
-function Resumo({ valor, legenda, cor }: { valor: number; legenda: string; cor: string }) {
-  const cores = useCores();
-  return (
-    <View style={styles.resumoItem} accessible accessibilityLabel={`${valor} ${legenda}`}>
-      <Text style={[Typography.data, { color: cor }]}>{valor}</Text>
-      <Text style={[Typography.caption, { color: cores.textMuted }]}>{legenda}</Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   ecra: {
     flex: 1,
@@ -125,24 +111,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.xxxl,
   },
-  resumo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: Radii.card,
-    borderWidth: StyleSheet.hairlineWidth,
-    paddingVertical: Spacing.md,
-  },
-  resumoItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  divisor: {
-    width: StyleSheet.hairlineWidth,
-    alignSelf: 'stretch',
-  },
   filtros: {
-    marginTop: Spacing.lg,
+    marginBottom: Spacing.sm,
+  },
+  item: {
     marginBottom: Spacing.md,
+  },
+  diaTitulo: {
+    fontFamily: Fonts.bold,
+    fontSize: 14,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  dia: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    marginTop: Spacing.xxl,
+    marginBottom: Spacing.md,
+    paddingBottom: Spacing.sm,
+    borderBottomWidth: 1.5,
   },
   carregar: {
     paddingVertical: Spacing.huge,

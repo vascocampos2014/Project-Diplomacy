@@ -14,7 +14,6 @@ import { Fonts, Typography } from '@/constants/Typography';
 import { useDeputado } from '@/hooks/useDeputado';
 import { usePartidoStats } from '@/hooks/usePartidoStats';
 import { fotoUrl } from '@/lib/parlamento-api';
-import { hexToRgba } from '@/lib/format';
 import type { Posicao } from '@/types';
 
 export default function DeputadoDetalheScreen() {
@@ -70,28 +69,27 @@ export default function DeputadoDetalheScreen() {
         initialNumToRender={20}
         ListHeaderComponent={
           <Contentor>
-            <View style={[styles.perfil, { backgroundColor: cores.surface, borderColor: cores.border }]}>
-              <View style={[styles.faixa, { backgroundColor: hexToRgba(cor, 0.14) }]} />
-              <View style={[styles.avatarAro, { borderColor: cores.surface }]}>
-                <Avatar nome={deputado.nome} fotoUrl={fotoUrl(deputado.id)} partido={deputado.partido} size={88} />
-              </View>
-              <Text style={[Typography.displaySm, styles.nome, { color: cores.text }]} accessibilityRole="header">
-                {deputado.nome}
-              </Text>
-              {deputado.nomeCompleto !== deputado.nome ? (
-                <Text style={[Typography.caption, styles.centrado, { color: cores.textMuted }]}>{deputado.nomeCompleto}</Text>
-              ) : null}
-              <View style={styles.meta}>
-                <View style={[styles.partido, { borderColor: cor }]}>
-                  <View style={[styles.ponto, { backgroundColor: cor }]} />
-                  <Text style={[styles.partidoTexto, { color: cores.text }]}>{deputado.partido}</Text>
+            <View style={[styles.perfil, { backgroundColor: cores.surface, borderColor: cores.rule }]}>
+              <Avatar nome={deputado.nome} fotoUrl={fotoUrl(deputado.id)} partido={deputado.partido} size={72} />
+              <View style={styles.perfilTextos}>
+                <Text style={[Typography.displaySm, { color: cores.text }]} accessibilityRole="header">
+                  {deputado.nome}
+                </Text>
+                {deputado.nomeCompleto !== deputado.nome ? (
+                  <Text style={[Typography.caption, styles.completo, { color: cores.textMuted }]}>{deputado.nomeCompleto}</Text>
+                ) : null}
+                <View style={styles.meta}>
+                  <View style={[styles.partido, { borderColor: cores.rule }]}>
+                    <View style={[styles.ponto, { backgroundColor: cor }]} />
+                    <Text style={[styles.partidoTexto, { color: cores.text }]}>{deputado.partido}</Text>
+                  </View>
+                  <Text style={[Typography.bodySm, { color: cores.textMuted }]}>Círculo de {deputado.circulo}</Text>
                 </View>
-                <Text style={[Typography.bodySm, { color: cores.textMuted }]}>Círculo de {deputado.circulo}</Text>
               </View>
             </View>
 
             <TituloSecao nota={`Votações do grupo parlamentar ${deputado.partido} nesta legislatura.`}>Como vota</TituloSecao>
-            <View style={styles.stats}>
+            <View style={[styles.stats, { borderColor: cores.border, backgroundColor: cores.surface }]}>
               <Stat label="A favor" valor={pct(stat?.favor ?? 0)} posicao="favor" />
               <Stat label="Contra" valor={pct(stat?.contra ?? 0)} posicao="contra" />
               <Stat label="Abstenção" valor={pct(stat?.abstencao ?? 0)} posicao="abstencao" />
@@ -142,11 +140,11 @@ export default function DeputadoDetalheScreen() {
 }
 
 function Stat({ label, valor, posicao }: { label: string; valor?: number; posicao: Posicao }) {
-  const c = coresPosicao(useCores(), posicao);
   const cores = useCores();
+  const c = coresPosicao(cores, posicao);
   return (
-    <View style={[styles.stat, { backgroundColor: c.fundo }]} accessible accessibilityLabel={`${label}: ${valor ?? 'sem dados'}%`}>
-      <Text style={[Typography.data, { color: c.tinta }]}>{valor !== undefined ? `${valor}%` : '—'}</Text>
+    <View style={[styles.stat, posicao !== 'favor' && { borderLeftColor: cores.border, borderLeftWidth: 1 }]} accessible accessibilityLabel={`${label}: ${valor ?? 'sem dados'}%`}>
+      <Text style={[Typography.data, { color: posicao === 'ausente' ? cores.text : c.tinta }]}>{valor !== undefined ? `${valor}%` : '—'}</Text>
       <Text style={[Typography.caption, { color: cores.textMuted }]}>{label}</Text>
     </View>
   );
@@ -165,45 +163,32 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.huge,
   },
   perfil: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: Spacing.lg,
     borderRadius: Radii.card,
-    borderWidth: StyleSheet.hairlineWidth,
-    paddingBottom: Spacing.xl,
-    overflow: 'hidden',
+    borderWidth: 1.5,
+    padding: Spacing.lg,
   },
-  faixa: {
-    alignSelf: 'stretch',
-    height: 64,
+  perfilTextos: {
+    flex: 1,
   },
-  avatarAro: {
-    marginTop: -44,
-    borderWidth: 4,
-    borderRadius: Radii.pill,
-  },
-  nome: {
-    marginTop: Spacing.md,
-    textAlign: 'center',
-    paddingHorizontal: Spacing.lg,
-  },
-  centrado: {
-    textAlign: 'center',
+  completo: {
     marginTop: 2,
   },
   meta: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'center',
     alignItems: 'center',
     gap: Spacing.sm,
-    marginTop: Spacing.md,
-    paddingHorizontal: Spacing.lg,
+    marginTop: Spacing.sm,
   },
   partido: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     borderWidth: 1.5,
-    borderRadius: Radii.pill,
+    borderRadius: Radii.chip,
     paddingHorizontal: 10,
     paddingVertical: 3,
   },
@@ -218,13 +203,14 @@ const styles = StyleSheet.create({
   },
   stats: {
     flexDirection: 'row',
-    gap: Spacing.sm,
+    borderWidth: 1,
+    borderRadius: Radii.card,
   },
   stat: {
     flex: 1,
-    alignItems: 'center',
     paddingVertical: Spacing.md,
-    borderRadius: Radii.chip,
+    paddingHorizontal: Spacing.md,
+    gap: 2,
   },
   item: {
     flexDirection: 'row',

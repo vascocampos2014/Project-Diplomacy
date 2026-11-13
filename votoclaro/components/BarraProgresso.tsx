@@ -1,10 +1,10 @@
-// Barra Favor/Contra/Abstenção/Ausente. Movimento só ao revelar (DESIGN.md › Motion),
-// e nenhum com "reduzir movimento" ativo.
-import React, { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, StyleSheet, View } from 'react-native';
+// Barra favor/contra/abstenção/ausente, sempre à mesma escala (230 lugares),
+// para que duas votações se comparem a olho. Sem animação: os números são
+// o conteúdo, não o movimento.
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import { useCores } from '@/components/ui';
-import { Radii } from '@/constants/Spacing';
 
 interface BarraProgressoProps {
   // percentagens; o resto até 100 é ausente
@@ -12,33 +12,12 @@ interface BarraProgressoProps {
   contra: number;
   abstencao: number;
   height?: number;
-  animated?: boolean;
+  animated?: boolean; // mantido por compatibilidade; ignorado
 }
 
-export function BarraProgresso({ favor, contra, abstencao, height = 8, animated = true }: BarraProgressoProps) {
+export function BarraProgresso({ favor, contra, abstencao, height = 6 }: BarraProgressoProps) {
   const cores = useCores();
   const ausente = Math.max(0, 100 - favor - contra - abstencao);
-  const [reduzir, setReduzir] = useState(false);
-  const progresso = useRef(new Animated.Value(animated ? 0 : 1)).current;
-
-  useEffect(() => {
-    let ativo = true;
-    AccessibilityInfo.isReduceMotionEnabled?.()
-      .then((r) => ativo && setReduzir(!!r))
-      .catch(() => {});
-    return () => {
-      ativo = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!animated || reduzir) {
-      progresso.setValue(1);
-      return;
-    }
-    Animated.timing(progresso, { toValue: 1, duration: 400, useNativeDriver: false }).start();
-  }, [animated, reduzir, progresso]);
-
   const partes = [
     { valor: favor, cor: cores.favor },
     { valor: contra, cor: cores.contra },
@@ -53,16 +32,9 @@ export function BarraProgresso({ favor, contra, abstencao, height = 8, animated 
       accessibilityRole="progressbar"
       accessibilityLabel={`${Math.round(favor)}% a favor, ${Math.round(contra)}% contra, ${Math.round(abstencao)}% abstenção`}
     >
-      <Animated.View
-        style={[
-          styles.preenchimento,
-          { width: progresso.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) },
-        ]}
-      >
-        {partes.map((p, i) => (
-          <View key={i} style={{ flex: p.valor, backgroundColor: p.cor }} />
-        ))}
-      </Animated.View>
+      {partes.map((p, i) => (
+        <View key={i} style={{ flex: p.valor, backgroundColor: p.cor }} />
+      ))}
     </View>
   );
 }
@@ -70,12 +42,8 @@ export function BarraProgresso({ favor, contra, abstencao, height = 8, animated 
 const styles = StyleSheet.create({
   trilho: {
     width: '100%',
-    overflow: 'hidden',
-    borderRadius: Radii.pill,
-  },
-  preenchimento: {
     flexDirection: 'row',
-    height: '100%',
     gap: 2,
+    overflow: 'hidden',
   },
 });

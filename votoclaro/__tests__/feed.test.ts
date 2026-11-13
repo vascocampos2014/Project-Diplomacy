@@ -48,6 +48,11 @@ describe('montarFeed', () => {
     const [item] = montarFeed([votacao({ aFavor: ['PSD', 'CDS-PP'], contra: ['CH'], abstencao: ['PS'] })], LUGARES);
     expect(item.iniciativa).toMatchObject({ favor: 91, contra: 60, abstencao: 58, resultado: 'aprovada' });
   });
+
+  it('lists the parties in each position, biggest group first', () => {
+    const [item] = montarFeed([votacao({ aFavor: ['CDS-PP', 'PSD'], contra: ['CH'], abstencao: ['PS'] })], LUGARES);
+    expect(item.partidos).toEqual({ favor: ['PSD', 'CDS-PP'], contra: ['CH'], abstencao: ['PS'] });
+  });
 });
 
 describe('resumirFeed', () => {

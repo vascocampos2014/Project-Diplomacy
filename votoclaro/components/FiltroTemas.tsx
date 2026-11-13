@@ -1,8 +1,7 @@
 import React from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
 
+import { LinhaOpcoes } from '@/components/LinhaOpcoes';
 import { Chip } from '@/components/ui';
-import { Spacing } from '@/constants/Spacing';
 
 interface FiltroTemasProps {
   temas: string[];
@@ -12,7 +11,7 @@ interface FiltroTemasProps {
 
 export function FiltroTemas({ temas, selecionado, onSelecionar }: FiltroTemasProps) {
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.linha}>
+    <LinhaOpcoes>
       <Chip label="Todos" selecionado={selecionado === null} onPress={() => onSelecionar(null)} />
       {temas.map((tema) => (
         <Chip
@@ -23,13 +22,6 @@ export function FiltroTemas({ temas, selecionado, onSelecionar }: FiltroTemasPro
           accessibilityLabel={`Filtrar por ${tema}`}
         />
       ))}
-    </ScrollView>
+    </LinhaOpcoes>
   );
 }
-
-const styles = StyleSheet.create({
-  linha: {
-    gap: Spacing.sm,
-    paddingVertical: Spacing.xs,
-  },
-});

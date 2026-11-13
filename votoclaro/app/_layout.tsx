@@ -1,4 +1,10 @@
-import { Inter_400Regular, Inter_600SemiBold, Inter_700Bold, Inter_900Black } from '@expo-google-fonts/inter';
+import {
+  PublicSans_400Regular,
+  PublicSans_500Medium,
+  PublicSans_600SemiBold,
+  PublicSans_700Bold,
+  PublicSans_800ExtraBold,
+} from '@expo-google-fonts/public-sans';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
@@ -10,6 +16,7 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
+import { BarraTopo } from '@/components/BarraTopo';
 import { queryClient } from '@/lib/queryClient';
 
 export {
@@ -27,10 +34,11 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    Inter_400Regular,
-    Inter_600SemiBold,
-    Inter_700Bold,
-    Inter_900Black,
+    PublicSans_400Regular,
+    PublicSans_500Medium,
+    PublicSans_600SemiBold,
+    PublicSans_700Bold,
+    PublicSans_800ExtraBold,
   });
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
@@ -68,19 +76,27 @@ export default function RootLayout() {
   );
 }
 
+// Tema da navegação com as cores do boletim (fundo, linhas, texto).
+function tema(escuro: boolean) {
+  const base = escuro ? DarkTheme : DefaultTheme;
+  const c = Colors[escuro ? 'dark' : 'light'];
+  return {
+    ...base,
+    colors: { ...base.colors, primary: c.tintInk, background: c.background, card: c.surface, text: c.text, border: c.border },
+  };
+}
+
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme];
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={tema(colorScheme === 'dark')}>
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: colors.background },
-          headerTitleStyle: { fontFamily: 'Inter_700Bold', fontSize: 17, color: colors.text },
-          headerTintColor: colors.tint,
-          headerShadowVisible: false,
-          headerBackButtonDisplayMode: 'minimal',
+          // A mesma barra (logótipo + navegação) em todos os ecrãs, com seta de voltar.
+          header: () => <BarraTopo voltar />,
+          contentStyle: { backgroundColor: colors.background },
         }}
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

@@ -37,7 +37,7 @@ export function MenuTresPontos() {
           <View
             style={[
               styles.menu,
-              { top: insets.top + Spacing.xxxl, backgroundColor: colors.surface, borderColor: colors.border },
+              { top: insets.top + 52, backgroundColor: colors.surface, borderColor: colors.rule },
             ]}
           >
             {ITENS.map((item, index) => (
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: Radii.pill,
+    borderRadius: Radii.chip,
   },
   backdrop: {
     flex: 1,
@@ -82,13 +82,8 @@ const styles = StyleSheet.create({
     right: Spacing.lg,
     minWidth: 180,
     borderRadius: Radii.chip,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1.5,
     paddingVertical: Spacing.xs,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    elevation: 4,
   },
   item: {
     flexDirection: 'row',
@@ -98,6 +93,6 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
   },
   itemLabel: {
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: 'PublicSans_600SemiBold',
   },
 });

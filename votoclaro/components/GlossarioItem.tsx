@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
   },
   termo: {
-    fontFamily: 'Inter_700Bold',
+    fontFamily: 'PublicSans_700Bold',
     fontSize: Typography.bodyLg.fontSize,
     marginBottom: Spacing.xs,
   },

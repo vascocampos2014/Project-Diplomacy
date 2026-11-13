@@ -1,68 +1,40 @@
-import { MaterialIcons } from '@expo/vector-icons';
+// Escolha do tema: três opções do boletim (Sistema / Claro / Escuro).
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { useColorScheme } from '@/components/useColorScheme';
-import Colors from '@/constants/Colors';
-import { Radii, Spacing } from '@/constants/Spacing';
-import { Typography } from '@/constants/Typography';
+import { Chip } from '@/components/ui';
+import { Spacing } from '@/constants/Spacing';
 import { useThemeStore, type ThemeOverride } from '@/store/themeStore';
 
-const OPCOES: { valor: ThemeOverride; label: string; icone: keyof typeof MaterialIcons.glyphMap }[] = [
-  { valor: null, label: 'Sistema', icone: 'brightness-auto' },
-  { valor: 'light', label: 'Claro', icone: 'light-mode' },
-  { valor: 'dark', label: 'Escuro', icone: 'dark-mode' },
+const OPCOES: { valor: ThemeOverride; label: string }[] = [
+  { valor: null, label: 'Sistema' },
+  { valor: 'light', label: 'Claro' },
+  { valor: 'dark', label: 'Escuro' },
 ];
 
 export function ThemeToggle() {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme];
   const override = useThemeStore((state) => state.override);
   const setOverride = useThemeStore((state) => state.setOverride);
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-      {OPCOES.map((opcao) => {
-        const selecionado = override === opcao.valor;
-        return (
-          <TouchableOpacity
-            key={opcao.label}
-            style={[styles.opcao, selecionado && { backgroundColor: colors.tint }]}
-            onPress={() => setOverride(opcao.valor)}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel={`Tema ${opcao.label}`}
-            accessibilityState={{ selected: selecionado }}
-          >
-            <MaterialIcons name={opcao.icone} size={18} color={selecionado ? colors.onTint : colors.textMuted} />
-            <Text style={[Typography.label, styles.opcaoLabel, { color: selecionado ? colors.onTint : colors.text }]}>
-              {opcao.label}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
+    <View style={styles.linha} accessibilityRole="radiogroup" accessibilityLabel="Tema">
+      {OPCOES.map((opcao) => (
+        <Chip
+          key={opcao.label}
+          label={opcao.label}
+          selecionado={override === opcao.valor}
+          onPress={() => setOverride(opcao.valor)}
+          accessibilityLabel={`Tema ${opcao.label}`}
+        />
+      ))}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  linha: {
     flexDirection: 'row',
-    borderRadius: Radii.pill,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: 4,
-    gap: 4,
-  },
-  opcao: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: Spacing.sm,
-    borderRadius: Radii.pill,
-  },
-  opcaoLabel: {
-    fontFamily: 'Inter_600SemiBold',
+    flexWrap: 'wrap',
+    gap: Spacing.xs,
   },
 });

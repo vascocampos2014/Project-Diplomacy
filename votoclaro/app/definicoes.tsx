@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { Cartao, Contentor, TituloSecao, useCores } from '@/components/ui';
+import { CabecalhoEcra, Cartao, Contentor, TituloSecao, useCores } from '@/components/ui';
 import { Spacing } from '@/constants/Spacing';
 import { Typography } from '@/constants/Typography';
 
@@ -15,6 +15,7 @@ export default function DefinicoesScreen() {
       <Stack.Screen options={{ title: 'Definições' }} />
       <ScrollView contentContainerStyle={styles.conteudo}>
         <Contentor>
+          <CabecalhoEcra titulo="Definições" />
           <TituloSecao>Aparência</TituloSecao>
           <ThemeToggle />
 

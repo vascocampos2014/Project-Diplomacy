@@ -65,7 +65,9 @@ export function RespostaRag({ texto, fontes: resolvidas = [] }: { texto: string;
 
       {fontes.length > 0 ? (
         <View style={[styles.fontes, { borderTopColor: cores.border }]} accessibilityLabel="Fontes">
-          <Text style={[Typography.eyebrow, { color: cores.textMuted }]}>FONTES</Text>
+          <Text style={[Typography.label, { color: cores.text }]} accessibilityRole="header">
+            Fontes
+          </Text>
           {fontes.map((c, i) => {
             const f = porCitacao.get(c);
             const conteudo = (
@@ -138,19 +140,21 @@ function FonteDetalhe({
       <Pressable style={styles.fundo} onPress={onFechar} accessibilityLabel="Fechar fonte">
         {fonte ? (
           <Pressable
-            style={[styles.painel, { backgroundColor: cores.surface, borderColor: cores.border }]}
+            style={[styles.painel, { backgroundColor: cores.surface, borderColor: cores.rule }]}
             onPress={() => undefined}
             accessibilityViewIsModal
           >
             <View style={styles.painelTopo}>
               <View style={styles.texto}>
-                <Text style={[Typography.eyebrow, { color: cores.textMuted }]}>
-                  {fonte.referencia.toUpperCase()}
-                  {fonte.secao ? ` · ${fonte.secao.toUpperCase()}` : ''}
-                </Text>
                 {fonte.titulo ? (
-                  <Text style={[Typography.bodyLg, styles.negrito, { color: cores.text }]}>{fonte.titulo}</Text>
+                  <Text style={[Typography.title, { color: cores.text }]} accessibilityRole="header">
+                    {fonte.titulo}
+                  </Text>
                 ) : null}
+                <Text style={[Typography.caption, { color: cores.textMuted }]}>
+                  {fonte.referencia}
+                  {fonte.secao ? ` · ${fonte.secao}` : ''}
+                </Text>
               </View>
               <Pressable onPress={onFechar} accessibilityRole="button" accessibilityLabel="Fechar" hitSlop={12}>
                 <MaterialIcons name="close" size={22} color={cores.textMuted} />
@@ -268,9 +272,9 @@ const styles = StyleSheet.create({
     maxWidth: 560,
     maxHeight: '85%',
     alignSelf: 'center',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: Radii.card,
-    padding: Spacing.md,
+    borderWidth: 1.5,
+    borderRadius: Radii.sheet,
+    padding: Spacing.lg,
     gap: Spacing.md,
   },
   painelTopo: {

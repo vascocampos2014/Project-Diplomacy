@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { EcraVazio } from '@/components/EcraVazio';
 import { RespostaRag } from '@/components/RespostaRag';
-import { Aviso, Botao, CabecalhoEcra, Cartao, Chip, Contentor, useCores } from '@/components/ui';
+import { Aviso, Botao, CabecalhoEcra, Cartao, Chip, Contentor, TituloSecao, useCores } from '@/components/ui';
 import { Radii, Spacing } from '@/constants/Spacing';
 import { Fonts, Typography } from '@/constants/Typography';
 import {
@@ -68,7 +68,7 @@ export default function PerguntarScreen({ apiUrl = RAG_API_URL, perguntar = perg
 
   if (!apiUrl) {
     return (
-      <SafeAreaView style={[styles.ecra, { backgroundColor: cores.background }]} edges={['top']}>
+      <SafeAreaView style={[styles.ecra, { backgroundColor: cores.background }]} edges={[]}>
         <Contentor style={styles.conteudo}>
           <CabecalhoEcra titulo="Perguntar" subtitulo="Pergunta sobre leis e votações do Parlamento." />
           <EcraVazio
@@ -82,7 +82,7 @@ export default function PerguntarScreen({ apiUrl = RAG_API_URL, perguntar = perg
   }
 
   return (
-    <SafeAreaView style={[styles.ecra, { backgroundColor: cores.background }]} edges={['top']}>
+    <SafeAreaView style={[styles.ecra, { backgroundColor: cores.background }]} edges={[]}>
       <KeyboardAvoidingView style={styles.ecra} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView
           ref={scroll}
@@ -103,13 +103,26 @@ export default function PerguntarScreen({ apiUrl = RAG_API_URL, perguntar = perg
 
             {conversa.length === 0 ? (
               <View style={styles.sugestoes}>
-                <Text style={[Typography.eyebrow, { color: cores.textMuted }]}>EXPERIMENTA PERGUNTAR</Text>
-                {SUGESTOES.map((s) => (
-                  <Cartao key={s} onPress={() => enviar(s)} accessibilityLabel={`Perguntar: ${s}`} style={styles.sugestao}>
-                    <Text style={[Typography.bodySm, styles.sugestaoTexto, { color: cores.text }]}>{s}</Text>
-                    <MaterialIcons name="north-east" size={16} color={cores.textMuted} accessible={false} />
-                  </Cartao>
-                ))}
+                <TituloSecao>Experimenta perguntar</TituloSecao>
+                <Cartao style={styles.lista}>
+                  {SUGESTOES.map((s, i) => (
+                    <Pressable
+                      key={s}
+                      onPress={() => enviar(s)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Perguntar: ${s}`}
+                      style={({ pressed, hovered }: { pressed: boolean; hovered?: boolean }) => [
+                        styles.sugestao,
+                        i > 0 && { borderTopColor: cores.border, borderTopWidth: StyleSheet.hairlineWidth },
+                        hovered && { backgroundColor: cores.surfaceAlt },
+                        pressed && styles.premido,
+                      ]}
+                    >
+                      <Text style={[Typography.bodySm, styles.sugestaoTexto, { color: cores.text }]}>{s}</Text>
+                      <MaterialIcons name="arrow-forward" size={18} color={cores.tintInk} accessible={false} />
+                    </Pressable>
+                  ))}
+                </Cartao>
               </View>
             ) : (
               <View style={styles.conversa} accessibilityLiveRegion="polite">
@@ -151,7 +164,7 @@ export default function PerguntarScreen({ apiUrl = RAG_API_URL, perguntar = perg
           </Contentor>
         </ScrollView>
 
-        <View style={[styles.barra, { backgroundColor: cores.surface, borderTopColor: cores.border }]}>
+        <View style={[styles.barra, { backgroundColor: cores.surface, borderTopColor: cores.rule }]}>
           <Contentor style={styles.barraLinha}>
             <TextInput
               value={texto}
@@ -162,7 +175,7 @@ export default function PerguntarScreen({ apiUrl = RAG_API_URL, perguntar = perg
               multiline
               accessibilityLabel="Pergunta"
               accessibilityHint="O assistente tem em conta as perguntas anteriores desta conversa"
-              style={[styles.input, { color: cores.text, backgroundColor: cores.background, borderColor: cores.border }]}
+              style={[styles.input, { color: cores.text, backgroundColor: cores.surface, borderColor: cores.rule }]}
               onKeyPress={(ev) => {
                 // Web: Enter envia, Shift+Enter muda de linha.
                 const n = ev.nativeEvent as { key: string; shiftKey?: boolean };
@@ -198,8 +211,9 @@ const styles = StyleSheet.create({
   ecra: { flex: 1 },
   scroll: { flexGrow: 1, paddingBottom: Spacing.xl },
   conteudo: { paddingHorizontal: Spacing.lg },
-  sugestoes: { marginTop: Spacing.xxl, gap: Spacing.sm },
-  sugestao: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, paddingVertical: Spacing.md },
+  sugestoes: { marginTop: Spacing.sm },
+  lista: { padding: 0 },
+  sugestao: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, paddingVertical: Spacing.md, paddingHorizontal: Spacing.lg, minHeight: 52 },
   sugestaoTexto: { flex: 1 },
   conversa: { marginTop: Spacing.xl, gap: Spacing.xl },
   troca: { gap: Spacing.sm },
@@ -215,21 +229,21 @@ const styles = StyleSheet.create({
   aCarregar: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
   erro: { gap: Spacing.md, alignItems: 'flex-start' },
   limpar: { alignSelf: 'center' },
-  barra: { borderTopWidth: StyleSheet.hairlineWidth, paddingVertical: Spacing.sm },
+  barra: { borderTopWidth: 1.5, paddingVertical: Spacing.sm },
   barraLinha: { flexDirection: 'row', alignItems: 'flex-end', gap: Spacing.sm, paddingHorizontal: Spacing.lg },
   input: {
     flex: 1,
     minHeight: 44,
     maxHeight: 120,
-    borderWidth: 1,
-    borderRadius: 22,
+    borderWidth: 1.5,
+    borderRadius: Radii.chip,
     paddingHorizontal: Spacing.lg,
     paddingTop: 11,
     paddingBottom: 11,
     fontFamily: Fonts.regular,
     fontSize: 16,
   },
-  enviar: { width: 44, height: 44, borderRadius: Radii.pill, alignItems: 'center', justifyContent: 'center' },
+  enviar: { width: 44, height: 44, borderRadius: Radii.chip, alignItems: 'center', justifyContent: 'center' },
   desativado: { opacity: 0.4 },
-  premido: { opacity: 0.85, transform: [{ scale: 0.96 }] },
+  premido: { opacity: 0.8 },
 });

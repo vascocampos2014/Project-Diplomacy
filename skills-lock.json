@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "skills": {
+    "impeccable": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/impeccable/SKILL.md",
+      "computedHash": "ba6f33350863bd8138de222e55a7bf0f409ed329770a92e3db7535cbd2d0fb80",
+      "installMode": "copy"
+    },
+    "transitions-dev": {
+      "source": "Jakubantalik/transitions.dev",
+      "sourceType": "github",
+      "skillPath": "skills/transitions-dev/SKILL.md",
+      "computedHash": "c7bc25bf1998615c73188bfcef6deca06c43f1b6f64538a456d446ca9d3911cd",
+      "installMode": "copy"
+    },
+    "transitions-polish": {
+      "source": "Jakubantalik/transitions.dev",
+      "sourceType": "github",
+      "skillPath": "skills/transitions-polish/SKILL.md",
+      "computedHash": "37a0842bfb0d9778b9a01fdd83947749476a9549addc60b31c9b8bfe2b2d9aae",
+      "installMode": "copy"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/web-design-guidelines/SKILL.md",
+      "computedHash": "4f68ae07187fb0d1fb78c88b503d089da4cf5a9d9625d1f2e425b1590bf96d92",
+      "installMode": "copy"
+    }
+  }
+}
