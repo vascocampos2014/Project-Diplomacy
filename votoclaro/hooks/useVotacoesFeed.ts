@@ -23,6 +23,8 @@ export function useVotacoesFeed() {
 
   return {
     itens,
+    // Número de votações da legislatura (o total da API, não só as que se mostram).
+    total: votacoesQuery.data?.total,
     isLoading: deputadosQuery.isLoading || votacoesQuery.isLoading,
     isError: deputadosQuery.isError || votacoesQuery.isError,
     error: deputadosQuery.error ?? votacoesQuery.error,

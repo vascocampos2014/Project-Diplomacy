@@ -14,6 +14,13 @@ Each tab has a Portuguese landmark at the top, frameless, blended into the page
 All current files are below the 2400×1200 target (Gemini's output size). The background was remapped to
 `#F8F9FA`, the image was padded to 2:1 and quantised to 64 colours (Pillow) to keep it small.
 
+## Ink-only versions (`tinta/`)
+
+The desktop header draws each building from `tinta/<id>.png`: the same engraving with the paper removed
+(alpha = darkness of the line, white lines, 16 alpha levels), tinted in the app with `tintColor`. Regenerate
+after replacing an image (Pillow): grey level → alpha, `0` where the pixel is within 6 of the paper (248),
+then scale to 255 at grey 20.
+
 ## Format
 
 - PNG, **2400 × 1200** (2:1), big enough for a wider window on desktop.

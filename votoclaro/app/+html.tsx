@@ -126,6 +126,8 @@ input, textarea { caret-color: #120A8F; }
    cinzento claro. Sem mix-blend-mode: a animação de entrada da página isola a
    imagem e o "blend" não teria nada por trás. */
 [data-gravura='escuro'] { filter: invert(0.884); }
+/* O edifício do cabeçalho do computador esbate-se em baixo, onde a folha da página assenta. */
+[data-horizonte] { -webkit-mask-image: linear-gradient(180deg, #000 62%, transparent 98%); mask-image: linear-gradient(180deg, #000 62%, transparent 98%); }
 /* A entrada com blur tem de manter a inversão, senão pisca papel claro. */
 @keyframes vc-imagem-escuro { from { opacity: 0; transform: scale(1.02); filter: invert(0.884) blur(var(--blur-large)); } }
 [data-gravura='escuro'][data-anim='imagem'] { animation-name: vc-imagem-escuro; }

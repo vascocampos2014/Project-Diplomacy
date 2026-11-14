@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { CabecalhoEdificio } from '@/components/Azulejo';
+import { CabecalhoEdificio, NumerosCabecalho } from '@/components/Azulejo';
 import { DeputadoRow } from '@/components/DeputadoRow';
 import { EcraVazio } from '@/components/EcraVazio';
 import { LinhaOpcoes } from '@/components/LinhaOpcoes';
@@ -63,10 +63,24 @@ export default function DeputadosScreen() {
         ListHeaderComponent={
           <View {...anim('pagina')}>
           <View style={styles.faixa}>
-            <CabecalhoEdificio edificio="torre-belem">
+            <CabecalhoEdificio
+              edificio="torre-belem"
+              direita={
+                data ? (
+                  <NumerosCabecalho
+                    itens={[
+                      { valor: data.deputados.length, rotulo: 'deputados' },
+                      { valor: partidos.length, rotulo: 'grupos parlamentares' },
+                      { valor: new Set(data.deputados.map((d) => d.circulo)).size, rotulo: 'círculos eleitorais' },
+                    ]}
+                  />
+                ) : undefined
+              }
+            >
               <CabecalhoEcra
                 titulo="Deputados"
-                subtitulo={data ? `${data.deputados.length} deputados em funções` : undefined}
+                // No computador o número está nos números do cabeçalho.
+                subtitulo={desktop ? 'Em funções na XVII legislatura.' : data ? `${data.deputados.length} deputados em funções` : undefined}
               />
               <View style={desktop ? styles.pesquisaLarga : undefined}>
                 <CampoPesquisa

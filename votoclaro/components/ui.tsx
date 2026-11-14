@@ -1,7 +1,7 @@
 // Peças base da interface — ver .claude/DESIGN.md (mundo: o azulejo)
 import { MaterialIcons } from '@expo/vector-icons';
 import { Link, type Href } from 'expo-router';
-import React, { useState } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import {
   Platform,
   Pressable,
@@ -224,6 +224,11 @@ export function Botao({
 }
 
 // Título de um ecrã de topo: título + frase curta + ação à direita.
+// Cores do título quando o cabeçalho está sobre o painel com o edifício
+// (CabecalhoEdificio no computador): Ultramarine no claro, branco no escuro,
+// e o título maior. Fora desse painel é null e vale o normal.
+export const CoresCabecalho = createContext<{ titulo: string; sub: string } | null>(null);
+
 export function CabecalhoEcra({
   titulo,
   subtitulo,
@@ -236,15 +241,22 @@ export function CabecalhoEcra({
   children?: React.ReactNode;
 }) {
   const cores = useCores();
+  const sobre = useContext(CoresCabecalho);
   return (
-    <View style={styles.cabecalho}>
+    <View style={[styles.cabecalho, sobre && styles.cabecalhoSobre]}>
       <View style={styles.cabecalhoLinha}>
         <View style={styles.cabecalhoTextos}>
-          <Text style={[Typography.displayLg, { color: cores.text }]} accessibilityRole="header" {...nivel(1)}>
+          <Text
+            style={[Typography.displayLg, sobre && styles.tituloGrande, { color: sobre?.titulo ?? cores.text }]}
+            accessibilityRole="header"
+            {...nivel(1)}
+          >
             {titulo}
           </Text>
           {subtitulo ? (
-            <Text style={[Typography.bodySm, styles.cabecalhoSub, { color: cores.textMuted }]}>{subtitulo}</Text>
+            <Text style={[Typography.bodySm, styles.cabecalhoSub, sobre && styles.subGrande, { color: sobre?.sub ?? cores.textMuted }]}>
+              {subtitulo}
+            </Text>
           ) : null}
         </View>
         {direita}
@@ -395,6 +407,20 @@ const styles = StyleSheet.create({
   cabecalhoSub: {
     marginTop: Spacing.xs,
     maxWidth: 560,
+  },
+  cabecalhoSobre: {
+    paddingTop: 0,
+  },
+  tituloGrande: {
+    fontSize: 60,
+    lineHeight: 64,
+    letterSpacing: -1.8,
+  },
+  subGrande: {
+    fontSize: 17,
+    lineHeight: 24,
+    maxWidth: 460,
+    marginTop: Spacing.sm,
   },
   secao: {
     marginTop: Spacing.xxxl,

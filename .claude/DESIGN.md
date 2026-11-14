@@ -56,8 +56,13 @@ Elevation is declared once: a hairline `border` on white. No shadows. The lead s
   56px behind the deputy avatar, 64px under a building window. `CabecalhoEdificio` is a tab's header: the
   32px band, the landmark engraving and the screen title. The engraving has **no frame**: its paper is the page
   colour, its edges fade out (CSS mask), and in dark mode a partial inversion (0.884) turns the paper into
-  `#232323` and the ink into light grey. On the phone the engraving sits under the band with the title below;
-  on desktop the title is on the left and the engraving on the right.
+  `#232323` and the ink into light grey. On the phone the engraving sits under the band with the title below.
+  On desktop the header is a **horizon panel**: white in light mode, Ultramarine in dark (continuing the top bar).
+  The building is drawn from its ink-only version (`assets/edificios/tinta/`, transparent PNG tinted with
+  `tintColor`: Ultramarine lines in light, white in dark), large on the right, rising from the bottom of the panel
+  and fading out there; the page sits over its base as a sheet with rounded top corners. The title is 60px
+  (Ultramarine in light, white in dark), with the building's name as a caption and `NumerosCabecalho`
+  (e.g. "2341 votações na XVII legislatura") on the right.
 - **Buildings** (`constants/Edificios.ts`, images in `votoclaro/assets/edificios/`). One landmark per tab:
   Votações → São Bento, Deputados → Torre de Belém, Perguntar → Jerónimos, Comparar → Casa da Música (Pena is
   reserved). Only in the screen headers, never in menus. Never put them in a frame, card or border. **Real images only**:
@@ -95,7 +100,8 @@ The phone layout is one 760px reading column. From 900px the tab screens and the
 page (`MAX_WIDTH_LARGO`, 1200px, `<Contentor largo>`), and the top bar aligns to it. `useDisposicao()` in
 `components/ui.tsx` gives `desktop` and `colunas` (2 from 900px, 3 from 1280px).
 
-- **Votações**: a front page. The header has the title and theme filters on the left and São Bento on the right.
+- **Tab headers**: the horizon panel (see Azulejo). Perguntar's panel is narrow (760px) to line up with the chat.
+- **Votações**: a front page. The header has the title and theme filters on the left and São Bento behind them on the right.
   The lead vote is two columns (tag, 44px Ultramarine headline, reference,
   parties by position on the left; the large hemicycle on the right), closed by a hairline. Recent votes
   are a grid of equal-height cards.

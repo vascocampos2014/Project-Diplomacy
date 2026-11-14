@@ -5,11 +5,11 @@ import React, { useId } from 'react';
 import { Image, Platform, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Circle, Defs, G, Path, Pattern, Rect } from 'react-native-svg';
 
-import { Contentor, useCores, useDisposicao } from '@/components/ui';
+import { Contentor, CoresCabecalho, useCores, useDisposicao } from '@/components/ui';
 import { useColorScheme } from '@/components/useColorScheme';
 import { EDIFICIOS, type EdificioId } from '@/constants/Edificios';
 import { MAX_WIDTH, MAX_WIDTH_LARGO, Spacing } from '@/constants/Spacing';
-import { Typography } from '@/constants/Typography';
+import { Fonts, Typography } from '@/constants/Typography';
 
 const LADO = 32; // um azulejo, em unidades do desenho
 
@@ -125,44 +125,77 @@ export function Gravura({
   );
 }
 
-// Cabeçalho de um separador: a faixa de azulejos, o edifício e o título do
-// ecrã (`children`).
-// - Telemóvel: o edifício por baixo da faixa, a toda a largura, e o título a seguir.
-// - Computador: o título à esquerda e o edifício à direita, como uma primeira página.
-// Sem imagem fica só a faixa: nunca se desenha um edifício falso.
-// Espera ocupar a largura toda do ecrã (sem padding lateral à volta).
+// O painel do cabeçalho no computador é sempre desta cor no escuro (como a barra).
+const ULTRA = '#120A8F';
+
+// Cabeçalho de um separador: o título do ecrã (`children`) com o edifício.
+// - Telemóvel: a faixa de azulejos, o edifício a toda a largura e o título a seguir.
+// - Computador: um painel (branco no claro, Ultramarine no escuro, a continuar a
+//   barra) com o edifício só em traço (Ultramarine no claro, branco no escuro) a
+//   nascer do fundo, à direita; a página assenta por cima da base dele, numa folha.
+//   `direita` são os números do cabeçalho (NumerosCabecalho).
+// Sem imagem fica só o título: nunca se desenha um edifício falso.
 // `estreito`: alinha com o conteúdo de largura normal (760) em vez da larga (1200),
 // por exemplo na conversa do Perguntar.
+// Espera ocupar a largura toda do ecrã (sem padding lateral à volta).
 export function CabecalhoEdificio({
   edificio,
   estreito = false,
+  direita,
   children,
 }: {
   edificio: EdificioId;
   estreito?: boolean;
+  direita?: React.ReactNode;
   children: React.ReactNode;
 }) {
+  const cores = useCores();
   const { desktop } = useDisposicao();
-  const temImagem = !!EDIFICIOS[edificio].imagem;
+  const escuro = useColorScheme() === 'dark';
+  const e = EDIFICIOS[edificio];
 
-  if (!temImagem) {
+  if (desktop) {
+    const sobre = escuro
+      ? { titulo: '#FFFFFF', sub: '#C9C6F0', legenda: '#A9A4E8' }
+      : { titulo: cores.tintInk, sub: cores.textMuted, legenda: cores.textMuted };
+    const web = Platform.OS === 'web' ? { dataSet: { horizonte: '1' } } : {};
     return (
-      <View>
-        <FaixaAzulejo altura={32} />
-        <Contentor largo={!estreito} style={[styles.margens, desktop && !estreito && styles.margensLargas]}>
-          {children}
+      <View style={[styles.painel, { backgroundColor: escuro ? ULTRA : cores.surface }]}>
+        {e.tinta ? (
+          <View style={[styles.horizonte, estreito && styles.horizonteEstreito]} pointerEvents="none" {...web}>
+            <Image
+              source={e.tinta}
+              style={[styles.imagem, { tintColor: escuro ? '#FFFFFF' : ULTRA, opacity: escuro ? 0.5 : 0.55 }]}
+              resizeMode="contain"
+              accessibilityLabel={e.nome}
+              accessibilityIgnoresInvertColors
+            />
+          </View>
+        ) : null}
+        <Contentor largo={!estreito} style={[styles.margens, !estreito && styles.margensLargas, styles.painelConteudo]}>
+          <View style={styles.painelTexto}>
+            <CoresCabecalho.Provider value={sobre}>{children}</CoresCabecalho.Provider>
+            {e.tinta ? <Text style={[Typography.caption, styles.legendaPainel, { color: sobre.legenda }]}>{e.nome}</Text> : null}
+          </View>
+          {direita ? <CoresCabecalho.Provider value={sobre}>{direita}</CoresCabecalho.Provider> : null}
         </Contentor>
+        {/* O topo da folha da página: cobre a base do edifício e continua no fundo da página. */}
+        <View
+          style={[
+            styles.folha,
+            estreito ? styles.folhaEstreita : styles.folhaLarga,
+            { backgroundColor: cores.background, borderColor: escuro ? 'transparent' : cores.border },
+          ]}
+        />
       </View>
     );
   }
-  if (desktop) {
+
+  if (!e.imagem) {
     return (
       <View>
         <FaixaAzulejo altura={32} />
-        <Contentor largo={!estreito} style={[styles.margens, !estreito && styles.margensLargas, styles.lado]}>
-          <View style={styles.ladoTexto}>{children}</View>
-          <Gravura edificio={edificio} style={styles.gravuraLado} />
-        </Contentor>
+        <Contentor style={styles.margens}>{children}</Contentor>
       </View>
     );
   }
@@ -173,6 +206,25 @@ export function CabecalhoEdificio({
         <Gravura edificio={edificio} style={styles.gravuraTopo} />
         {children}
       </Contentor>
+    </View>
+  );
+}
+
+// Os números do cabeçalho (p. ex. "2341 votações na XVII legislatura"), à direita
+// do título, nas cores do painel.
+export function NumerosCabecalho({ itens }: { itens: { valor: number | string; rotulo: string }[] }) {
+  const cores = useCores();
+  const escuro = useColorScheme() === 'dark';
+  const valor = escuro ? '#FFFFFF' : cores.text;
+  const rotulo = escuro ? '#C9C6F0' : cores.textMuted;
+  return (
+    <View style={styles.numeros}>
+      {itens.map((i) => (
+        <View key={i.rotulo} style={styles.numero} accessible accessibilityLabel={`${i.valor} ${i.rotulo}`}>
+          <Text style={[styles.numeroValor, { color: valor }]}>{i.valor}</Text>
+          <Text style={[Typography.caption, { color: rotulo }]}>{i.rotulo}</Text>
+        </View>
+      ))}
     </View>
   );
 }
@@ -197,22 +249,75 @@ const styles = StyleSheet.create({
   margensLargas: {
     maxWidth: MAX_WIDTH_LARGO + Spacing.lg * 2,
   },
-  // Sem faixa por cima (no computador a barra do topo já é de azulejo).
-  lado: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.xxxl,
-    paddingTop: Spacing.lg,
+  // Painel do computador: o edifício ocupa a metade direita e nasce do fundo.
+  painel: {
+    minHeight: 460,
+    overflow: 'hidden',
+    position: 'relative',
   },
-  ladoTexto: {
+  horizonte: {
+    position: 'absolute',
+    left: '66%',
+    marginLeft: -420,
+    bottom: -40,
+    width: 840,
+    height: 420,
+  },
+  horizonteEstreito: {
+    left: '70%',
+    marginLeft: -380,
+    width: 760,
+    height: 380,
+  },
+  painelConteudo: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: Spacing.xxxl,
+    paddingTop: Spacing.huge,
+    paddingBottom: 72,
+  },
+  painelTexto: {
     flex: 1,
     minWidth: 0,
+    maxWidth: 560,
   },
-  // No computador o edifício é a imagem principal do cabeçalho: ~60% da página.
-  gravuraLado: {
-    width: '60%',
-    maxWidth: 720,
-    marginTop: Spacing.sm,
+  legendaPainel: {
+    fontSize: 12,
+    marginTop: Spacing.xs,
+  },
+  folha: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    marginHorizontal: 'auto',
+    height: 28,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    borderWidth: 1,
+    borderBottomWidth: 0,
+  },
+  folhaLarga: {
+    maxWidth: MAX_WIDTH_LARGO + Spacing.lg * 2,
+  },
+  folhaEstreita: {
+    maxWidth: MAX_WIDTH + Spacing.lg * 2,
+  },
+  numeros: {
+    flexDirection: 'row',
+    gap: Spacing.xxl,
+    paddingTop: Spacing.sm,
+  },
+  numero: {
+    alignItems: 'flex-end',
+  },
+  numeroValor: {
+    fontFamily: Fonts.black,
+    fontSize: 32,
+    lineHeight: 36,
+    letterSpacing: -0.6,
+    fontVariant: ['tabular-nums'],
   },
   gravuraTopo: {
     width: '100%',

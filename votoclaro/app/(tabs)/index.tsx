@@ -3,7 +3,7 @@ import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { CabecalhoEdificio } from '@/components/Azulejo';
+import { CabecalhoEdificio, NumerosCabecalho } from '@/components/Azulejo';
 import { EcraVazio } from '@/components/EcraVazio';
 import { FiltroTemas } from '@/components/FiltroTemas';
 import { anim, CabecalhoEcra, Contentor, TituloSecao, useCores, useDisposicao } from '@/components/ui';
@@ -22,7 +22,7 @@ export default function FeedScreen() {
   const tema = params.tema && TEMAS.includes(params.tema) ? params.tema : null;
   const setTema = (t: string | null) => router.setParams({ tema: t ?? undefined });
   const [aAtualizar, setAAtualizar] = useState(false);
-  const { itens, isLoading, isError, refetch } = useVotacoesFeed();
+  const { itens, total, isLoading, isError, refetch } = useVotacoesFeed();
 
   const filtrados = useMemo(() => (itens ?? []).filter((i) => !tema || i.iniciativa.tema === tema), [itens, tema]);
 
@@ -74,7 +74,10 @@ export default function FeedScreen() {
         ListHeaderComponent={
           <View {...anim('pagina')}>
             <View style={styles.faixa}>
-              <CabecalhoEdificio edificio="sao-bento">
+              <CabecalhoEdificio
+                edificio="sao-bento"
+                direita={total ? <NumerosCabecalho itens={[{ valor: total, rotulo: 'votações na XVII legislatura' }]} /> : undefined}
+              >
                 <CabecalhoEcra titulo="Votações" subtitulo="O que o Parlamento votou nos últimos dias e como votou cada partido." />
                 <View style={styles.filtros}>
                   <FiltroTemas temas={TEMAS} selecionado={tema} onSelecionar={setTema} />
