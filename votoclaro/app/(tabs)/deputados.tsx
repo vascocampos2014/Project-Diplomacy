@@ -29,6 +29,12 @@ export default function DeputadosScreen() {
   useEffect(() => {
     if (typeof params.partido === 'string') setPartido(params.partido);
   }, [params.partido]);
+  // O partido escolhido fica também no URL, para "Todos" limpar o ?partido= que
+  // veio do menu (e a ligação poder ser partilhada).
+  const escolherPartido = (p: string | null) => {
+    setPartido(p);
+    router.setParams({ partido: p ?? undefined });
+  };
   const { data, isLoading, isError, refetch } = useDeputados();
 
   const partidos = useMemo(
@@ -76,15 +82,15 @@ export default function DeputadosScreen() {
           <Contentor largo>
             <View style={styles.partidos}>
             <LinhaOpcoes>
-              <Chip label="Todos" selecionado={partido === null} onPress={() => setPartido(null)} />
+              <Chip label="Todos" selecionado={partido === null} onPress={() => escolherPartido(null)} />
               {partidos.map(([sigla, n]) => (
                 <Chip
                   key={sigla}
                   label={`${sigla} ${n}`}
                   cor={getCorPartido(sigla)}
                   selecionado={partido === sigla}
-                  onPress={() => setPartido(partido === sigla ? null : sigla)}
-                  accessibilityLabel={`Filtrar por ${sigla}, ${n} deputados`}
+                  onPress={() => escolherPartido(partido === sigla ? null : sigla)}
+                  accessibilityLabel={`Filtrar por ${sigla}, ${n} ${n === 1 ? 'deputado' : 'deputados'}`}
                 />
               ))}
             </LinhaOpcoes>
@@ -135,7 +141,7 @@ export default function DeputadosScreen() {
               icone="person-search"
               titulo="Nenhum deputado encontrado"
               descricao="Tenta outro nome, ou procura pelo teu círculo eleitoral."
-              accao={{ label: 'Limpar pesquisa', onPress: () => (setPesquisa(''), setPartido(null)) }}
+              accao={{ label: 'Limpar pesquisa', onPress: () => (setPesquisa(''), escolherPartido(null)) }}
             />
           )
         }

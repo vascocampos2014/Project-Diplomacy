@@ -7,7 +7,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { Link, usePathname, useRouter, type Href } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
-import { Image, Platform, Pressable, StyleSheet, Text, TextInput, View, type ViewStyle } from 'react-native';
+import { Image, Platform, Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View, type ViewStyle } from 'react-native';
 
 import { AzulejoUnico, Gravura, PadraoAzulejo } from '@/components/Azulejo';
 import { Hemiciclo, LegendaVotos } from '@/components/Hemiciclo';
@@ -70,6 +70,8 @@ export function BarraComputador({ voltar = false }: { voltar?: boolean }) {
   const temporizador = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const gatilhos = useRef<Partial<Record<MenuId, View | null>>>({});
 
+  // Entre 900 e 1180px não cabe tudo: a pesquisa passa a um ícone que leva a Deputados.
+  const compacta = useWindowDimensions().width < 1180;
   const ativo = itemDaRota(pathname);
   const marcado = aberto ?? ativo;
 
@@ -116,6 +118,9 @@ export function BarraComputador({ voltar = false }: { voltar?: boolean }) {
 
   return (
     <View style={styles.zona}>
+      {/* A barra e o menu são uma só zona de rato: sair dela (e só dela) fecha o
+          menu. O fundo escurecido fica fora, para não contar como "dentro". */}
+      <View style={styles.zonaRato} onPointerEnter={ficar} onPointerLeave={sair}>
       <View style={styles.barra}>
         <PadraoAzulejo altura={ALTURA} lado={48} linha={LINHA_PADRAO} fundo={ULTRA} style={StyleSheet.absoluteFill} />
         <View style={styles.interior}>
@@ -161,7 +166,6 @@ export function BarraComputador({ voltar = false }: { voltar?: boolean }) {
                       }}
                       onPress={() => setAberto((a) => (a === item.id ? null : (item.id as MenuId)))}
                       onHoverIn={() => passarPor(item.id as MenuId)}
-                      onHoverOut={sair}
                       accessibilityRole="button"
                       accessibilityLabel={`${item.nome}, abrir menu`}
                       aria-expanded={aberto === item.id}
@@ -182,49 +186,57 @@ export function BarraComputador({ voltar = false }: { voltar?: boolean }) {
             })}
           </View>
 
-          <View style={styles.pesquisa}>
-            <MaterialIcons name="search" size={18} color="#585D64" />
-            <TextInput
-              value={pesquisa}
-              onChangeText={setPesquisa}
-              onSubmitEditing={procurar}
-              placeholder="Procurar deputado"
-              placeholderTextColor="#585D64"
-              accessibilityLabel="Procurar deputado por nome, partido ou círculo"
-              style={styles.pesquisaInput}
-              maxLength={60}
-              returnKeyType="search"
-            />
-          </View>
+          {compacta ? (
+            <Link href="/deputados" asChild>
+              <Pressable accessibilityRole="link" accessibilityLabel="Procurar deputado">
+                {({ hovered }: { hovered?: boolean }) => (
+                  <View style={[styles.icone, transicao, hovered && styles.iconeHover]}>
+                    <MaterialIcons name="search" size={22} color={TEXTO} />
+                  </View>
+                )}
+              </Pressable>
+            </Link>
+          ) : (
+            <View style={styles.pesquisa}>
+              <MaterialIcons name="search" size={18} color="#585D64" />
+              <TextInput
+                value={pesquisa}
+                onChangeText={setPesquisa}
+                onSubmitEditing={procurar}
+                placeholder="Procurar deputado"
+                placeholderTextColor="#585D64"
+                accessibilityLabel="Procurar deputado por nome, partido ou círculo"
+                style={styles.pesquisaInput}
+                maxLength={60}
+                returnKeyType="search"
+              />
+            </View>
+          )}
           <Link href="/definicoes" asChild>
-            <Pressable
-              accessibilityRole="link"
-              accessibilityLabel="Definições"
-              style={({ hovered }: { hovered?: boolean }) => [styles.icone, transicao, hovered && styles.iconeHover]}
-            >
-              <MaterialIcons name="settings" size={21} color={TEXTO} />
+            <Pressable accessibilityRole="link" accessibilityLabel="Definições">
+              {({ hovered }: { hovered?: boolean }) => (
+                <View style={[styles.icone, transicao, hovered && styles.iconeHover]}>
+                  <MaterialIcons name="settings" size={21} color={TEXTO} />
+                </View>
+              )}
             </Pressable>
           </Link>
         </View>
       </View>
 
       {aberto ? (
-        <>
-          {/* O resto da página fica um pouco escurecido; um clique fora fecha. */}
-          <Pressable style={[fixo, styles.fundo]} onPress={fechar} accessible={false} focusable={false} />
-          <Pressable
-            style={[fixo, styles.menu]}
-            onHoverIn={ficar}
-            onHoverOut={sair}
-            accessible={false}
-            focusable={false}
-            role="region"
-            aria-label={`Menu ${ITENS.find((i) => i.id === aberto)?.nome}`}
-          >
-            <MenuAberto id={aberto} fechar={fechar} />
-          </Pressable>
-        </>
+        <View
+          style={[fixo, styles.menu]}
+          onPointerEnter={ficar}
+          role="region"
+          aria-label={`Menu ${ITENS.find((i) => i.id === aberto)?.nome}`}
+        >
+          <MenuAberto id={aberto} fechar={fechar} />
+        </View>
       ) : null}
+      </View>
+      {/* O resto da página fica um pouco escurecido; um clique fora fecha. */}
+      {aberto ? <Pressable style={[fixo, styles.fundo]} onPress={fechar} accessible={false} focusable={false} /> : null}
     </View>
   );
 }
@@ -485,6 +497,12 @@ function MenuAprender({ fechar }: { fechar: () => void }) {
 const styles = StyleSheet.create({
   zona: {
     zIndex: 20,
+  },
+  // No react-native-web cada View tem z-index 0 (é um contexto de empilhamento):
+  // esta zona tem de ficar acima do fundo escurecido (18), senão o menu fica
+  // por baixo dele e o rato nunca lhe chega.
+  zonaRato: {
+    zIndex: 19,
   },
   barra: {
     height: ALTURA,

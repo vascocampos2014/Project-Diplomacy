@@ -9,7 +9,7 @@ import { LinhaOpcoes } from '@/components/LinhaOpcoes';
 import { PartidoBar } from '@/components/PartidoBar';
 import { anim, Aviso, CabecalhoEcra, Cartao, Chip, Contentor, TituloSecao, useCores, useDisposicao } from '@/components/ui';
 import { useEspacoBarra } from '@/components/BarraSeparadores';
-import { VotoIndicator } from '@/components/VotoIndicator';
+import { ROTULO, VotoIndicator } from '@/components/VotoIndicator';
 import { getCorPartido } from '@/constants/CORES_PARTIDOS';
 import { Radii, Spacing } from '@/constants/Spacing';
 import { Fonts, Typography } from '@/constants/Typography';
@@ -154,7 +154,7 @@ export default function CompararScreen() {
                                   pressed && { opacity: 0.7 },
                                 ]}
                                 accessibilityRole="button"
-                                accessibilityLabel={`${d.titulo}. ${partidoA}: ${d.posicaoA}. ${partidoB}: ${d.posicaoB}`}
+                                accessibilityLabel={`${d.titulo}. ${partidoA}: ${ROTULO[d.posicaoA]}. ${partidoB}: ${ROTULO[d.posicaoB]}`}
                               >
                                 <View style={styles.divergenciaInfo}>
                                   <Text style={[Typography.bodySm, { color: cores.text }]} numberOfLines={2}>

@@ -7,7 +7,7 @@ import { Avatar } from '@/components/Avatar';
 import { FaixaAzulejo } from '@/components/Azulejo';
 import { EcraVazio } from '@/components/EcraVazio';
 import { FiltroPosicao } from '@/components/FiltroPosicao';
-import { anim, Aviso, Contentor, nivel, TituloSecao, useCores } from '@/components/ui';
+import { anim, Aviso, Contentor, nivel, TituloSecao, useCores, useDisposicao } from '@/components/ui';
 import { Amostra } from '@/components/Amostra';
 import { ROTULO, VotoIndicator } from '@/components/VotoIndicator';
 import { getCorPartido, nomePartido } from '@/constants/CORES_PARTIDOS';
@@ -22,6 +22,7 @@ export default function DeputadoDetalheScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const cores = useCores();
+  const { desktop } = useDisposicao();
   const [filtro, setFiltro] = useState<Posicao | null>(null);
 
   const deputadoQuery = useDeputado(id);
@@ -70,12 +71,17 @@ export default function DeputadoDetalheScreen() {
         initialNumToRender={20}
         ListHeaderComponent={
           <View {...anim('pagina')}>
-          <View style={styles.faixa}>
-            <FaixaAzulejo altura={56} />
-          </View>
+          {/* No computador a barra do topo já é de azulejo: sem segunda faixa. */}
+          {desktop ? (
+            <View style={styles.semFaixa} />
+          ) : (
+            <View style={styles.faixa}>
+              <FaixaAzulejo altura={56} />
+            </View>
+          )}
           <Contentor>
             <View style={styles.perfil}>
-              <View style={[styles.moldura, { borderColor: cores.tint, backgroundColor: cores.background }]}>
+              <View style={[styles.moldura, desktop && styles.molduraLarga, { borderColor: cores.tint, backgroundColor: cores.background }]}>
                 <Avatar nome={deputado.nome} fotoUrl={fotoUrl(deputado.id)} partido={deputado.partido} size={76} />
               </View>
               <View style={styles.perfilTextos}>
@@ -182,6 +188,12 @@ const styles = StyleSheet.create({
   },
   perfil: {
     gap: Spacing.md,
+  },
+  semFaixa: {
+    height: Spacing.xxl,
+  },
+  molduraLarga: {
+    marginTop: 0,
   },
   moldura: {
     marginTop: -36,
