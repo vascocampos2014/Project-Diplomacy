@@ -4,10 +4,11 @@ import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { JanelaAzulejo } from '@/components/Azulejo';
 import { DeputadoRow } from '@/components/DeputadoRow';
 import { EcraVazio } from '@/components/EcraVazio';
 import { LinhaOpcoes } from '@/components/LinhaOpcoes';
-import { CampoPesquisa, CabecalhoEcra, Chip, Contentor, useCores } from '@/components/ui';
+import { anim, CampoPesquisa, CabecalhoEcra, Chip, Contentor, useCores } from '@/components/ui';
 import { getCorPartido } from '@/constants/CORES_PARTIDOS';
 import { Radii, Spacing } from '@/constants/Spacing';
 import { Fonts, Typography } from '@/constants/Typography';
@@ -35,6 +36,10 @@ export default function DeputadosScreen() {
         contentContainerStyle={styles.lista}
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
+          <View {...anim('pagina')}>
+          <View style={styles.faixa}>
+            <JanelaAzulejo edificio="torre-belem" />
+          </View>
           <Contentor>
             <CabecalhoEcra
               titulo="Deputados"
@@ -68,13 +73,14 @@ export default function DeputadosScreen() {
               </Text>
             ) : null}
           </Contentor>
+          </View>
         }
         renderItem={({ item, index }) => (
           <Contentor>
             <View
               style={[
                 styles.linha,
-                { backgroundColor: cores.surface, borderColor: cores.rule, borderBottomColor: index === deputados.length - 1 ? cores.rule : cores.border },
+                { backgroundColor: cores.surface, borderColor: cores.border },
                 index === 0 && styles.primeira,
                 index === deputados.length - 1 && styles.ultima,
               ]}
@@ -136,6 +142,9 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
     fontFamily: Fonts.regular,
     fontSize: 15,
+  },
+  faixa: {
+    marginHorizontal: -Spacing.lg,
   },
   partidos: {
     paddingVertical: Spacing.sm,

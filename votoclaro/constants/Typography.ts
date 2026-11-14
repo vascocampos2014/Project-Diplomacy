@@ -13,9 +13,17 @@ export const Fonts = {
 };
 
 export const Typography = {
+  // Manchete: o título de uma votação em destaque, em azul ultramarino.
+  manchete: {
+    fontFamily: Fonts.black,
+    fontWeight: '800',
+    fontSize: 28,
+    letterSpacing: -0.6,
+    lineHeight: 32,
+  },
   displayLg: {
-    fontFamily: Fonts.bold,
-    fontWeight: '700',
+    fontFamily: Fonts.black,
+    fontWeight: '800',
     fontSize: 30,
     letterSpacing: -0.6,
     lineHeight: 36,
@@ -28,11 +36,11 @@ export const Typography = {
     lineHeight: 30,
   },
   title: {
-    fontFamily: Fonts.semibold,
-    fontWeight: '600',
-    fontSize: 17,
+    fontFamily: Fonts.bold,
+    fontWeight: '700',
+    fontSize: 16,
     letterSpacing: -0.15,
-    lineHeight: 23,
+    lineHeight: 21,
   },
   bodyLg: {
     fontFamily: Fonts.regular,
@@ -51,8 +59,7 @@ export const Typography = {
     fontWeight: '600',
     fontSize: 14,
   },
-  // Cabeçalhos de coluna do boletim ("A FAVOR", "CONTRA"). Nunca por cima
-  // de um título.
+  // Texto pequeno em maiúsculas: só para o carimbo do resultado.
   eyebrow: {
     fontFamily: Fonts.semibold,
     fontWeight: '600',

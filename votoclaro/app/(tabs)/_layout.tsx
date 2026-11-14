@@ -38,8 +38,8 @@ export default function TabLayout() {
           ? { display: 'none' }
           : {
               backgroundColor: cores.surface,
-              borderTopColor: cores.rule,
-              borderTopWidth: 1.5,
+              borderTopColor: cores.border,
+              borderTopWidth: StyleSheet.hairlineWidth,
               height: 64,
               paddingTop: 0,
               paddingBottom: 8,
@@ -76,5 +76,7 @@ const styles = StyleSheet.create({
     top: 0,
     width: 28,
     height: 3,
+    borderBottomLeftRadius: 2,
+    borderBottomRightRadius: 2,
   },
 });

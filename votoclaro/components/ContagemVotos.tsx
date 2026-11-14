@@ -49,7 +49,7 @@ function Numero({ posicao, n }: { posicao: Posicao; n: number }) {
   );
 }
 
-const RESULTADO: Record<Resultado, { label: string; icone: keyof typeof MaterialIcons.glyphMap }> = {
+export const RESULTADO: Record<Resultado, { label: string; icone: keyof typeof MaterialIcons.glyphMap }> = {
   aprovada: { label: 'Aprovada', icone: 'check' },
   chumbada: { label: 'Chumbada', icone: 'close' },
   pendente: { label: 'Pendente', icone: 'schedule' },

@@ -1,10 +1,8 @@
-// Peças base da interface — ver .claude/DESIGN.md (mundo: o boletim de voto)
+// Peças base da interface — ver .claude/DESIGN.md (mundo: o azulejo)
 import { MaterialIcons } from '@expo/vector-icons';
 import { Link, type Href } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import {
-  Animated,
-  Easing,
   Platform,
   Pressable,
   StyleSheet,
@@ -15,29 +13,42 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import { useReducedMotion } from 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors, { type Paleta } from '@/constants/Colors';
-import { MAX_WIDTH, Motion, Radii, Spacing } from '@/constants/Spacing';
+import { Easing, MAX_WIDTH, Motion, Radii, Spacing } from '@/constants/Spacing';
 import { Fonts, Typography } from '@/constants/Typography';
 
 export function useCores(): Paleta {
   return Colors[useColorScheme()];
 }
 
-// Transição única de estado no web (cor da linha, fundo). No nativo é ignorada.
-const transicao = (Platform.OS === 'web'
-  ? { transitionProperty: 'border-color, background-color, opacity', transitionDuration: `${Motion.duracao}ms`, transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)' }
+// Transição única de estado no web (borda, fundo, escala ao premir). No
+// nativo é ignorada.
+export const transicao = (Platform.OS === 'web'
+  ? {
+      transitionProperty: 'border-color, background-color, color, opacity, transform',
+      transitionDuration: `${Motion.duracao}ms`,
+      transitionTimingFunction: Easing.smoothOut,
+    }
   : {}) as ViewStyle;
+
+// Entradas animadas no web: o CSS está no +html.tsx ([data-anim]) e respeita
+// prefers-reduced-motion. `i` dá o atraso em escada (40ms por item, até 8).
+// No nativo não faz nada.
+export type Animacao = 'pagina' | 'titulo' | 'item' | 'carimbo' | 'imagem' | 'troca';
+export function anim(nome: Animacao, i?: number): object {
+  if (Platform.OS !== 'web') return {};
+  return { dataSet: { anim: nome, ...(i !== undefined ? { i: String(Math.min(i, 8)) } : {}) } };
+}
 
 // Limita a largura do conteúdo no web/tablet e centra-o.
 export function Contentor({ children, style }: { children: React.ReactNode; style?: StyleProp<ViewStyle> }) {
   return <View style={[styles.contentor, style]}>{children}</View>;
 }
 
-// Um boletim: papel branco, cantos retos, linha a tinta. `tinta` desenha a
-// moldura forte do boletim; sem ela fica a linha fina das secções.
+// Um cartão: papel branco, cantos macios, linha fina. `tinta` desenha a
+// moldura em azul ultramarino (destaque).
 // Com `href` é uma ligação a sério (<a> no web: Ctrl/Cmd+clique abre noutro
 // separador); com `onPress` é um botão.
 export function Cartao({
@@ -62,8 +73,8 @@ export function Cartao({
   const [premido, setPremido] = useState(false);
   const base: StyleProp<ViewStyle>[] = [
     styles.cartao,
-    { backgroundColor: cores.surface, borderColor: cores.rule },
-    tinta && styles.cartaoTinta,
+    { backgroundColor: cores.surface, borderColor: cores.border },
+    tinta && [styles.cartaoTinta, { borderColor: cores.tint }],
     style,
   ];
   if (!onPress && !href) return <View style={base}>{children}</View>;
@@ -78,7 +89,7 @@ export function Cartao({
       accessibilityLabel={accessibilityLabel}
       accessibilityHint={accessibilityHint}
       // Achatado: o Link (asChild) do web não aceita listas de estilos.
-      style={StyleSheet.flatten<ViewStyle>([...base, transicao, (ativo || premido) && { borderColor: cores.tint }, premido && styles.premido])}
+      style={StyleSheet.flatten<ViewStyle>([...base, transicao, ativo && { borderColor: cores.tint }, premido && styles.encolher])}
     >
       {children}
     </Pressable>
@@ -92,78 +103,8 @@ export function Cartao({
   );
 }
 
-// A caixa quadrada do boletim, com o ✕ desenhado a caneta. Quando `animar`,
-// o traço entra como uma caneta (duas linhas seguidas); com movimento
-// reduzido aparece já desenhado.
-export function MarcaX({
-  marcado,
-  tamanho = 20,
-  animar = false,
-  cor,
-}: {
-  marcado: boolean;
-  tamanho?: number;
-  animar?: boolean;
-  cor?: string;
-}) {
-  const cores = useCores();
-  const reduzido = useReducedMotion();
-  const borda = tamanho >= 18 ? 1.5 : 1.25;
-  const interior = tamanho - borda * 2;
-  const margem = Math.max(3, Math.round(interior * 0.2));
-  const espessura = Math.max(2, Math.round(tamanho / 9));
-  const diagonal = (interior - margem * 2) * Math.SQRT2;
-  const inicial = marcado && animar && !reduzido ? 0 : 1;
-  const a = useRef(new Animated.Value(inicial)).current;
-  const b = useRef(new Animated.Value(inicial)).current;
-
-  useEffect(() => {
-    if (!marcado || !animar || reduzido) {
-      a.setValue(1);
-      b.setValue(1);
-      return;
-    }
-    const nativo = Platform.OS !== 'web';
-    Animated.sequence([
-      Animated.timing(a, { toValue: 1, duration: Motion.traco, easing: Easing.out(Easing.cubic), useNativeDriver: nativo }),
-      Animated.delay(Motion.pausa),
-      Animated.timing(b, { toValue: 1, duration: Motion.traco, easing: Easing.out(Easing.cubic), useNativeDriver: nativo }),
-    ]).start();
-  }, [marcado, animar, reduzido, a, b]);
-
-  const linha = (valor: Animated.Value, topo: number, angulo: string) => (
-    <Animated.View
-      style={{
-        position: 'absolute',
-        left: margem,
-        top: topo - espessura / 2,
-        width: diagonal,
-        height: espessura,
-        borderRadius: espessura / 2,
-        backgroundColor: cor ?? cores.tint,
-        transformOrigin: 'left center',
-        transform: [{ rotate: angulo }, { scaleX: valor }],
-      }}
-    />
-  );
-
-  return (
-    <View
-      style={[styles.caixa, { width: tamanho, height: tamanho, borderWidth: borda, borderColor: cores.rule }]}
-      accessible={false}
-    >
-      {marcado ? (
-        <>
-          {linha(a, margem, '45deg')}
-          {linha(b, interior - margem, '-45deg')}
-        </>
-      ) : null}
-    </View>
-  );
-}
-
-// Opção do boletim: caixa + texto. Serve para filtros (tema, partido,
-// posição). Quando `cor` existe, mostra o ponto do partido.
+// Filtro em pílula (tema, partido, posição). Selecionado fica cheio a azul.
+// Quando `cor` existe, mostra o ponto do partido.
 export function Chip({
   label,
   selecionado = false,
@@ -192,19 +133,30 @@ export function Chip({
       style={({ pressed, hovered }: { pressed: boolean; hovered?: boolean }) => [
         styles.opcao,
         transicao,
-        { borderColor: selecionado ? cores.tint : 'transparent', backgroundColor: selecionado ? cores.tintBg : 'transparent' },
-        hovered && !selecionado && { backgroundColor: cores.surfaceAlt },
-        pressed && styles.premido,
+        { borderColor: cores.tint, backgroundColor: selecionado ? cores.tint : 'transparent' },
+        hovered && !selecionado && { backgroundColor: cores.tintBg },
+        pressed && styles.encolher,
       ]}
       accessibilityRole="button"
       accessibilityState={{ selected: selecionado }}
       accessibilityLabel={accessibilityLabel ?? label}
       hitSlop={4}
     >
-      <MarcaX marcado={selecionado} tamanho={14} animar />
-      {cor ? <View style={[styles.chipPonto, { backgroundColor: cor }]} /> : null}
-      <Text style={[Typography.label, { color: selecionado ? cores.tintInk : cores.text }]}>{label}</Text>
+      {cor ? <View style={[styles.chipPonto, { backgroundColor: cor }, selecionado && { borderColor: cores.onTint, borderWidth: 1 }]} /> : null}
+      <Text style={[Typography.label, { color: selecionado ? cores.onTint : cores.tintInk }]}>{label}</Text>
     </Pressable>
+  );
+}
+
+// Etiqueta de tema (só leitura): pílula azul clara.
+export function Etiqueta({ children }: { children: string }) {
+  const cores = useCores();
+  return (
+    <View style={[styles.tag, { backgroundColor: cores.tintBg }]}>
+      <Text style={[styles.tagTexto, { color: cores.tintInk }]} numberOfLines={1}>
+        {children}
+      </Text>
+    </View>
   );
 }
 
@@ -226,8 +178,9 @@ export function Botao({
   style?: StyleProp<ViewStyle>;
 }) {
   const cores = useCores();
+  // Primário: tinta cheia (carbono). Secundário: cinzento suave sem moldura.
   const primario = variante === 'primario';
-  const corTexto = primario ? cores.onTint : cores.text;
+  const corTexto = primario ? cores.background : cores.text;
   return (
     <Pressable
       onPress={onPress}
@@ -240,9 +193,9 @@ export function Botao({
         styles.botao,
         transicao,
         primario
-          ? { backgroundColor: cores.tint, borderColor: cores.tint }
-          : { backgroundColor: hovered ? cores.surfaceAlt : cores.surface, borderColor: hovered ? cores.tint : cores.rule },
-        pressed && styles.premido,
+          ? { backgroundColor: hovered ? cores.tint : cores.text }
+          : { backgroundColor: hovered ? cores.border : cores.surfaceAlt },
+        pressed && styles.encolher,
         disabled && styles.desativado,
         style,
       ]}
@@ -284,15 +237,15 @@ export function CabecalhoEcra({
   );
 }
 
-// Título de secção com a voz impressa do boletim: maiúsculas espaçadas e a
-// linha a tinta por baixo. A nota fica à direita (ou por baixo, se não couber).
-export function TituloSecao({ children, nota }: { children: string; nota?: string }) {
+// Título de secção: negrito, frase normal. A nota fica por baixo.
+export function TituloSecao({ children, nota, direita }: { children: string; nota?: string; direita?: React.ReactNode }) {
   const cores = useCores();
   return (
-    <View style={[styles.secao, { borderBottomColor: cores.rule }]}>
+    <View style={styles.secao}>
       <Text style={[styles.secaoTitulo, { color: cores.text }]} accessibilityRole="header">
         {children}
       </Text>
+      {direita}
       {nota ? <Text style={[Typography.caption, styles.secaoNota, { color: cores.textMuted }]}>{nota}</Text> : null}
     </View>
   );
@@ -314,7 +267,7 @@ export function CampoPesquisa({
 }) {
   const cores = useCores();
   return (
-    <View style={[styles.pesquisa, { backgroundColor: cores.surface, borderColor: cores.rule }]}>
+    <View style={[styles.pesquisa, { backgroundColor: cores.surface, borderColor: cores.border }]}>
       <MaterialIcons name="search" size={20} color={cores.textMuted} accessible={false} />
       <TextInput
         style={[styles.pesquisaInput, { color: cores.text }]}
@@ -356,26 +309,32 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
   },
   cartaoTinta: {
-    borderWidth: 1.5,
+    borderWidth: 2,
   },
-  premido: {
-    opacity: 0.8,
+  encolher: {
+    transform: [{ scale: 0.98 }],
   },
   desativado: {
     opacity: 0.45,
   },
-  caixa: {
-    borderRadius: Radii.badge,
-    overflow: 'hidden',
-  },
   opcao: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.sm,
+    gap: 6,
     minHeight: 36,
-    paddingHorizontal: Spacing.sm,
-    borderRadius: Radii.chip,
-    borderWidth: 1,
+    paddingHorizontal: 14,
+    borderRadius: Radii.pill,
+    borderWidth: 1.5,
+  },
+  tag: {
+    alignSelf: 'flex-start',
+    borderRadius: Radii.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+  },
+  tagTexto: {
+    fontFamily: Fonts.semibold,
+    fontSize: 12,
   },
   etiqueta: {
     flexDirection: 'row',
@@ -395,7 +354,6 @@ const styles = StyleSheet.create({
     minHeight: 48,
     paddingHorizontal: Spacing.xl,
     borderRadius: Radii.chip,
-    borderWidth: 1.5,
   },
   botaoLabel: {
     fontFamily: Fonts.semibold,
@@ -421,8 +379,6 @@ const styles = StyleSheet.create({
   secao: {
     marginTop: Spacing.xxxl,
     marginBottom: Spacing.md,
-    paddingBottom: Spacing.sm,
-    borderBottomWidth: 1.5,
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'baseline',
@@ -430,13 +386,13 @@ const styles = StyleSheet.create({
     columnGap: Spacing.md,
   },
   secaoTitulo: {
-    fontFamily: Fonts.bold,
-    fontSize: 14,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
+    fontFamily: Fonts.black,
+    fontSize: 19,
+    letterSpacing: -0.3,
   },
   secaoNota: {
     marginTop: 2,
+    width: '100%',
   },
   pesquisa: {
     flexDirection: 'row',

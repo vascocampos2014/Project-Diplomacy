@@ -3,12 +3,12 @@ import React, { useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { BarraProgresso } from '@/components/BarraProgresso';
-import { ContagemVotos, ResultadoBadge } from '@/components/ContagemVotos';
+import { FaixaAzulejo } from '@/components/Azulejo';
 import { DeputadoRow } from '@/components/DeputadoRow';
 import { EcraVazio } from '@/components/EcraVazio';
-import { BoletimCompleto } from '@/components/BoletimCompleto';
-import { Aviso, Botao, Cartao, Contentor, TituloSecao, useCores } from '@/components/ui';
+import { Hemiciclo, LegendaVotos } from '@/components/Hemiciclo';
+import { anim, Aviso, Botao, Cartao, Contentor, Etiqueta, TituloSecao, useCores } from '@/components/ui';
+import { PartidosPorSentido } from '@/components/VotacaoCard';
 import { Spacing } from '@/constants/Spacing';
 import { Typography } from '@/constants/Typography';
 import { useDeputados } from '@/hooks/useDeputados';
@@ -58,38 +58,48 @@ export default function VotacaoDetalheScreen() {
       a.nome.localeCompare(b.nome, 'pt')
   );
   const total = iniciativa.favor + iniciativa.contra + iniciativa.abstencao + iniciativa.ausentes;
-  const pct = (n: number) => (total > 0 ? (n / total) * 100 : 0);
+  // Partidos por sentido de voto, do maior grupo para o menor.
+  const partidos = { favor: [] as string[], contra: [] as string[], abstencao: [] as string[] };
+  [...posicaoPorPartido.entries()]
+    .sort(([a], [b]) => (lugares[b] ?? 0) - (lugares[a] ?? 0) || a.localeCompare(b))
+    .forEach(([partido, posicao]) => {
+      if (posicao !== 'ausente') partidos[posicao].push(partido);
+    });
 
   return (
     <SafeAreaView style={[styles.ecra, { backgroundColor: cores.background }]} edges={['bottom']}>
       <Stack.Screen options={{ title: 'Votação' }} />
       <ScrollView contentContainerStyle={styles.conteudo}>
-        <Contentor>
-          <Text style={[Typography.displaySm, { color: cores.text }]} accessibilityRole="header">
-            {iniciativa.titulo}
-          </Text>
-          <View style={styles.meta}>
+        <FaixaAzulejo altura={14} />
+        <Contentor style={styles.corpo}>
+          <View {...anim('pagina')}>
+            <Etiqueta>{iniciativa.tema}</Etiqueta>
+            <Text style={[Typography.manchete, styles.titulo, { color: cores.tintInk }]} accessibilityRole="header">
+              {iniciativa.titulo}
+            </Text>
             <Text style={[Typography.bodySm, { color: cores.textMuted }]}>{iniciativa.dataVoto}</Text>
-            <Text style={[Typography.bodySm, { color: cores.textMuted }]}>{iniciativa.tema}</Text>
-          </View>
-          <View style={styles.resultado}>
-            <ResultadoBadge resultado={iniciativa.resultado} />
-            {total > 0 ? (
-              <ContagemVotos favor={iniciativa.favor} contra={iniciativa.contra} abstencao={iniciativa.abstencao} ausentes={iniciativa.ausentes} />
-            ) : null}
           </View>
 
+          <TituloSecao>Como votou o Parlamento</TituloSecao>
           {total > 0 ? (
-            <View style={styles.barra}>
-              <BarraProgresso favor={pct(iniciativa.favor)} contra={pct(iniciativa.contra)} abstencao={pct(iniciativa.abstencao)} height={8} />
+            <View>
+              <Hemiciclo
+                favor={iniciativa.favor}
+                contra={iniciativa.contra}
+                abstencao={iniciativa.abstencao}
+                ausentes={iniciativa.ausentes}
+                resultado={iniciativa.resultado}
+                animar
+              />
+              <LegendaVotos favor={iniciativa.favor} contra={iniciativa.contra} abstencao={iniciativa.abstencao} ausentes={iniciativa.ausentes} />
               <Text style={[Typography.caption, styles.escala, { color: cores.textMuted }]}>
                 {total} deputados. Os votos são registados por grupo parlamentar.
               </Text>
             </View>
           ) : null}
-
-          <TituloSecao>O boletim</TituloSecao>
-          <BoletimCompleto posicaoPorPartido={posicaoPorPartido} lugares={lugares} />
+          <Cartao style={styles.partidos}>
+            <PartidosPorSentido partidos={partidos} semLinha />
+          </Cartao>
 
           <TituloSecao nota="A posição de cada deputado é a do seu grupo parlamentar.">Deputados</TituloSecao>
           {verDeputados ? (
@@ -134,28 +144,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   conteudo: {
-    padding: Spacing.lg,
     paddingBottom: Spacing.huge,
   },
-  meta: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    columnGap: Spacing.md,
+  corpo: {
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.xl,
+  },
+  titulo: {
     marginTop: Spacing.sm,
-  },
-  resultado: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    columnGap: Spacing.md,
-    rowGap: Spacing.sm,
-    marginTop: Spacing.lg,
-  },
-  barra: {
-    marginTop: Spacing.md,
+    marginBottom: Spacing.sm,
   },
   escala: {
     marginTop: Spacing.sm,
+    textAlign: 'center',
+  },
+  partidos: {
+    marginTop: Spacing.lg,
   },
   deputados: {
     paddingVertical: 0,

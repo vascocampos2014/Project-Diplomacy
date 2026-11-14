@@ -4,7 +4,7 @@ Non-partisan app showing how the Portuguese Parliament (Assembleia da República
 aimed at 16–30 year olds. This file is how the repo **actually** works today.
 `.claude/CLAUDE.md` is the original product vision. Parts of it, such as Supabase, the
 `deputados/{id}/votos` endpoints and push notifications, are not built.
-`.claude/DESIGN.md` is the visual design system: the "ballot paper" world from the 2026-11 redesign.
+`.claude/DESIGN.md` is the visual design system: the "Azulejo" world (2026-11-14), which replaced the short-lived "ballot paper".
 `PRODUCT.md` (product truth) and `.impeccable/surfaces/votoclaro.md` (the direction contract) go with it.
 `.claude/SKILLS.md` (component contracts) predates the redesign; where they disagree, DESIGN.md wins.
 
@@ -74,8 +74,9 @@ Votes are recorded **per parliamentary group, not per deputy**.
   (domain: `votacao`, `deputado`, `iniciativa`, `posicao`) and English; follow the file you're in.
 - Accessibility: every pressable has an `accessibilityLabel`, and vote colours must pass WCAG AA (see
   the `*Ink` colours in `constants/Colors.ts`).
-- Design: follow `.claude/DESIGN.md`. In short: a white slip with ink rules and square corners; Ultramarine is the pen
-  (the ✕, links, actions) and Blue Bell marks only "where you are". No pills, shadows, coloured edge stripes, or eyebrow
-  labels above headings. The design skills are installed in `.claude/skills/` (impeccable, transitions-dev,
-  web-design-guidelines).
+- Design: follow `.claude/DESIGN.md`. In short: Bright Snow paper, azulejo tiles in Ultramarine, a Portuguese landmark
+  image per tab (`assets/edificios/`, real images only), big Ultramarine headlines, soft 14px cards, pill filters.
+  Votes are drawn in ink on an engraved hemicycle (solid / hatched / empty / grey), **never green/red**. No shadows,
+  eyebrow labels or sketch-style SVG drawings. Motion uses the transitions.dev scale via `anim()` in `components/ui.tsx`.
+  The design skills are installed in `.claude/skills/` (impeccable, transitions-dev, web-design-guidelines).
 - Branches: work happens on `preview/*` branches. Don't push to `main` without asking.

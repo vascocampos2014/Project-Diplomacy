@@ -70,9 +70,10 @@ describe('VotacaoCard', () => {
 
   it('renders title, reference, theme, date and result', () => {
     render(<VotacaoCard {...props} onPress={() => {}} />);
-    for (const t of ['Orçamento do Estado para 2027', 'Proposta de Lei n.º 110', 'Economia', '28 Out 2026', 'Aprovada']) {
+    for (const t of ['Orçamento do Estado para 2027', 'Proposta de Lei n.º 110', 'Economia']) {
       expect(screen.getByText(t)).toBeTruthy();
     }
+    expect(screen.getByText('Aprovada · 91–79 · 28 Out 2026')).toBeTruthy();
   });
 
   it('is one accessible button that opens the vote', () => {
@@ -83,11 +84,17 @@ describe('VotacaoCard', () => {
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 
-  it('marks the ballot rows with the parties in each position', () => {
+  it('lists the parties in each position, skipping empty ones on a compact card', () => {
     render(<VotacaoCard {...props} partidos={{ favor: ['PSD', 'CDS-PP'], contra: ['CH'], abstencao: [] }} onPress={() => {}} />);
     expect(screen.getByLabelText('A favor: PSD, CDS-PP')).toBeTruthy();
     expect(screen.getByLabelText('Contra: CH')).toBeTruthy();
+    expect(screen.queryByLabelText('Abstenção: nenhum partido')).toBeNull();
+  });
+
+  it('shows every position on the lead story, with the hemicycle', () => {
+    render(<VotacaoCard {...props} destaque partidos={{ favor: ['PSD', 'CDS-PP'], contra: ['CH'], abstencao: [] }} onPress={() => {}} />);
     expect(screen.getByLabelText('Abstenção: nenhum partido')).toBeTruthy();
+    expect(screen.getByLabelText('Hemiciclo: 91 a favor, 79 contra, 60 abstenção. Aprovada')).toBeTruthy();
   });
 
   it('hides counts when there are no votes recorded', () => {

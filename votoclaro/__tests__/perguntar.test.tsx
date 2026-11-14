@@ -16,7 +16,7 @@ import {
 } from '@/lib/perguntar';
 
 const mockPush = jest.fn();
-jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockPush }) }));
+jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockPush }), useLocalSearchParams: () => ({}) }));
 
 jest.mock('react-native-safe-area-context', () => {
   const { View } = require('react-native');

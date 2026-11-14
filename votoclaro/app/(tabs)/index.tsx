@@ -3,12 +3,12 @@ import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { JanelaAzulejo } from '@/components/Azulejo';
 import { EcraVazio } from '@/components/EcraVazio';
 import { FiltroTemas } from '@/components/FiltroTemas';
-import { CabecalhoEcra, Contentor, useCores } from '@/components/ui';
+import { anim, CabecalhoEcra, Contentor, TituloSecao, useCores } from '@/components/ui';
 import { VotacaoCard } from '@/components/VotacaoCard';
 import { Spacing } from '@/constants/Spacing';
-import { Fonts, Typography } from '@/constants/Typography';
 import { useVotacoesFeed } from '@/hooks/useVotacoesFeed';
 import { TEMAS } from '@/lib/temas';
 
@@ -37,29 +37,25 @@ export default function FeedScreen() {
         contentContainerStyle={styles.lista}
         refreshControl={<RefreshControl refreshing={aAtualizar} onRefresh={atualizar} tintColor={cores.tint} />}
         ListHeaderComponent={
+          <View {...anim('pagina')}>
+          <View style={styles.faixa}>
+            <JanelaAzulejo edificio="sao-bento" />
+          </View>
           <Contentor>
             <CabecalhoEcra titulo="Votações" subtitulo="O que o Parlamento votou nos últimos dias e como votou cada partido." />
             <View style={styles.filtros}>
               <FiltroTemas temas={TEMAS} selecionado={tema} onSelecionar={setTema} />
             </View>
           </Contentor>
+          </View>
         }
-        renderItem={({ item, index }) => {
-          const novoDia = index === 0 || filtrados[index - 1].iniciativa.dataVoto !== item.iniciativa.dataVoto;
-          const doDia = novoDia ? filtrados.filter((i) => i.iniciativa.dataVoto === item.iniciativa.dataVoto).length : 0;
-          return (
-            <Contentor style={styles.item}>
-              {novoDia ? (
-                <View style={[styles.dia, { borderBottomColor: cores.rule }]}>
-                  <Text style={[styles.diaTitulo, { color: cores.text }]} accessibilityRole="header">
-                    {item.iniciativa.dataVoto}
-                  </Text>
-                  <Text style={[Typography.caption, { color: cores.textMuted }]}>
-                    {doDia} {doDia === 1 ? 'votação' : 'votações'}
-                  </Text>
-                </View>
-              ) : null}
+        renderItem={({ item, index }) => (
+          // A primeira votação é a manchete; as outras são cartões.
+          <Contentor style={index === 0 ? styles.destaque : styles.item}>
+            {index === 1 ? <TituloSecao>Votações recentes</TituloSecao> : null}
+            <View {...anim('item', index)}>
               <VotacaoCard
+                destaque={index === 0}
                 titulo={item.iniciativa.titulo}
                 referencia={item.referencia}
                 tema={item.iniciativa.tema}
@@ -72,9 +68,9 @@ export default function FeedScreen() {
                 partidos={item.partidos}
                 href={{ pathname: '/votacao/[id]', params: { id: item.votacaoId, iniciativaId: String(item.iniciativaId) } }}
               />
-            </Contentor>
-          );
-        }}
+            </View>
+          </Contentor>
+        )}
         ListEmptyComponent={
           isLoading ? (
             <View style={styles.carregar}>
@@ -111,26 +107,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.xxxl,
   },
+  faixa: {
+    marginHorizontal: -Spacing.lg,
+  },
   filtros: {
+    marginBottom: Spacing.sm,
+  },
+  destaque: {
     marginBottom: Spacing.sm,
   },
   item: {
     marginBottom: Spacing.md,
-  },
-  diaTitulo: {
-    fontFamily: Fonts.bold,
-    fontSize: 14,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
-  dia: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    justifyContent: 'space-between',
-    marginTop: Spacing.xxl,
-    marginBottom: Spacing.md,
-    paddingBottom: Spacing.sm,
-    borderBottomWidth: 1.5,
   },
   carregar: {
     paddingVertical: Spacing.huge,

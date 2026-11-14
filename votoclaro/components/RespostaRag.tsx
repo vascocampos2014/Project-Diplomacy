@@ -140,7 +140,7 @@ function FonteDetalhe({
       <Pressable style={styles.fundo} onPress={onFechar} accessibilityLabel="Fechar fonte">
         {fonte ? (
           <Pressable
-            style={[styles.painel, { backgroundColor: cores.surface, borderColor: cores.rule }]}
+            style={[styles.painel, { backgroundColor: cores.surface, borderColor: cores.border }]}
             onPress={() => undefined}
             accessibilityViewIsModal
           >

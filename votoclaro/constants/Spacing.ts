@@ -10,14 +10,13 @@ export const Spacing = {
   huge: 48,
 };
 
-// O boletim é papel cortado: cantos quase retos. Só os pontos de partido são
-// redondos (pill).
+// Cantos macios: cartões a 14px, botões e campos a 10px, filtros em pílula.
 export const Radii = {
-  badge: 2, // carimbo de resultado, caixas do ✕
-  chip: 3, // botões, campos, filtros
-  card: 3, // boletins (cartões)
-  sheet: 6, // painéis sobrepostos
-  pill: 999, // só para pontos/círculos
+  badge: 5, // carimbo de resultado
+  chip: 10, // botões, campos
+  card: 14, // cartões
+  sheet: 18, // painéis sobrepostos
+  pill: 999, // filtros, etiquetas de tema, pontos
 };
 
 // Largura máxima do conteúdo no web/tablet.
@@ -27,11 +26,18 @@ export const MAX_WIDTH = 760;
 // separadores de baixo desaparece.
 export const LARGURA_DESKTOP = 900;
 
-// Uma só duração e curva para todas as mudanças de estado; o ✕ tem o seu
-// próprio tempo de traço. Escala transitions.dev: o ✕ é um "traço de
-// confirmação" (500ms no total: dois traços de 210ms com uma pausa de 80ms).
+// Escala de movimento transitions.dev (os mesmos valores estão em CSS no
+// +html.tsx, como --duration-* e --ease-*). Escolhe pelo USO, não pelo número.
 export const Motion = {
-  duracao: 200,
-  traco: 210, // cada um dos dois traços do ✕
-  pausa: 80, // entre o primeiro e o segundo traço
+  stagger: 40, // atraso por item numa lista
+  quick: 150, // fechar, trocar texto
+  fast: 250, // mudar de página, abrir
+  slow: 400, // revelar conteúdo carregado
+  verySlow: 500, // momento de ênfase (títulos, carimbo)
+  hemiciclo: 700, // o varrimento do hemiciclo, o momento principal
+  duracao: 150, // mudanças de estado (cor, borda) em hover e toque
+};
+
+export const Easing = {
+  smoothOut: 'cubic-bezier(0.22, 1, 0.36, 1)',
 };

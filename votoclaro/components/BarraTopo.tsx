@@ -43,7 +43,7 @@ export function BarraTopo({ voltar = false }: { voltar?: boolean }) {
   const desktop = width >= LARGURA_DESKTOP;
 
   return (
-    <View style={[styles.barra, { paddingTop: insets.top, backgroundColor: cores.surface, borderBottomColor: cores.rule }]}>
+    <View style={[styles.barra, { paddingTop: insets.top, backgroundColor: cores.surface, borderBottomColor: cores.border }]}>
       <View style={styles.interior}>
         {voltar ? (
           <Pressable
@@ -91,7 +91,7 @@ export function BarraTopo({ voltar = false }: { voltar?: boolean }) {
 
 const styles = StyleSheet.create({
   barra: {
-    borderBottomWidth: 1.5,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   interior: {
     width: '100%',

@@ -1,7 +1,8 @@
 // Paleta VotoClaro — ver .claude/DESIGN.md
 //
-// Mundo: o boletim de voto. Papel branco sobre Bright Snow, linhas a tinta
-// Carbon, e o azul ultramarino como a caneta que marca o ✕.
+// Mundo: o azulejo. Papel branco sobre Bright Snow, o azul ultramarino do
+// azulejo nas faixas, títulos e ações, e os resultados desenhados a tinta
+// (preto, tracejado, vazio), nunca em verde/vermelho.
 //
 // Papéis (definidos pelo utilizador, da esquerda para a direita):
 //   Bright Snow #F8F9FA  primária: fundo
@@ -13,8 +14,10 @@
 // de texto no modo claro. #120A8F sobre #232323 dá 1.1:1, por isso no modo
 // escuro a caneta passa a ser Blue Bell (5.2:1).
 //
-// favor/contra/abstencao/ausente são cores de dados (barras, contagens).
-// Para TEXTO usa as variantes *Ink, que passam AA sobre o fundo e os *Bg.
+// favor/contra/abstencao/ausente são a TINTA dos resultados: a favor é tinta
+// cheia, contra é tinta tracejada (o padrão é desenhado pelo componente),
+// abstenção é papel com contorno e ausente é cinzento. O sentido nunca vem
+// só da cor: há sempre textura e texto.
 
 const light = {
   text: '#232323', // Carbon
@@ -23,7 +26,7 @@ const light = {
   surface: '#FFFFFF', // o papel do boletim
   surfaceAlt: '#EEF0F3',
   border: '#DADDE2', // linhas finas entre filas
-  rule: '#232323', // linha a tinta do boletim
+  rule: '#232323', // linha a tinta
   tint: '#120A8F', // Ultramarine — a caneta
   tintInk: '#120A8F',
   tintBg: '#E8E7F4',
@@ -32,18 +35,21 @@ const light = {
   tabIconDefault: '#585D64',
   tabIconSelected: '#120A8F',
 
-  favor: '#15803D',
-  contra: '#B91C1C',
-  abstencao: '#B45309',
-  ausente: '#9CA3AF',
-  favorBg: '#E3F3E8',
-  contraBg: '#FBE7E7',
-  abstencaoBg: '#FBEEDD',
+  favor: '#232323', // tinta cheia
+  contra: '#232323', // tinta tracejada
+  abstencao: '#FFFFFF', // papel com contorno
+  ausente: '#C9CDD3',
+  contraMini: '#8A8F96', // contra em tamanho pequeno, onde o tracejado não se lê
+  favorBg: '#EEF0F3',
+  contraBg: '#EEF0F3',
+  abstencaoBg: '#EEF0F3',
   ausenteBg: '#EEF0F3',
-  favorInk: '#15803D',
-  contraInk: '#B91C1C',
-  abstencaoInk: '#B45309',
-  ausenteInk: '#4B5563',
+  favorInk: '#232323',
+  contraInk: '#232323',
+  abstencaoInk: '#232323',
+  ausenteInk: '#585D64',
+  azulejo: '#120A8F', // linhas do azulejo
+  azulejoFundo: '#FFFFFF',
 };
 
 const dark: typeof light = {
@@ -62,18 +68,21 @@ const dark: typeof light = {
   tabIconDefault: '#A9AEB5',
   tabIconSelected: '#7FBFE6',
 
-  favor: '#22C55E',
-  contra: '#EF4444',
-  abstencao: '#F59E0B',
-  ausente: '#6B7280',
-  favorBg: '#18331F',
-  contraBg: '#3D1C1C',
-  abstencaoBg: '#3B2C12',
+  favor: '#F1F2F4',
+  contra: '#F1F2F4',
+  abstencao: '#2C2C2D',
+  ausente: '#55585D',
+  contraMini: '#8D9299',
+  favorBg: '#343537',
+  contraBg: '#343537',
+  abstencaoBg: '#343537',
   ausenteBg: '#343537',
-  favorInk: '#4ADE80',
-  contraInk: '#F87171',
-  abstencaoInk: '#FBBF24',
+  favorInk: '#F1F2F4',
+  contraInk: '#F1F2F4',
+  abstencaoInk: '#F1F2F4',
   ausenteInk: '#A9AEB5',
+  azulejo: '#449DD1',
+  azulejoFundo: '#2C2C2D',
 };
 
 export type Paleta = typeof light;

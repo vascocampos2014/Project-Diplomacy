@@ -22,7 +22,7 @@ export function EcraVazio({ icone, titulo, descricao, accao }: EcraVazioProps) {
   return (
     <View style={styles.container}>
       {/* Um boletim em branco: a caixa por marcar, com o ícone do motivo. */}
-      <View style={[styles.icone, { borderColor: cores.rule }]}>
+      <View style={[styles.icone, { borderColor: cores.tint }]}>
         <MaterialIcons name={icone} size={22} color={cores.textMuted} accessible={false} />
       </View>
       <Text style={[Typography.title, styles.titulo, { color: cores.text }]} accessibilityRole="header">

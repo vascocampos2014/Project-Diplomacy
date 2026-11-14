@@ -1,4 +1,5 @@
 import { MaterialIcons } from '@expo/vector-icons';
+import { useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -13,9 +14,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { FaixaAzulejo } from '@/components/Azulejo';
 import { EcraVazio } from '@/components/EcraVazio';
 import { RespostaRag } from '@/components/RespostaRag';
-import { Aviso, Botao, CabecalhoEcra, Cartao, Chip, Contentor, TituloSecao, useCores } from '@/components/ui';
+import { anim, Aviso, Botao, CabecalhoEcra, Cartao, Chip, Contentor, TituloSecao, useCores } from '@/components/ui';
 import { Radii, Spacing } from '@/constants/Spacing';
 import { Fonts, Typography } from '@/constants/Typography';
 import {
@@ -37,6 +39,11 @@ type Entrada =
 export default function PerguntarScreen({ apiUrl = RAG_API_URL, perguntar = perguntarApi }: { apiUrl?: string; perguntar?: typeof perguntarApi }) {
   const cores = useCores();
   const [texto, setTexto] = useState('');
+  // ?pergunta=… (vindo do detalhe de uma votação) preenche o campo.
+  const { pergunta: perguntaInicial } = useLocalSearchParams<{ pergunta?: string }>();
+  useEffect(() => {
+    if (perguntaInicial) setTexto(perguntaInicial.slice(0, MAX_PERGUNTA));
+  }, [perguntaInicial]);
   const [conversa, setConversa] = useState<Entrada[]>([]);
   const scroll = useRef<ScrollView>(null);
   const proximoId = useRef(1);
@@ -69,6 +76,7 @@ export default function PerguntarScreen({ apiUrl = RAG_API_URL, perguntar = perg
   if (!apiUrl) {
     return (
       <SafeAreaView style={[styles.ecra, { backgroundColor: cores.background }]} edges={[]}>
+        <FaixaAzulejo altura={14} />
         <Contentor style={styles.conteudo}>
           <CabecalhoEcra titulo="Perguntar" subtitulo="Pergunta sobre leis e votações do Parlamento." />
           <EcraVazio
@@ -90,6 +98,7 @@ export default function PerguntarScreen({ apiUrl = RAG_API_URL, perguntar = perg
           keyboardShouldPersistTaps="handled"
           onContentSizeChange={() => conversa.length > 0 && scroll.current?.scrollToEnd({ animated: true })}
         >
+          <FaixaAzulejo altura={14} />
           <Contentor style={styles.conteudo}>
             <CabecalhoEcra
               titulo="Perguntar"
@@ -127,7 +136,7 @@ export default function PerguntarScreen({ apiUrl = RAG_API_URL, perguntar = perg
             ) : (
               <View style={styles.conversa} accessibilityLiveRegion="polite">
                 {conversa.map((e) => (
-                  <View key={e.id} style={styles.troca}>
+                  <View key={e.id} style={styles.troca} {...anim('item')}>
                     <View style={[styles.pergunta, { backgroundColor: cores.tint }]}>
                       <Text style={[Typography.bodySm, { color: cores.onTint }]}>{e.pergunta}</Text>
                     </View>
@@ -164,7 +173,7 @@ export default function PerguntarScreen({ apiUrl = RAG_API_URL, perguntar = perg
           </Contentor>
         </ScrollView>
 
-        <View style={[styles.barra, { backgroundColor: cores.surface, borderTopColor: cores.rule }]}>
+        <View style={[styles.barra, { backgroundColor: cores.background, borderTopColor: cores.border }]}>
           <Contentor style={styles.barraLinha}>
             <TextInput
               value={texto}
@@ -175,7 +184,7 @@ export default function PerguntarScreen({ apiUrl = RAG_API_URL, perguntar = perg
               multiline
               accessibilityLabel="Pergunta"
               accessibilityHint="O assistente tem em conta as perguntas anteriores desta conversa"
-              style={[styles.input, { color: cores.text, backgroundColor: cores.surface, borderColor: cores.rule }]}
+              style={[styles.input, { color: cores.text, backgroundColor: cores.surface, borderColor: cores.border }]}
               onKeyPress={(ev) => {
                 // Web: Enter envia, Shift+Enter muda de linha.
                 const n = ev.nativeEvent as { key: string; shiftKey?: boolean };
@@ -225,25 +234,25 @@ const styles = StyleSheet.create({
     borderRadius: Radii.card,
     borderBottomRightRadius: Radii.badge,
   },
-  resposta: { borderTopLeftRadius: Radii.badge },
+  resposta: { borderBottomLeftRadius: Radii.badge },
   aCarregar: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
   erro: { gap: Spacing.md, alignItems: 'flex-start' },
   limpar: { alignSelf: 'center' },
-  barra: { borderTopWidth: 1.5, paddingVertical: Spacing.sm },
+  barra: { borderTopWidth: StyleSheet.hairlineWidth, paddingVertical: Spacing.sm },
   barraLinha: { flexDirection: 'row', alignItems: 'flex-end', gap: Spacing.sm, paddingHorizontal: Spacing.lg },
   input: {
     flex: 1,
     minHeight: 44,
     maxHeight: 120,
     borderWidth: 1.5,
-    borderRadius: Radii.chip,
+    borderRadius: 22,
     paddingHorizontal: Spacing.lg,
     paddingTop: 11,
     paddingBottom: 11,
     fontFamily: Fonts.regular,
     fontSize: 16,
   },
-  enviar: { width: 44, height: 44, borderRadius: Radii.chip, alignItems: 'center', justifyContent: 'center' },
+  enviar: { width: 44, height: 44, borderRadius: Radii.pill, alignItems: 'center', justifyContent: 'center' },
   desativado: { opacity: 0.4 },
-  premido: { opacity: 0.8 },
+  premido: { transform: [{ scale: 0.96 }] },
 });

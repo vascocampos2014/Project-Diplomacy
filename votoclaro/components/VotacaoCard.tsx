@@ -1,17 +1,17 @@
-// O boletim de uma votação no feed — ver DESIGN.md › Boletim.
-// Título primeiro, depois a referência; carimbo e contagem; a barra dos 230
-// lugares; e três linhas de boletim (a favor / contra / abstenção) com a
-// caixa marcada a ✕ e os partidos que votaram assim.
+// Uma votação no feed — ver DESIGN.md › Feed.
+// `destaque`: a votação mais recente, como manchete de jornal (título grande
+// em azul, hemiciclo gravado a varrer, carimbo do resultado).
+// Sem destaque: cartão com o tema, o título, quem votou como, e o hemiciclo
+// pequeno à direita.
 import type { Href } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { BarraProgresso } from '@/components/BarraProgresso';
-import { ContagemVotos, ResultadoBadge } from '@/components/ContagemVotos';
-import { Cartao, MarcaX, useCores } from '@/components/ui';
-import { getCorPartido } from '@/constants/CORES_PARTIDOS';
+import { RESULTADO } from '@/components/ContagemVotos';
+import { Amostra, Hemiciclo, LegendaVotos } from '@/components/Hemiciclo';
+import { anim, Cartao, Etiqueta, useCores } from '@/components/ui';
 import { Spacing } from '@/constants/Spacing';
-import { Typography } from '@/constants/Typography';
+import { Fonts, Typography } from '@/constants/Typography';
 import type { PartidosPorPosicao } from '@/lib/feed';
 import type { Resultado } from '@/types';
 
@@ -28,9 +28,8 @@ interface VotacaoCardProps {
   partidos?: PartidosPorPosicao;
   onPress?: () => void;
   href?: Href;
+  destaque?: boolean;
 }
-
-const RESULTADO_A11Y: Record<Resultado, string> = { aprovada: 'Aprovada', chumbada: 'Chumbada', pendente: 'Pendente' };
 
 const LINHAS: { chave: keyof PartidosPorPosicao; rotulo: string }[] = [
   { chave: 'favor', rotulo: 'A favor' },
@@ -38,148 +37,168 @@ const LINHAS: { chave: keyof PartidosPorPosicao; rotulo: string }[] = [
   { chave: 'abstencao', rotulo: 'Abstenção' },
 ];
 
-export function VotacaoCard({
-  titulo,
-  referencia,
-  tema,
-  data,
-  resultado,
-  favor,
-  contra,
-  abstencao,
-  ausentes,
-  partidos,
-  onPress,
-  href,
-}: VotacaoCardProps) {
+export function VotacaoCard(props: VotacaoCardProps) {
+  const { titulo, referencia, tema, data, resultado, favor, contra, abstencao, ausentes, partidos, onPress, href, destaque } = props;
   const cores = useCores();
   const total = favor + contra + abstencao + ausentes;
-  const pct = (n: number) => (total > 0 ? (n / total) * 100 : 0);
+  const rotulo = `${titulo}, ${referencia ? `${referencia}, ` : ''}${tema}, ${data}, ${RESULTADO[resultado].label}`;
+
+  if (destaque) {
+    return (
+      <Cartao
+        onPress={onPress}
+        href={href}
+        style={styles.destaque}
+        accessibilityLabel={rotulo}
+        accessibilityHint="Abre a votação completa"
+      >
+        <Etiqueta>{tema}</Etiqueta>
+        <View {...anim('titulo')}>
+          <Text style={[Typography.manchete, styles.manchete, { color: cores.tintInk }]}>{titulo}</Text>
+        </View>
+        <Text style={[Typography.caption, { color: cores.textMuted }]}>
+          {referencia ? `${referencia} · ` : ''}
+          {data}
+        </Text>
+        {total > 0 ? (
+          <View style={styles.hemiciclo}>
+            <Hemiciclo favor={favor} contra={contra} abstencao={abstencao} ausentes={ausentes} resultado={resultado} animar />
+            <LegendaVotos favor={favor} contra={contra} abstencao={abstencao} ausentes={ausentes} />
+          </View>
+        ) : null}
+        {partidos ? <PartidosPorSentido partidos={partidos} /> : null}
+        <Text style={[styles.ver, { color: cores.tintInk }]}>Ver a votação completa ›</Text>
+      </Cartao>
+    );
+  }
 
   return (
-    <Cartao
-      onPress={onPress}
-      href={href}
-      tinta
-      style={styles.cartao}
-      accessibilityLabel={`${titulo}, ${referencia ? `${referencia}, ` : ''}${tema}, ${data}, ${RESULTADO_A11Y[resultado]}`}
-      accessibilityHint="Abre o boletim completo da votação"
-    >
-      <View style={styles.cabeca}>
-        <Text style={[Typography.title, { color: cores.text }]} numberOfLines={3}>
-          {titulo}
-        </Text>
-        <View style={styles.meta}>
+    <Cartao onPress={onPress} href={href} accessibilityLabel={rotulo} accessibilityHint="Abre a votação completa">
+      <View style={styles.linhaCartao}>
+        <View style={styles.texto}>
+          <Etiqueta>{tema}</Etiqueta>
+          <Text style={[Typography.title, styles.titulo, { color: cores.text }]} numberOfLines={3}>
+            {titulo}
+          </Text>
+          <Text style={[Typography.caption, { color: cores.textMuted }]} numberOfLines={1}>
+            {RESULTADO[resultado].label}
+            {total > 0 ? ` · ${favor}–${contra}` : ''} · {data}
+          </Text>
           {referencia ? (
             <Text style={[Typography.caption, { color: cores.textMuted }]} numberOfLines={1}>
               {referencia}
             </Text>
           ) : null}
-          <Text style={[Typography.caption, { color: cores.textMuted }]}>{tema}</Text>
-          <Text style={[Typography.caption, { color: cores.textMuted }]}>{data}</Text>
         </View>
-
-        <View style={styles.resultado}>
-          <ResultadoBadge resultado={resultado} />
-          {total > 0 ? <ContagemVotos favor={favor} contra={contra} abstencao={abstencao} ausentes={ausentes} /> : null}
-        </View>
-        {total > 0 ? (
-          <View style={styles.barra}>
-            <BarraProgresso favor={pct(favor)} contra={pct(contra)} abstencao={pct(abstencao)} />
-          </View>
-        ) : null}
+        {total > 0 ? <Hemiciclo mini favor={favor} contra={contra} abstencao={abstencao} ausentes={ausentes} /> : null}
       </View>
-
-      {partidos ? (
-        <View style={[styles.boletim, { borderTopColor: cores.border }]}>
-          {LINHAS.map(({ chave, rotulo }, i) => {
-            const lista = partidos[chave];
-            return (
-              <View
-                key={chave}
-                style={[styles.linha, i > 0 && { borderTopColor: cores.border, borderTopWidth: StyleSheet.hairlineWidth }]}
-                accessible
-                accessibilityLabel={`${rotulo}: ${lista.length ? lista.join(', ') : 'nenhum partido'}`}
-              >
-                <MarcaX marcado={lista.length > 0} tamanho={18} animar />
-                <Text style={[Typography.label, styles.rotulo, { color: lista.length ? cores.text : cores.textMuted }]}>{rotulo}</Text>
-                <View style={styles.partidos}>
-                  {lista.length ? (
-                    lista.map((p) => (
-                      <View key={p} style={styles.partido}>
-                        <View style={[styles.ponto, { backgroundColor: getCorPartido(p) }]} />
-                        <Text style={[Typography.caption, styles.sigla, { color: cores.text }]}>{p}</Text>
-                      </View>
-                    ))
-                  ) : (
-                    <Text style={[Typography.caption, { color: cores.textMuted }]}>Nenhum partido</Text>
-                  )}
-                </View>
-              </View>
-            );
-          })}
-        </View>
-      ) : null}
+      {partidos ? <PartidosPorSentido partidos={partidos} compacto /> : null}
     </Cartao>
   );
 }
 
+// Quem votou como: uma linha por sentido, com a amostra da textura.
+export function PartidosPorSentido({
+  partidos,
+  compacto = false,
+  semLinha = false,
+}: {
+  partidos: PartidosPorPosicao;
+  compacto?: boolean;
+  semLinha?: boolean;
+}) {
+  const cores = useCores();
+  return (
+    <View style={[styles.partidos, { borderTopColor: cores.border }, compacto && styles.partidosCompacto, semLinha && styles.semLinha]}>
+      {LINHAS.map(({ chave, rotulo }) => {
+        const lista = partidos[chave];
+        if (compacto && lista.length === 0) return null;
+        return (
+          <View
+            key={chave}
+            style={styles.partidoLinha}
+            accessible
+            accessibilityLabel={`${rotulo}: ${lista.length ? lista.join(', ') : 'nenhum partido'}`}
+          >
+            <View style={styles.partidoRotulo}>
+              <Amostra posicao={chave} />
+              <Text style={[styles.rotulo, { color: cores.text }]}>{rotulo}</Text>
+            </View>
+            <Text style={[styles.siglas, { color: lista.length ? cores.text : cores.textMuted }]}>
+              {lista.length ? lista.join(' · ') : 'Nenhum partido'}
+            </Text>
+          </View>
+        );
+      })}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  cartao: {
-    padding: 0,
-  },
-  cabeca: {
-    padding: Spacing.lg,
+  destaque: {
+    borderWidth: 0,
+    backgroundColor: 'transparent',
+    paddingHorizontal: 0,
     gap: Spacing.sm,
   },
-  meta: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    columnGap: Spacing.md,
-  },
-  resultado: {
+  manchete: {
     marginTop: Spacing.xs,
+  },
+  hemiciclo: {
+    marginTop: Spacing.md,
+  },
+  ver: {
+    fontFamily: Fonts.semibold,
+    fontSize: 14,
+    marginTop: Spacing.xs,
+  },
+  linhaCartao: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     alignItems: 'center',
-    columnGap: Spacing.md,
-    rowGap: Spacing.sm,
+    gap: Spacing.md,
   },
-  barra: {
-    marginTop: Spacing.xs,
+  texto: {
+    flex: 1,
+    minWidth: 0,
+    gap: 4,
   },
-  boletim: {
-    borderTopWidth: 1,
-    paddingHorizontal: Spacing.lg,
+  titulo: {
+    marginTop: 4,
   },
-  linha: {
+  partidos: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    marginTop: Spacing.md,
+    paddingTop: Spacing.sm,
+    gap: 6,
+  },
+  semLinha: {
+    borderTopWidth: 0,
+    marginTop: 0,
+    paddingTop: 0,
+  },
+  partidosCompacto: {
+    marginTop: Spacing.md,
+  },
+  partidoLinha: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: Spacing.md,
-    paddingVertical: 10,
   },
-  rotulo: {
-    width: 76,
-    lineHeight: 18,
-  },
-  partidos: {
-    flex: 1,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    columnGap: Spacing.md,
-    rowGap: 4,
-  },
-  partido: {
+  partidoRotulo: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 6,
+    width: 92,
+    paddingTop: 1,
   },
-  ponto: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+  rotulo: {
+    fontFamily: Fonts.semibold,
+    fontSize: 13,
   },
-  sigla: {
-    fontWeight: '600',
+  siglas: {
+    flex: 1,
+    fontFamily: Fonts.bold,
+    fontSize: 13,
+    lineHeight: 18,
   },
 });

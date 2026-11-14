@@ -3,10 +3,11 @@ import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { FaixaAzulejo } from '@/components/Azulejo';
 import { EcraVazio } from '@/components/EcraVazio';
 import { LinhaOpcoes } from '@/components/LinhaOpcoes';
 import { PartidoBar } from '@/components/PartidoBar';
-import { Aviso, CabecalhoEcra, Cartao, Chip, Contentor, TituloSecao, useCores } from '@/components/ui';
+import { anim, Aviso, CabecalhoEcra, Cartao, Chip, Contentor, TituloSecao, useCores } from '@/components/ui';
 import { VotoIndicator } from '@/components/VotoIndicator';
 import { getCorPartido } from '@/constants/CORES_PARTIDOS';
 import { Radii, Spacing } from '@/constants/Spacing';
@@ -50,6 +51,9 @@ export default function CompararScreen() {
   return (
     <SafeAreaView style={[styles.ecra, { backgroundColor: cores.background }]} edges={[]}>
       <ScrollView contentContainerStyle={styles.conteudo}>
+        <View style={styles.faixa}>
+          <FaixaAzulejo altura={14} />
+        </View>
         <Contentor>
           <CabecalhoEcra
             titulo="Comparar"
@@ -81,12 +85,16 @@ export default function CompararScreen() {
                       <Text style={[Typography.bodySm, { color: cores.textMuted }]}>e</Text>
                       <Sigla partido={partidoB} />
                     </View>
-                    <Text
-                      style={[Typography.displaySm, styles.frase, { color: cores.text }]}
+                    {/* O número troca suavemente quando se escolhe outro par (text swap soft). */}
+                    <View
+                      key={`${partidoA}-${partidoB}`}
+                      {...anim('troca')}
+                      accessible
                       accessibilityLabel={`Votaram da mesma forma em ${resultado.percentagem}% das votações`}
                     >
-                      Votaram da mesma forma em <Text style={[styles.percentagem, { color: cores.tintInk }]}>{resultado.percentagem}%</Text> das votações.
-                    </Text>
+                      <Text style={[styles.percentagem, { color: cores.tintInk }]}>{resultado.percentagem}%</Text>
+                      <Text style={[Typography.bodyLg, styles.frase, { color: cores.text }]}>das votações com o mesmo sentido de voto</Text>
+                    </View>
                     <View style={[styles.trilho, { backgroundColor: cores.border }]}>
                       <View style={[styles.preenchido, { width: `${resultado.percentagem}%`, backgroundColor: cores.tint }]} />
                     </View>
@@ -226,6 +234,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.huge,
   },
+  faixa: {
+    marginHorizontal: -Spacing.lg,
+  },
   carregar: {
     alignItems: 'center',
     gap: Spacing.md,
@@ -267,11 +278,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   percentagem: {
-    fontFamily: Fonts.bold,
+    fontFamily: Fonts.black,
+    fontSize: 56,
+    lineHeight: 60,
+    letterSpacing: -1.5,
     fontVariant: ['tabular-nums'],
+    marginTop: Spacing.md,
   },
   frase: {
-    marginTop: Spacing.md,
+    marginTop: 2,
+    marginBottom: Spacing.md,
   },
   escala: {
     marginTop: Spacing.sm,
