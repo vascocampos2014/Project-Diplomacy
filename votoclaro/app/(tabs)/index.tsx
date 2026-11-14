@@ -3,7 +3,7 @@ import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { JanelaAzulejo } from '@/components/Azulejo';
+import { CabecalhoEdificio } from '@/components/Azulejo';
 import { EcraVazio } from '@/components/EcraVazio';
 import { FiltroTemas } from '@/components/FiltroTemas';
 import { anim, CabecalhoEcra, Contentor, TituloSecao, useCores, useDisposicao } from '@/components/ui';
@@ -74,13 +74,14 @@ export default function FeedScreen() {
         ListHeaderComponent={
           <View {...anim('pagina')}>
             <View style={styles.faixa}>
-              <JanelaAzulejo edificio="sao-bento" />
+              <CabecalhoEdificio edificio="sao-bento">
+                <CabecalhoEcra titulo="Votações" subtitulo="O que o Parlamento votou nos últimos dias e como votou cada partido." />
+                <View style={styles.filtros}>
+                  <FiltroTemas temas={TEMAS} selecionado={tema} onSelecionar={setTema} />
+                </View>
+              </CabecalhoEdificio>
             </View>
             <Contentor largo>
-              <CabecalhoEcra titulo="Votações" subtitulo="O que o Parlamento votou nos últimos dias e como votou cada partido." />
-              <View style={styles.filtros}>
-                <FiltroTemas temas={TEMAS} selecionado={tema} onSelecionar={setTema} />
-              </View>
               {manchete ? (
                 <View style={[styles.destaque, desktop && styles.destaqueLargo, desktop && { borderBottomColor: cores.border }]} {...anim('item', 0)}>
                   {cartao(manchete, true, 0)}

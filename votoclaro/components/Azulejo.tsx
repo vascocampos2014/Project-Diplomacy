@@ -2,12 +2,12 @@
 // dos ecrãs e separadores). É geometria desenhada aqui, não uma imagem.
 // Ver .claude/DESIGN.md › Azulejo.
 import React, { useId } from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Circle, Defs, G, Path, Pattern, Rect } from 'react-native-svg';
 
-import { anim, useCores } from '@/components/ui';
+import { anim, Contentor, useCores, useDisposicao } from '@/components/ui';
 import { EDIFICIOS, type EdificioId } from '@/constants/Edificios';
-import { Radii, Spacing } from '@/constants/Spacing';
+import { MAX_WIDTH, MAX_WIDTH_LARGO, Radii, Spacing } from '@/constants/Spacing';
 import { Typography } from '@/constants/Typography';
 
 const LADO = 32; // um azulejo, em unidades do desenho
@@ -46,30 +46,67 @@ export function FaixaAzulejo({ altura = 14 }: { altura?: number }) {
   );
 }
 
-// Cabeçalho de um separador: a faixa de azulejos e, por cima, a janela com o
-// edifício (quando a imagem existe em assets/edificios). Sem imagem fica só a
-// faixa: nunca se desenha um edifício falso.
-export function JanelaAzulejo({ edificio }: { edificio: EdificioId }) {
+// A janela: o edifício gravado numa moldura ultramarino, sempre em "papel"
+// claro (também no modo escuro: as gravuras são tinta preta sobre #F8F9FA).
+function Janela({ edificio, style }: { edificio: EdificioId; style?: StyleProp<ViewStyle> }) {
   const cores = useCores();
   const e = EDIFICIOS[edificio];
-  if (!e.imagem) return <FaixaAzulejo altura={32} />;
+  if (!e.imagem) return null;
   return (
-    <View style={styles.janelaZona}>
-      <FaixaAzulejo altura={64} />
-      {/* A janela é sempre "papel" claro, também no modo escuro: as gravuras são
-          tinta preta sobre #F8F9FA. */}
-      <View style={[styles.janela, { backgroundColor: PAPEL, borderColor: cores.tint }]}>
-        <View {...anim('imagem')}>
-          <Image
-            source={e.imagem}
-            style={styles.imagem}
-            resizeMode="contain"
-            accessibilityLabel={e.nome}
-            accessibilityIgnoresInvertColors
-          />
-        </View>
-        <Text style={[Typography.caption, styles.legenda, { color: '#585D64' }]}>{e.nome}</Text>
+    <View style={[styles.janela, { backgroundColor: PAPEL, borderColor: cores.tint }, style]}>
+      {/* A caixa tem a proporção da gravura (2:1); a imagem enche-a. */}
+      <View style={styles.imagemCaixa} {...anim('imagem')}>
+        <Image
+          source={e.imagem}
+          style={styles.imagem}
+          resizeMode="contain"
+          accessibilityLabel={e.nome}
+          accessibilityIgnoresInvertColors
+        />
       </View>
+      <Text style={[Typography.caption, styles.legenda, { color: '#585D64' }]}>{e.nome}</Text>
+    </View>
+  );
+}
+
+// Cabeçalho de um separador: a faixa de azulejos com o edifício numa janela,
+// e o título do ecrã (`children`).
+// - Telemóvel: a janela centrada, a sobrepor a faixa, e o título por baixo.
+// - Computador: o título à esquerda e a janela à direita, como uma primeira página.
+// Sem imagem fica só a faixa: nunca se desenha um edifício falso.
+// Espera ocupar a largura toda do ecrã (sem padding lateral à volta).
+export function CabecalhoEdificio({ edificio, children }: { edificio: EdificioId; children: React.ReactNode }) {
+  const { desktop } = useDisposicao();
+  const temImagem = !!EDIFICIOS[edificio].imagem;
+
+  if (!temImagem) {
+    return (
+      <View>
+        <FaixaAzulejo altura={32} />
+        <Contentor largo style={[styles.margens, desktop && styles.margensLargas]}>
+          {children}
+        </Contentor>
+      </View>
+    );
+  }
+  if (desktop) {
+    return (
+      <View>
+        <FaixaAzulejo altura={64} />
+        <Contentor largo style={[styles.margens, styles.margensLargas, styles.lado]}>
+          <View style={styles.ladoTexto}>{children}</View>
+          <Janela edificio={edificio} style={styles.janelaLado} />
+        </Contentor>
+      </View>
+    );
+  }
+  return (
+    <View>
+      <View style={styles.janelaZona}>
+        <FaixaAzulejo altura={64} />
+        <Janela edificio={edificio} style={styles.janelaCentro} />
+      </View>
+      <Contentor style={styles.margens}>{children}</Contentor>
     </View>
   );
 }
@@ -79,18 +116,50 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.sm,
   },
   janela: {
-    marginTop: -48,
-    marginHorizontal: Spacing.xxl,
     borderWidth: 2,
     borderRadius: Radii.card,
     padding: Spacing.sm,
+  },
+  janelaCentro: {
+    marginTop: -48,
+    marginHorizontal: Spacing.xxl,
     alignSelf: 'center',
     width: '86%',
     maxWidth: 520,
   },
-  imagem: {
+  imagemCaixa: {
     width: '100%',
     aspectRatio: 2,
+  },
+  // Largura e altura explícitas: sem elas o react-native-web dá à imagem o
+  // tamanho natural do ficheiro (1024×512) e ela sai da moldura.
+  imagem: {
+    width: '100%',
+    height: '100%',
+  },
+  // O cabeçalho ocupa o ecrã inteiro, por isso põe ele próprio a margem de 16px
+  // e soma-a à largura máxima, para alinhar com o conteúdo da lista por baixo.
+  margens: {
+    paddingHorizontal: Spacing.lg,
+    maxWidth: MAX_WIDTH + Spacing.lg * 2,
+  },
+  margensLargas: {
+    maxWidth: MAX_WIDTH_LARGO + Spacing.lg * 2,
+  },
+  lado: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.huge,
+  },
+  ladoTexto: {
+    flex: 1,
+    minWidth: 0,
+    paddingTop: Spacing.xl,
+  },
+  janelaLado: {
+    marginTop: -40,
+    width: '44%',
+    maxWidth: 520,
   },
   legenda: {
     textAlign: 'center',

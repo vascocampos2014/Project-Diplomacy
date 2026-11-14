@@ -9,8 +9,14 @@ import type { ImageSourcePropType } from 'react-native';
 export type EdificioId = 'sao-bento' | 'torre-belem' | 'jeronimos' | 'pena';
 
 export const EDIFICIOS: Record<EdificioId, { nome: string; imagem: ImageSourcePropType | null }> = {
-  'sao-bento': { nome: 'Palácio de São Bento, Lisboa', imagem: null },
-  'torre-belem': { nome: 'Torre de Belém, Lisboa', imagem: null },
+  'sao-bento': {
+    nome: 'Palácio de São Bento, Lisboa',
+    imagem: require('@/assets/edificios/sao-bento.png'),
+  },
+  'torre-belem': {
+    nome: 'Torre de Belém, Lisboa',
+    imagem: require('@/assets/edificios/torre-belem.png'),
+  },
   jeronimos: { nome: 'Mosteiro dos Jerónimos, Lisboa', imagem: null },
   pena: { nome: 'Palácio da Pena, Sintra', imagem: null },
 };

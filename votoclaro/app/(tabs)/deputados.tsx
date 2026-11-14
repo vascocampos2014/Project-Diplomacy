@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { JanelaAzulejo } from '@/components/Azulejo';
+import { CabecalhoEdificio } from '@/components/Azulejo';
 import { DeputadoRow } from '@/components/DeputadoRow';
 import { EcraVazio } from '@/components/EcraVazio';
 import { LinhaOpcoes } from '@/components/LinhaOpcoes';
@@ -49,22 +49,23 @@ export default function DeputadosScreen() {
         ListHeaderComponent={
           <View {...anim('pagina')}>
           <View style={styles.faixa}>
-            <JanelaAzulejo edificio="torre-belem" />
+            <CabecalhoEdificio edificio="torre-belem">
+              <CabecalhoEcra
+                titulo="Deputados"
+                subtitulo={data ? `${data.deputados.length} deputados em funções` : undefined}
+              />
+              <View style={desktop ? styles.pesquisaLarga : undefined}>
+                <CampoPesquisa
+                  valor={pesquisa}
+                  onMudar={setPesquisa}
+                  placeholder="Nome, partido ou círculo…"
+                  accessibilityLabel="Procurar deputado"
+                  accessibilityHint="Filtra a lista por nome, partido ou círculo eleitoral"
+                />
+              </View>
+            </CabecalhoEdificio>
           </View>
           <Contentor largo>
-            <CabecalhoEcra
-              titulo="Deputados"
-              subtitulo={data ? `${data.deputados.length} deputados em funções` : undefined}
-            />
-            <View style={desktop ? styles.pesquisaLarga : undefined}>
-              <CampoPesquisa
-                valor={pesquisa}
-                onMudar={setPesquisa}
-                placeholder="Nome, partido ou círculo…"
-                accessibilityLabel="Procurar deputado"
-                accessibilityHint="Filtra a lista por nome, partido ou círculo eleitoral"
-              />
-            </View>
             <View style={styles.partidos}>
             <LinhaOpcoes>
               <Chip label="Todos" selecionado={partido === null} onPress={() => setPartido(null)} />
