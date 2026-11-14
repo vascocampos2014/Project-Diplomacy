@@ -1,6 +1,6 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -19,8 +19,16 @@ import { filtrarDeputados } from '@/lib/deputados';
 export default function DeputadosScreen() {
   const cores = useCores();
   const router = useRouter();
-  const [pesquisa, setPesquisa] = useState('');
-  const [partido, setPartido] = useState<string | null>(null);
+  // ?q= (pesquisa da barra do topo) e ?partido= (menu Deputados) chegam pelo URL.
+  const params = useLocalSearchParams<{ q?: string; partido?: string }>();
+  const [pesquisa, setPesquisa] = useState(typeof params.q === 'string' ? params.q.slice(0, 60) : '');
+  const [partido, setPartido] = useState<string | null>(typeof params.partido === 'string' ? params.partido : null);
+  useEffect(() => {
+    if (typeof params.q === 'string') setPesquisa(params.q.slice(0, 60));
+  }, [params.q]);
+  useEffect(() => {
+    if (typeof params.partido === 'string') setPartido(params.partido);
+  }, [params.partido]);
   const { data, isLoading, isError, refetch } = useDeputados();
 
   const partidos = useMemo(

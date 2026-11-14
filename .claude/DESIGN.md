@@ -24,7 +24,7 @@ Tokens live in `votoclaro/constants/Colors.ts`. The user's palette, read left to
 | `text` | `#232323` Carbon | `#F1F2F4` | Body, primary button fill |
 | `tint` / `tintInk` | `#120A8F` Ultramarine | `#449DD1` / `#7FBFE6` | Headlines, links, selected chips, azulejo |
 | `tintBg` | `#E8E7F4` | `#1F3A4D` | Theme tags, chip hover |
-| `marcador` | `#449DD1` Blue Bell | same | Only "where you are": active item of the desktop top nav, focus ring |
+| `marcador` | `#449DD1` Blue Bell | same | Only "where you are": focus ring (the desktop nav marks the active item with a hanging tile) |
 | `azulejo` / `azulejoFundo` | `#120A8F` on `#FFFFFF` | `#449DD1` on `#2C2C2D` | Tile pattern |
 
 Contrast limits: `#449DD1` on `#F8F9FA` is 2.85:1, so it is never text in light mode. `#120A8F` on `#232323` is
@@ -68,6 +68,15 @@ Elevation is declared once: a hairline `border` on white. No shadows. The lead s
   repeat the textures next to numbers.
   `VotoIndicator` is the same swatch plus the word ("A favor"), used in lists (deputy history, Comparar,
   the deputy list on a vote). There are no ✓/✗ glyphs for votes.
+- **BarraComputador** (`components/BarraComputador.tsx`, ≥ 900px; the phone keeps `BarraTopo` + the capsule).
+  A 72px Ultramarine azulejo panel (pattern lines `#2A22A8`, always Ultramarine, also in dark mode) with white
+  text; each item sits on a solid Ultramarine chip so it never reads over the tile lines. The active page, or the
+  open menu, is marked by **one tile hanging under the item**, half on the bar and half below it; there is no
+  underline or pill. Votações, Deputados and Aprender open a full-width white menu (three columns: themes and the
+  latest vote with São Bento; parliamentary groups with their counts and Belém; glossary and "Sobre"); Perguntar
+  and Comparar are plain links. Hover opens after 140ms, click toggles, Escape closes and returns focus, a click
+  outside closes. The search pill goes to Deputados (`?q=`). On desktop the top tile strips (≤ 32px) are not drawn,
+  because the bar is the tile band.
 - **BarraSeparadores** (`components/BarraSeparadores.tsx`, phone widths only; desktop navigates from the top bar).
   A floating capsule, 68px tall, 16px from the sides and 12px above the safe area, max 440px wide. Frosted
   paper (`surface` at 85% with a backdrop blur, web only; solid on native) and a hairline border, no shadow.

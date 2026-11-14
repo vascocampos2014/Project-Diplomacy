@@ -1,22 +1,16 @@
-// Barra do topo: logótipo + (no computador) a navegação em texto.
-// Blue Bell marca só onde estás: o separador ativo.
+// Barra do topo no telemóvel: logótipo e o menu ⋮ (a navegação é a cápsula de
+// baixo). No computador é a BarraComputador, um painel de azulejo com menus.
 import { MaterialIcons } from '@expo/vector-icons';
-import { Link, usePathname, useRouter } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import React from 'react';
 import { Image, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { BarraComputador } from '@/components/BarraComputador';
 import { MenuTresPontos } from '@/components/MenuTresPontos';
 import { useCores } from '@/components/ui';
 import { LARGURA_DESKTOP, MAX_WIDTH_LARGO, Spacing } from '@/constants/Spacing';
 import { Fonts } from '@/constants/Typography';
-
-export const SEPARADORES = [
-  { rota: '/', nome: 'Votações' },
-  { rota: '/deputados', nome: 'Deputados' },
-  { rota: '/perguntar', nome: 'Perguntar' },
-  { rota: '/comparar', nome: 'Comparar' },
-] as const;
 
 const ICONE = require('@/assets/brand/logo-icon-96.png');
 
@@ -39,8 +33,10 @@ export function BarraTopo({ voltar = false }: { voltar?: boolean }) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const pathname = usePathname();
   const desktop = width >= LARGURA_DESKTOP;
+
+  // No computador: o painel de azulejo com menus (BarraComputador).
+  if (desktop) return <BarraComputador voltar={voltar} />;
 
   return (
     <View style={[styles.barra, { paddingTop: insets.top, backgroundColor: cores.surface, borderBottomColor: cores.border }]}>
@@ -62,26 +58,7 @@ export function BarraTopo({ voltar = false }: { voltar?: boolean }) {
           </Pressable>
         </Link>
 
-        {desktop ? (
-          <View style={styles.nav} role="navigation" aria-label="Principal">
-            {SEPARADORES.map((s) => {
-              const ativo = s.rota === '/' ? pathname === '/' : pathname.startsWith(s.rota);
-              return (
-                <Link
-                  key={s.rota}
-                  href={s.rota}
-                  accessibilityRole="link"
-                  aria-current={ativo ? 'page' : undefined}
-                  style={[styles.navItem, { borderBottomColor: ativo ? cores.marcador : 'transparent' }]}
-                >
-                  <Text style={[styles.navTexto, { color: ativo ? cores.text : cores.textMuted }, ativo && styles.navAtivo]}>{s.nome}</Text>
-                </Link>
-              );
-            })}
-          </View>
-        ) : (
-          <View style={styles.espaco} />
-        )}
+        <View style={styles.espaco} />
 
         <MenuTresPontos />
       </View>
@@ -128,27 +105,6 @@ const styles = StyleSheet.create({
   },
   voto: {
     fontFamily: Fonts.black,
-  },
-  nav: {
-    flex: 1,
-    height: '100%',
-    flexDirection: 'row',
-    alignItems: 'stretch',
-    gap: Spacing.xl,
-  },
-  navItem: {
-    height: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    borderBottomWidth: 3,
-    paddingTop: 3,
-  },
-  navTexto: {
-    fontFamily: Fonts.medium,
-    fontSize: 15,
-  },
-  navAtivo: {
-    fontFamily: Fonts.semibold,
   },
   espaco: {
     flex: 1,

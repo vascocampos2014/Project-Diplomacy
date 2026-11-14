@@ -13,30 +13,52 @@ import { Typography } from '@/constants/Typography';
 
 const LADO = 32; // um azulejo, em unidades do desenho
 
-// Uma faixa de azulejos. Até 32px de altura mostra uma fila inteira de
-// azulejos mais pequenos; acima disso repete a tamanho real.
-export function FaixaAzulejo({ altura = 14 }: { altura?: number }) {
-  const cores = useCores();
-  const id = `az${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
-  const escala = altura < LADO ? altura / LADO : 1;
-  const lado = LADO * escala;
-  const linha = cores.azulejo;
+// O desenho de um azulejo (unidades 32×32), nas cores dadas.
+function DesenhoAzulejo({ linha, fundo }: { linha: string; fundo: string }) {
   return (
-    <View style={{ height: altura, width: '100%', overflow: 'hidden' }} accessible={false} importantForAccessibility="no-hide-descendants">
+    <>
+      <Rect width={LADO} height={LADO} fill={fundo} />
+      <Rect x={0.8} y={0.8} width={LADO - 1.6} height={LADO - 1.6} fill="none" stroke={linha} strokeWidth={1.6} />
+      <Circle cx={16} cy={16} r={6} fill="none" stroke={linha} strokeWidth={1.6} />
+      <Path
+        d="M0 9 A9 9 0 0 0 9 0 M23 0 A9 9 0 0 0 32 9 M32 23 A9 9 0 0 0 23 32 M9 32 A9 9 0 0 0 0 23 M16 4 L19 10 M16 4 L13 10 M16 28 L19 22 M16 28 L13 22 M4 16 L10 13 M4 16 L10 19 M28 16 L22 13 M28 16 L22 19"
+        fill="none"
+        stroke={linha}
+        strokeWidth={1.6}
+      />
+      <Circle cx={16} cy={16} r={2.2} fill={linha} />
+    </>
+  );
+}
+
+// Uma superfície coberta de azulejos (`lado` em px por azulejo), a toda a
+// largura e com a altura dada. Decorativa: escondida dos leitores de ecrã.
+export function PadraoAzulejo({
+  altura,
+  lado,
+  linha,
+  fundo,
+  style,
+}: {
+  altura: number;
+  lado: number;
+  linha: string;
+  fundo: string;
+  style?: StyleProp<ViewStyle>;
+}) {
+  const id = `az${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
+  return (
+    <View
+      style={[{ height: altura, width: '100%', overflow: 'hidden' }, style]}
+      accessible={false}
+      importantForAccessibility="no-hide-descendants"
+      aria-hidden
+    >
       <Svg width="100%" height={altura}>
         <Defs>
           <Pattern id={id} x={0} y={0} width={lado} height={lado} patternUnits="userSpaceOnUse">
-            <G scale={escala}>
-              <Rect width={LADO} height={LADO} fill={cores.azulejoFundo} />
-              <Rect x={0.8} y={0.8} width={LADO - 1.6} height={LADO - 1.6} fill="none" stroke={linha} strokeWidth={1.6} />
-              <Circle cx={16} cy={16} r={6} fill="none" stroke={linha} strokeWidth={1.6} />
-              <Path
-                d="M0 9 A9 9 0 0 0 9 0 M23 0 A9 9 0 0 0 32 9 M32 23 A9 9 0 0 0 23 32 M9 32 A9 9 0 0 0 0 23 M16 4 L19 10 M16 4 L13 10 M16 28 L19 22 M16 28 L13 22 M4 16 L10 13 M4 16 L10 19 M28 16 L22 13 M28 16 L22 19"
-                fill="none"
-                stroke={linha}
-                strokeWidth={1.6}
-              />
-              <Circle cx={16} cy={16} r={2.2} fill={linha} />
+            <G scale={lado / LADO}>
+              <DesenhoAzulejo linha={linha} fundo={fundo} />
             </G>
           </Pattern>
         </Defs>
@@ -46,12 +68,41 @@ export function FaixaAzulejo({ altura = 14 }: { altura?: number }) {
   );
 }
 
+// Um único azulejo, por exemplo o que marca o separador ativo na barra do topo.
+export function AzulejoUnico({ tamanho, linha, fundo }: { tamanho: number; linha: string; fundo: string }) {
+  return (
+    <Svg width={tamanho} height={tamanho} viewBox={`0 0 ${LADO} ${LADO}`} aria-hidden>
+      <DesenhoAzulejo linha={linha} fundo={fundo} />
+    </Svg>
+  );
+}
+
+// Uma faixa de azulejos. Até 32px de altura mostra uma fila inteira de
+// azulejos mais pequenos; acima disso repete a tamanho real.
+// No computador as faixas de topo (até 32px) não se desenham: a barra de
+// navegação já é um painel de azulejo (BarraComputador).
+export function FaixaAzulejo({ altura = 14 }: { altura?: number }) {
+  const cores = useCores();
+  const { desktop } = useDisposicao();
+  if (desktop && altura <= LADO) return null;
+  const lado = altura < LADO ? altura : LADO;
+  return <PadraoAzulejo altura={altura} lado={lado} linha={cores.azulejo} fundo={cores.azulejoFundo} />;
+}
+
 // A gravura do edifício, sem moldura: o papel da imagem (#F8F9FA, a cor da
 // página) funde-se com o fundo. Na web, em modo escuro, uma inversão parcial
 // leva o papel a #232323 e o traço a cinzento claro; as margens esbatem-se
 // (máscara em +html.tsx, [data-gravura]), para o edifício não acabar num corte.
 // No nativo a imagem aparece como está.
-function Gravura({ edificio, style }: { edificio: EdificioId; style?: StyleProp<ViewStyle> }) {
+export function Gravura({
+  edificio,
+  style,
+  legenda = true,
+}: {
+  edificio: EdificioId;
+  style?: StyleProp<ViewStyle>;
+  legenda?: boolean;
+}) {
   const cores = useCores();
   const escuro = useColorScheme() === 'dark';
   const e = EDIFICIOS[edificio];
@@ -69,7 +120,7 @@ function Gravura({ edificio, style }: { edificio: EdificioId; style?: StyleProp<
           accessibilityIgnoresInvertColors
         />
       </View>
-      <Text style={[Typography.caption, styles.legenda, { color: cores.textMuted }]}>{e.nome}</Text>
+      {legenda ? <Text style={[Typography.caption, styles.legenda, { color: cores.textMuted }]}>{e.nome}</Text> : null}
     </View>
   );
 }
@@ -136,10 +187,12 @@ const styles = StyleSheet.create({
   margensLargas: {
     maxWidth: MAX_WIDTH_LARGO + Spacing.lg * 2,
   },
+  // Sem faixa por cima (no computador a barra do topo já é de azulejo).
   lado: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.xxxl,
+    paddingTop: Spacing.lg,
   },
   ladoTexto: {
     flex: 1,
