@@ -139,16 +139,17 @@ const styles = StyleSheet.create({
   lado: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.huge,
+    gap: Spacing.xxxl,
   },
   ladoTexto: {
     flex: 1,
     minWidth: 0,
   },
+  // No computador o edifício é a imagem principal do cabeçalho: ~60% da página.
   gravuraLado: {
-    width: '48%',
-    maxWidth: 580,
-    marginTop: Spacing.md,
+    width: '60%',
+    maxWidth: 720,
+    marginTop: Spacing.sm,
   },
   gravuraTopo: {
     width: '100%',
