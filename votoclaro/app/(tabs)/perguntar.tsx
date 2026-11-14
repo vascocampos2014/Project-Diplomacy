@@ -18,7 +18,7 @@ import { CabecalhoEdificio, FaixaAzulejo } from '@/components/Azulejo';
 import { EcraVazio } from '@/components/EcraVazio';
 import { RespostaRag } from '@/components/RespostaRag';
 import { useEspacoBarra } from '@/components/BarraSeparadores';
-import { anim, Aviso, Botao, CabecalhoEcra, Cartao, Chip, Contentor, TituloSecao, useCores } from '@/components/ui';
+import { anim, Aviso, Botao, CabecalhoEcra, Cartao, Chip, Contentor, TituloSecao, transicao, useCores, useDisposicao } from '@/components/ui';
 import { Radii, Spacing } from '@/constants/Spacing';
 import { Fonts, Typography } from '@/constants/Typography';
 import {
@@ -39,6 +39,7 @@ type Entrada =
 
 export default function PerguntarScreen({ apiUrl = RAG_API_URL, perguntar = perguntarApi }: { apiUrl?: string; perguntar?: typeof perguntarApi }) {
   const cores = useCores();
+  const { desktop } = useDisposicao();
   const espacoBarra = useEspacoBarra();
   const [texto, setTexto] = useState('');
   // ?pergunta=… (vindo do detalhe de uma votação) preenche o campo.
@@ -116,6 +117,29 @@ export default function PerguntarScreen({ apiUrl = RAG_API_URL, perguntar = perg
             {conversa.length === 0 ? (
               <View style={styles.sugestoes}>
                 <TituloSecao>Experimenta perguntar</TituloSecao>
+                {desktop ? (
+                  // Computador: as sugestões em cartões, duas por linha.
+                  <View style={styles.grelhaSugestoes}>
+                    {SUGESTOES.map((s) => (
+                      <Pressable
+                        key={s}
+                        onPress={() => enviar(s)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Perguntar: ${s}`}
+                        style={({ pressed, hovered }: { pressed: boolean; hovered?: boolean }) => [
+                          styles.cartaoSugestao,
+                          transicao,
+                          { backgroundColor: cores.surface, borderColor: hovered ? cores.tint : cores.border },
+                          pressed && styles.premido,
+                        ]}
+                      >
+                        <MaterialIcons name="chat-bubble-outline" size={20} color={cores.tintInk} accessible={false} />
+                        <Text style={[Typography.bodySm, styles.cartaoSugestaoTexto, { color: cores.text }]}>{s}</Text>
+                        <MaterialIcons name="arrow-forward" size={18} color={cores.tintInk} accessible={false} style={styles.cartaoSeta} />
+                      </Pressable>
+                    ))}
+                  </View>
+                ) : (
                 <Cartao style={styles.lista}>
                   {SUGESTOES.map((s, i) => (
                     <Pressable
@@ -135,6 +159,7 @@ export default function PerguntarScreen({ apiUrl = RAG_API_URL, perguntar = perg
                     </Pressable>
                   ))}
                 </Cartao>
+                )}
               </View>
             ) : (
               <View style={styles.conversa} accessibilityLiveRegion="polite">
@@ -227,6 +252,10 @@ const styles = StyleSheet.create({
   lista: { padding: 0 },
   sugestao: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, paddingVertical: Spacing.md, paddingHorizontal: Spacing.lg, minHeight: 52 },
   sugestaoTexto: { flex: 1 },
+  grelhaSugestoes: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md },
+  cartaoSugestao: { width: '48.5%', minHeight: 132, borderWidth: 1, borderRadius: Radii.card, padding: Spacing.lg, gap: Spacing.sm },
+  cartaoSugestaoTexto: { flex: 1, fontFamily: Fonts.semibold },
+  cartaoSeta: { alignSelf: 'flex-end' },
   conversa: { marginTop: Spacing.xl, gap: Spacing.xl },
   troca: { gap: Spacing.sm },
   pergunta: {

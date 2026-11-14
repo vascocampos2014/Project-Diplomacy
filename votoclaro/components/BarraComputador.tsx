@@ -10,7 +10,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Image, Platform, Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View, type ViewStyle } from 'react-native';
 
 import { AzulejoUnico, PadraoAzulejo } from '@/components/Azulejo';
-import { Hemiciclo, LegendaVotos } from '@/components/Hemiciclo';
+import { Carimbo, LegendaVotos } from '@/components/Hemiciclo';
 import { transicao, useCores } from '@/components/ui';
 import { getCorPartido } from '@/constants/CORES_PARTIDOS';
 import { MAX_WIDTH_LARGO, Radii, Spacing } from '@/constants/Spacing';
@@ -384,14 +384,9 @@ function MenuVotacoes({ fechar }: { fechar: () => void }) {
                     transicao,
                   ]}
                 >
-                  <Hemiciclo
-                    favor={ultima.iniciativa.favor}
-                    contra={ultima.iniciativa.contra}
-                    abstencao={ultima.iniciativa.abstencao}
-                    ausentes={ultima.iniciativa.ausentes}
-                    resultado={ultima.iniciativa.resultado}
-                    style={styles.ultimaHemiciclo}
-                  />
+                  <View style={styles.ultimaCarimbo}>
+                    <Carimbo resultado={ultima.iniciativa.resultado} />
+                  </View>
                   <Text style={[styles.ultimaTitulo, { color: cores.text }]} numberOfLines={2}>
                     {ultima.iniciativa.titulo}
                   </Text>
@@ -710,9 +705,8 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
     gap: 4,
   },
-  ultimaHemiciclo: {
-    maxWidth: 200,
-    marginBottom: Spacing.sm,
+  ultimaCarimbo: {
+    alignSelf: 'flex-start',
   },
   ultimaTitulo: {
     fontFamily: Fonts.black,

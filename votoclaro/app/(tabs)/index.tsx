@@ -1,18 +1,24 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CabecalhoEdificio, NumerosCabecalho } from '@/components/Azulejo';
+import { Carimbo } from '@/components/Hemiciclo';
+import { Coluna, FaixaPartidos, LARGURA_FAIXA, LinhaLigacao, NumerosVoto, Painel, RailItem, RailSecao, SiglasFaixa, Tabela } from '@/components/Computador';
 import { EcraVazio } from '@/components/EcraVazio';
 import { FiltroTemas } from '@/components/FiltroTemas';
 import { anim, CabecalhoEcra, Contentor, TituloSecao, useCores, useDisposicao } from '@/components/ui';
 import { useEspacoBarra } from '@/components/BarraSeparadores';
 import { VotacaoCard } from '@/components/VotacaoCard';
 import { MAX_WIDTH_LARGO, Spacing } from '@/constants/Spacing';
+import { Fonts, Typography } from '@/constants/Typography';
+import { useDeputados } from '@/hooks/useDeputados';
 import { useVotacoesFeed } from '@/hooks/useVotacoesFeed';
+import type { Posicao, Resultado } from '@/types';
 import type { ItemFeed } from '@/lib/feed';
 import { TEMAS } from '@/lib/temas';
+import { ICONE_TEMA } from '@/components/BarraComputador';
 
 export default function FeedScreen() {
   const cores = useCores();
@@ -59,6 +65,10 @@ export default function FeedScreen() {
       key={`${item.votacaoId}-${index}`}
     />
   );
+
+  if (desktop) {
+    return <VotacoesComputador itens={itens} total={total} isLoading={isLoading} isError={isError} atualizar={atualizar} tema={tema} setTema={setTema} />;
+  }
 
   return (
     <SafeAreaView style={[styles.ecra, { backgroundColor: cores.background }]} edges={[]}>
@@ -129,6 +139,144 @@ export default function FeedScreen() {
   );
 }
 
+const TIPOS = ['Projeto de Lei', 'Proposta de Lei', 'Projeto de Resolução'];
+
+// Computador: filtros fixos à esquerda (tema, resultado, tipo, com contagens das
+// votações mostradas) e uma tabela, uma linha por votação, com o sentido de cada
+// grupo parlamentar numa faixa de amostras de tinta e os números.
+function VotacoesComputador({
+  itens,
+  total,
+  isLoading,
+  isError,
+  atualizar,
+  tema,
+  setTema,
+}: {
+  itens: ItemFeed[] | undefined;
+  total: number | undefined;
+  isLoading: boolean;
+  isError: boolean;
+  atualizar: () => void;
+  tema: string | null;
+  setTema: (t: string | null) => void;
+}) {
+  const cores = useCores();
+  const deputados = useDeputados();
+  const [resultado, setResultado] = useState<Resultado | null>(null);
+  const [tipo, setTipo] = useState<string | null>(null);
+  const todos = itens ?? [];
+  const partidos = useMemo(
+    () =>
+      Object.entries(deputados.data?.lugaresPorPartido ?? {})
+        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+        .map(([p]) => p),
+    [deputados.data]
+  );
+  const tipoDe = (i: ItemFeed) => TIPOS.find((t) => i.referencia.startsWith(t)) ?? null;
+  const visiveis = todos.filter(
+    (i) => (!tema || i.iniciativa.tema === tema) && (!resultado || i.iniciativa.resultado === resultado) && (!tipo || tipoDe(i) === tipo)
+  );
+  const conta = (f: (i: ItemFeed) => boolean) => todos.filter(f).length;
+  const posicaoDe = (i: ItemFeed) => (p: string): Posicao =>
+    i.partidos.favor.includes(p) ? 'favor' : i.partidos.contra.includes(p) ? 'contra' : i.partidos.abstencao.includes(p) ? 'abstencao' : 'ausente';
+
+  const rail = (
+    <>
+      <RailSecao titulo="Tema" primeira>
+        <RailItem rotulo="Todos" icone="apps" contagem={todos.length} ativo={!tema} onPress={() => setTema(null)} />
+        {TEMAS.map((t) => (
+          <RailItem key={t} rotulo={t} icone={ICONE_TEMA[t]} contagem={conta((i) => i.iniciativa.tema === t)} ativo={tema === t} onPress={() => setTema(tema === t ? null : t)} />
+        ))}
+      </RailSecao>
+      <RailSecao titulo="Resultado">
+        <RailItem rotulo="Todos" ativo={!resultado} onPress={() => setResultado(null)} />
+        <RailItem rotulo="Aprovadas" contagem={conta((i) => i.iniciativa.resultado === 'aprovada')} ativo={resultado === 'aprovada'} onPress={() => setResultado(resultado === 'aprovada' ? null : 'aprovada')} />
+        <RailItem rotulo="Chumbadas" contagem={conta((i) => i.iniciativa.resultado === 'chumbada')} ativo={resultado === 'chumbada'} onPress={() => setResultado(resultado === 'chumbada' ? null : 'chumbada')} />
+      </RailSecao>
+      <RailSecao titulo="Tipo">
+        <RailItem rotulo="Todos" ativo={!tipo} onPress={() => setTipo(null)} />
+        {TIPOS.map((t) => (
+          <RailItem key={t} rotulo={t} contagem={conta((i) => tipoDe(i) === t)} ativo={tipo === t} onPress={() => setTipo(tipo === t ? null : t)} />
+        ))}
+      </RailSecao>
+    </>
+  );
+
+  return (
+    <SafeAreaView style={[styles.ecra, { backgroundColor: cores.background }]} edges={[]}>
+      <ScrollView contentContainerStyle={styles.paginaComputador}>
+        <View {...anim('pagina')}>
+          <CabecalhoEdificio
+            edificio="sao-bento"
+            direita={total ? <NumerosCabecalho itens={[{ valor: total, rotulo: 'votações na XVII legislatura' }]} /> : undefined}
+          >
+            <CabecalhoEcra titulo="Votações" subtitulo="As votações mais recentes do Parlamento e como votou cada grupo parlamentar." />
+          </CabecalhoEdificio>
+        </View>
+        <Contentor largo style={styles.margensComputador}>
+          <Painel rail={rail}>
+            {isLoading ? (
+              <View style={styles.carregar}>
+                <ActivityIndicator color={cores.tint} />
+              </View>
+            ) : isError ? (
+              <EcraVazio icone="cloud-off" titulo="Não foi possível carregar" descricao="Verifica a tua ligação à internet e tenta de novo." accao={{ label: 'Tentar de novo', onPress: atualizar }} />
+            ) : visiveis.length === 0 ? (
+              <EcraVazio
+                icone="filter-alt-off"
+                titulo="Nenhuma votação com estes filtros"
+                descricao="Nas votações mais recentes não há nenhuma assim."
+                accao={{ label: 'Limpar filtros', onPress: () => (setTema(null), setResultado(null), setTipo(null)) }}
+              />
+            ) : (
+              <Tabela
+                cabecalho={
+                  <>
+                    <Coluna largura={64}>Data</Coluna>
+                    <Coluna flex>Iniciativa</Coluna>
+                    <View style={{ width: LARGURA_FAIXA(partidos.length) }}>
+                      <SiglasFaixa partidos={partidos} />
+                    </View>
+                    <Coluna largura={150}>Deputados</Coluna>
+                    <Coluna largura={104}>Resultado</Coluna>
+                  </>
+                }
+              >
+                {visiveis.map((i, n) => (
+                  <LinhaLigacao
+                    key={i.votacaoId}
+                    href={{ pathname: '/votacao/[id]', params: { id: i.votacaoId, iniciativaId: String(i.iniciativaId) } }}
+                    accessibilityLabel={`${i.iniciativa.titulo}. ${i.referencia}. ${i.iniciativa.dataVoto}. ${i.iniciativa.resultado === 'aprovada' ? 'Aprovada' : 'Chumbada'}: ${i.iniciativa.favor} a favor, ${i.iniciativa.contra} contra, ${i.iniciativa.abstencao} abstenções`}
+                    ultima={n === visiveis.length - 1}
+                  >
+                    <Text style={[Typography.caption, styles.data, { color: cores.textMuted }]}>{i.iniciativa.dataVoto.replace(/ \d{4}$/, '')}</Text>
+                    <View style={styles.titulo}>
+                      <Text style={[Typography.bodySm, styles.tituloTexto, { color: cores.text }]} numberOfLines={1}>
+                        {i.iniciativa.titulo}
+                      </Text>
+                      <Text style={[Typography.caption, { color: cores.textMuted }]} numberOfLines={1}>
+                        {i.referencia}
+                      </Text>
+                    </View>
+                    <FaixaPartidos partidos={partidos} posicaoDe={posicaoDe(i)} />
+                    <View style={styles.numerosColuna}>
+                      <NumerosVoto favor={i.iniciativa.favor} contra={i.iniciativa.contra} abstencao={i.iniciativa.abstencao} />
+                    </View>
+                    <View style={styles.resultadoColuna}>
+                      <Carimbo resultado={i.iniciativa.resultado} />
+                    </View>
+                  </LinhaLigacao>
+                ))}
+              </Tabela>
+            )}
+          </Painel>
+        </Contentor>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
 const styles = StyleSheet.create({
   ecra: {
     flex: 1,
@@ -167,5 +315,28 @@ const styles = StyleSheet.create({
   carregar: {
     paddingVertical: Spacing.huge,
     alignItems: 'center',
+  },
+  paginaComputador: {
+    paddingBottom: Spacing.huge,
+  },
+  margensComputador: {
+    paddingHorizontal: Spacing.lg,
+  },
+  data: {
+    width: 64,
+  },
+  titulo: {
+    flex: 1,
+    minWidth: 0,
+  },
+  tituloTexto: {
+    fontFamily: Fonts.semibold,
+  },
+  numerosColuna: {
+    width: 150,
+  },
+  resultadoColuna: {
+    width: 104,
+    alignItems: 'flex-start',
   },
 });

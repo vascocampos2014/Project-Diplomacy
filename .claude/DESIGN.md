@@ -101,16 +101,23 @@ page (`MAX_WIDTH_LARGO`, 1200px, `<Contentor largo>`), and the top bar aligns to
 `components/ui.tsx` gives `desktop` and `colunas` (2 from 900px, 3 from 1280px).
 
 - **Tab headers**: the horizon panel (see Azulejo). Perguntar's panel is narrow (760px) to line up with the chat.
-- **Votações**: a front page. The header has the title and theme filters on the left and São Bento behind them on the right.
-  The lead vote is two columns (tag, 44px Ultramarine headline, reference,
-  parties by position on the left; the large hemicycle on the right), closed by a hairline. Recent votes
-  are a grid of equal-height cards.
-- **Votação**: the title spans the page; below, the hemicycle on the left and a 400px side column on the
-  right ("Quem votou como", party names, glossary link, Perguntar/Partilhar). The deputy list is a grid.
-- **Deputados**: search capped at 480px; each deputy is its own card in a 2–3 column grid.
-- **Comparar**: party pickers, the percentage card and "Votos a favor por partido" on the left (460px);
-  "Por tema" and "Onde divergiram" on the right.
-- Reading screens (Glossário, Definições, deputy profile, Perguntar) stay in the 760px column.
+- **Votações**: a filter rail on the left (`components/Computador.tsx` › `Painel`, `RailItem`: tema, resultado,
+  tipo, with counts of the votes shown) and a table: one row per vote with date, title and reference, each
+  parliamentary group's position as a strip of ink swatches (largest group first), the deputies by position in
+  numbers, and the stamp. No half-circle in the list.
+- **Votação**: list and detail side by side, like mail. The recent votes are a 380px column on the left (the open
+  one marked); the detail shows the result card (the only half-circle, with the legend and the actions) and a
+  table with one row per group: name, seats, position.
+- **Deputados**: rail with search, groups and constituencies; the 230 seats drawn as dots by group (party
+  colours, largest group first, not the real seating), whose legend also filters; and a table of deputies.
+- **Deputado**: a fixed card on the left (photo, name, group, constituency, the group's percentages); on the
+  right the group's history (search, position filter, 40 at a time) and "Com quem o X vota da mesma forma".
+- **Comparar**: the two pickers side by side with a swap button, the percentage at 88px, then "Por tema" and
+  "Onde divergiram" side by side, and "Votos a favor por partido" below.
+- **Perguntar**: the 760px chat column; the suggestions are cards, two per row.
+- **Glossário**: "Como nasce uma lei" in five steps (each opens its term), search and an A–Z index, and the terms
+  grouped by letter in two columns.
+- **Navbar menu**: the latest-vote card shows the stamp and the numbers, no half-circle.
 
 ## Link previews (share images)
 
