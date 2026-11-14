@@ -3,7 +3,7 @@ import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { FaixaAzulejo } from '@/components/Azulejo';
+import { CabecalhoEdificio } from '@/components/Azulejo';
 import { EcraVazio } from '@/components/EcraVazio';
 import { LinhaOpcoes } from '@/components/LinhaOpcoes';
 import { PartidoBar } from '@/components/PartidoBar';
@@ -67,13 +67,14 @@ export default function CompararScreen() {
     <SafeAreaView style={[styles.ecra, { backgroundColor: cores.background }]} edges={[]}>
       <ScrollView contentContainerStyle={[styles.conteudo, { paddingBottom: Spacing.huge + espacoBarra }]}>
         <View style={styles.faixa}>
-          <FaixaAzulejo altura={14} />
+          <CabecalhoEdificio edificio="casa-musica">
+            <CabecalhoEcra
+              titulo="Comparar"
+              subtitulo="Com que frequência dois partidos votam da mesma forma."
+            />
+          </CabecalhoEdificio>
         </View>
         <Contentor largo>
-          <CabecalhoEcra
-            titulo="Comparar"
-            subtitulo="Com que frequência dois partidos votam da mesma forma."
-          />
 
           {carregando ? (
             <View style={styles.carregar}>

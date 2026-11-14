@@ -131,7 +131,17 @@ export function Gravura({
 // - Computador: o título à esquerda e o edifício à direita, como uma primeira página.
 // Sem imagem fica só a faixa: nunca se desenha um edifício falso.
 // Espera ocupar a largura toda do ecrã (sem padding lateral à volta).
-export function CabecalhoEdificio({ edificio, children }: { edificio: EdificioId; children: React.ReactNode }) {
+// `estreito`: alinha com o conteúdo de largura normal (760) em vez da larga (1200),
+// por exemplo na conversa do Perguntar.
+export function CabecalhoEdificio({
+  edificio,
+  estreito = false,
+  children,
+}: {
+  edificio: EdificioId;
+  estreito?: boolean;
+  children: React.ReactNode;
+}) {
   const { desktop } = useDisposicao();
   const temImagem = !!EDIFICIOS[edificio].imagem;
 
@@ -139,7 +149,7 @@ export function CabecalhoEdificio({ edificio, children }: { edificio: EdificioId
     return (
       <View>
         <FaixaAzulejo altura={32} />
-        <Contentor largo style={[styles.margens, desktop && styles.margensLargas]}>
+        <Contentor largo={!estreito} style={[styles.margens, desktop && !estreito && styles.margensLargas]}>
           {children}
         </Contentor>
       </View>
@@ -149,7 +159,7 @@ export function CabecalhoEdificio({ edificio, children }: { edificio: EdificioId
     return (
       <View>
         <FaixaAzulejo altura={32} />
-        <Contentor largo style={[styles.margens, styles.margensLargas, styles.lado]}>
+        <Contentor largo={!estreito} style={[styles.margens, !estreito && styles.margensLargas, styles.lado]}>
           <View style={styles.ladoTexto}>{children}</View>
           <Gravura edificio={edificio} style={styles.gravuraLado} />
         </Contentor>

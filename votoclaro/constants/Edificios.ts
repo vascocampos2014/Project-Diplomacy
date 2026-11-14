@@ -6,7 +6,7 @@
 //   imagem: require('@/assets/edificios/sao-bento.png'),
 import type { ImageSourcePropType } from 'react-native';
 
-export type EdificioId = 'sao-bento' | 'torre-belem' | 'jeronimos' | 'pena';
+export type EdificioId = 'sao-bento' | 'torre-belem' | 'jeronimos' | 'casa-musica' | 'pena';
 
 export const EDIFICIOS: Record<EdificioId, { nome: string; imagem: ImageSourcePropType | null }> = {
   'sao-bento': {
@@ -17,6 +17,13 @@ export const EDIFICIOS: Record<EdificioId, { nome: string; imagem: ImageSourcePr
     nome: 'Torre de Belém, Lisboa',
     imagem: require('@/assets/edificios/torre-belem.png'),
   },
-  jeronimos: { nome: 'Mosteiro dos Jerónimos, Lisboa', imagem: null },
+  jeronimos: {
+    nome: 'Mosteiro dos Jerónimos, Lisboa',
+    imagem: require('@/assets/edificios/jeronimos.png'),
+  },
+  'casa-musica': {
+    nome: 'Casa da Música, Porto',
+    imagem: require('@/assets/edificios/casa-musica.png'),
+  },
   pena: { nome: 'Palácio da Pena, Sintra', imagem: null },
 };

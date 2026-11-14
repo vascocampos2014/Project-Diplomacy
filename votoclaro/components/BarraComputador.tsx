@@ -9,7 +9,7 @@ import { Link, usePathname, useRouter, type Href } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import { Image, Platform, Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View, type ViewStyle } from 'react-native';
 
-import { AzulejoUnico, Gravura, PadraoAzulejo } from '@/components/Azulejo';
+import { AzulejoUnico, PadraoAzulejo } from '@/components/Azulejo';
 import { Hemiciclo, LegendaVotos } from '@/components/Hemiciclo';
 import { transicao, useCores } from '@/components/ui';
 import { getCorPartido } from '@/constants/CORES_PARTIDOS';
@@ -327,11 +327,10 @@ function Colunas({ children }: { children: React.ReactNode }) {
   return <View style={[styles.colunas, { borderColor: cores.border, backgroundColor: cores.surface }]}>{children}</View>;
 }
 
-// `largura`: a coluna do edifício, no fundo da página para a gravura se fundir.
-function Coluna({ children, rotulo, largura }: { children: React.ReactNode; rotulo?: string; largura?: number }) {
+function Coluna({ children, rotulo }: { children: React.ReactNode; rotulo?: string }) {
   const cores = useCores();
   return (
-    <View style={[styles.coluna, largura ? { flexGrow: 0, flexShrink: 0, flexBasis: largura, justifyContent: 'center', backgroundColor: cores.background } : null, { borderRightColor: cores.border }]}>
+    <View style={[styles.coluna, { borderRightColor: cores.border }]}>
       {rotulo ? <Text style={[styles.rotulo, { color: cores.textMuted }]}>{rotulo}</Text> : null}
       {children}
     </View>
@@ -414,9 +413,6 @@ function MenuVotacoes({ fechar }: { fechar: () => void }) {
         )}
         <VerTodas href="/" texto="Ver todas as votações" fechar={fechar} />
       </Coluna>
-      <Coluna largura={360}>
-        <Gravura edificio="sao-bento" />
-      </Coluna>
     </Colunas>
   );
 }
@@ -454,9 +450,6 @@ function MenuDeputados({ fechar }: { fechar: () => void }) {
           frase="Em funções na XVII legislatura"
         />
         <Opcao href="/comparar" fechar={fechar} icone="compare-arrows" titulo="Comparar dois partidos" frase="Com que frequência votam da mesma forma" />
-      </Coluna>
-      <Coluna largura={360}>
-        <Gravura edificio="torre-belem" />
       </Coluna>
     </Colunas>
   );

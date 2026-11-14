@@ -59,8 +59,8 @@ Elevation is declared once: a hairline `border` on white. No shadows. The lead s
   `#232323` and the ink into light grey. On the phone the engraving sits under the band with the title below;
   on desktop the title is on the left and the engraving on the right.
 - **Buildings** (`constants/Edificios.ts`, images in `votoclaro/assets/edificios/`). One landmark per tab:
-  Votações → São Bento, Deputados → Torre de Belém (Jerónimos and Pena are reserved). Never put them in a
-  frame, card or border. **Real images only**:
+  Votações → São Bento, Deputados → Torre de Belém, Perguntar → Jerónimos, Comparar → Casa da Música (Pena is
+  reserved). Only in the screen headers, never in menus. Never put them in a frame, card or border. **Real images only**:
   while an image is missing the tab shows the tile band alone. Never draw a fake building in SVG.
 - **Hemiciclo** (`components/Hemiciclo.tsx`). The 230-seat half ring split by position, with faint seat rows.
   Large on the feed lead and the vote detail, with the result stamp in the centre; `mini` (64px) on feed cards,
@@ -72,8 +72,8 @@ Elevation is declared once: a hairline `border` on white. No shadows. The lead s
   A 72px Ultramarine azulejo panel (pattern lines `#2A22A8`, always Ultramarine, also in dark mode) with white
   text; each item sits on a solid Ultramarine chip so it never reads over the tile lines. The active page, or the
   open menu, is marked by **one tile hanging under the item**, half on the bar and half below it; there is no
-  underline or pill. Votações, Deputados and Aprender open a full-width white menu (three columns: themes and the
-  latest vote with São Bento; parliamentary groups with their counts and Belém; glossary and "Sobre"); Perguntar
+  underline or pill. Votações, Deputados and Aprender open a full-width white menu (columns: themes and the
+  latest vote; parliamentary groups with their counts and the deputies links; glossary and "Sobre"; no building engravings); Perguntar
   and Comparar are plain links. Hover opens after 140ms, click toggles, Escape closes and returns focus, a click
   outside closes. The search pill goes to Deputados (`?q=`). On desktop the top tile strips (≤ 32px) are not drawn,
   because the bar is the tile band.

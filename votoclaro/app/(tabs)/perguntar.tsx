@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { FaixaAzulejo } from '@/components/Azulejo';
+import { CabecalhoEdificio, FaixaAzulejo } from '@/components/Azulejo';
 import { EcraVazio } from '@/components/EcraVazio';
 import { RespostaRag } from '@/components/RespostaRag';
 import { useEspacoBarra } from '@/components/BarraSeparadores';
@@ -100,12 +100,13 @@ export default function PerguntarScreen({ apiUrl = RAG_API_URL, perguntar = perg
           keyboardShouldPersistTaps="handled"
           onContentSizeChange={() => conversa.length > 0 && scroll.current?.scrollToEnd({ animated: true })}
         >
-          <FaixaAzulejo altura={14} />
-          <Contentor style={styles.conteudo}>
+          <CabecalhoEdificio edificio="jeronimos" estreito>
             <CabecalhoEcra
               titulo="Perguntar"
               subtitulo="Respostas com base nos textos das iniciativas e nas votações da XVII legislatura."
             />
+          </CabecalhoEdificio>
+          <Contentor style={styles.conteudo}>
             <Aviso>
               Respostas geradas por IA a partir de dados públicos. Podem ter erros: confirma nas fontes indicadas. O
               assistente não dá opiniões nem recomendações de voto. As perguntas são processadas por um serviço de IA
