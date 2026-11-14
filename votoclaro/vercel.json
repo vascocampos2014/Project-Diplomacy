@@ -3,9 +3,35 @@
   "buildCommand": "npx expo export -p web && cp \"dist/+not-found.html\" dist/404.html",
   "outputDirectory": "dist",
   "cleanUrls": true,
+  "functions": {
+    "api/og.ts": {
+      "includeFiles": "api/_og/fonts/**",
+      "maxDuration": 15
+    },
+    "api/votacao.ts": {
+      "maxDuration": 10
+    }
+  },
   "rewrites": [
-    { "source": "/votacao/:id", "destination": "/votacao/[id]" },
-    { "source": "/deputado/:id", "destination": "/deputado/[id]" }
+    {
+      "source": "/votacao/:id",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(facebookexternalhit|facebookcatalog|meta-externalagent|twitterbot|whatsapp|telegrambot|slackbot|slack-imgproxy|discordbot|linkedinbot|pinterest|redditbot|skypeuripreview|mastodon|bluesky|cardyb|embedly|iframely|vkshare|snapchat|signal).*"
+        }
+      ],
+      "destination": "/api/votacao?id=:id"
+    },
+    {
+      "source": "/votacao/:id",
+      "destination": "/votacao/[id]"
+    },
+    {
+      "source": "/deputado/:id",
+      "destination": "/deputado/[id]"
+    }
   ],
   "headers": [
     {
@@ -15,16 +41,36 @@
           "key": "Content-Security-Policy",
           "value": "default-src 'self'; script-src 'self' 'sha256-67fhrP0+BkBqmgGGXTtgiVO/9EQs3QruYNU/7fnRkI8='; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://cdn.openar.pt; font-src 'self' data:; connect-src 'self' https://api.openar.pt https://vscocmp-votoclaro-rag.hf.space; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
         },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(), payment=(), usb=()" },
-        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        }
       ]
     },
     {
       "source": "/_expo/static/(.*)",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     }
   ]
 }

@@ -106,6 +106,15 @@ page (`MAX_WIDTH_LARGO`, 1200px, `<Contentor largo>`), and the top bar aligns to
   "Por tema" and "Onde divergiram" on the right.
 - Reading screens (Glossário, Definições, deputy profile, Perguntar) stay in the 760px column.
 
+## Link previews (share images)
+
+A shared vote link (`/votacao/:id?iniciativaId=…`) shows a 1200×630 card, drawn by the Vercel function
+`votoclaro/api/og.ts` (`@vercel/og`, layout in `api/_og/imagem.ts`). It sits in the same world: an azulejo band on top, the reference
+and date in muted grey, the title in Public Sans 800 Ultramarine (clamped to 5 lines), the result stamp
+(Aprovada filled Ultramarine, Chumbada an ink outline), and the engraved hemicycle with the ink legend. It is always light.
+Link crawlers (WhatsApp, iMessage, Telegram, social networks; matched by user-agent in `vercel.json`) are
+rewritten to `api/votacao.ts`, which returns only the meta tags. People get the normal static page.
+
 ## Motion
 
 transitions.dev scale (`--duration-*`, `--ease-*` in `app/+html.tsx`, mirrored in `Motion` in Spacing.ts).

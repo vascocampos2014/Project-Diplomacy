@@ -12,6 +12,7 @@ aimed at 16–30 year olds. This file is how the repo **actually** works today.
 
 ```
 votoclaro/   Expo app (iOS, Android, web). Web is deployed to Vercel.
+votoclaro/api/  Vercel functions: per-vote link-preview image (og.ts) and crawler meta tags (votacao.ts).
 backend/     Python RAG API ("Perguntar" tab). Deployed to a Hugging Face Space.
 .github/workflows/refresh-rag.yml   weekly data refresh of the Space (runs from main only)
 PREVIEW_REPORT.md                   what the preview/ui-overhaul branch changed vs main

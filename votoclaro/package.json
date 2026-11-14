@@ -8,6 +8,7 @@
     "@expo-google-fonts/public-sans": "^0.4.2",
     "@expo/vector-icons": "^15.1.1",
     "@tanstack/react-query": "^5.101.0",
+    "@vercel/og": "^0.8.6",
     "expo": "^54.0.0",
     "expo-constants": "~18.0.13",
     "expo-font": "~14.0.12",
