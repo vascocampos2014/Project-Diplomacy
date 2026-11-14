@@ -24,7 +24,7 @@ Tokens live in `votoclaro/constants/Colors.ts`. The user's palette, read left to
 | `text` | `#232323` Carbon | `#F1F2F4` | Body, primary button fill |
 | `tint` / `tintInk` | `#120A8F` Ultramarine | `#449DD1` / `#7FBFE6` | Headlines, links, selected chips, azulejo |
 | `tintBg` | `#E8E7F4` | `#1F3A4D` | Theme tags, chip hover |
-| `marcador` | `#449DD1` Blue Bell | same | Only "where you are": active tab bar, focus ring |
+| `marcador` | `#449DD1` Blue Bell | same | Only "where you are": active item of the desktop top nav, focus ring |
 | `azulejo` / `azulejoFundo` | `#120A8F` on `#FFFFFF` | `#449DD1` on `#2C2C2D` | Tile pattern |
 
 Contrast limits: `#449DD1` on `#F8F9FA` is 2.85:1, so it is never text in light mode. `#120A8F` on `#232323` is
@@ -62,12 +62,35 @@ Elevation is declared once: a hairline `border` on white. No shadows. The lead s
   Large on the feed lead and the vote detail, with the result stamp in the centre; `mini` (64px) on feed cards,
   where *contra* becomes solid grey because hatching does not read at that size. `LegendaVotos` and `Amostra`
   repeat the textures next to numbers.
+  `VotoIndicator` is the same swatch plus the word ("A favor"), used in lists (deputy history, Comparar,
+  the deputy list on a vote). There are no ✓/✗ glyphs for votes.
+- **BarraSeparadores** (`components/BarraSeparadores.tsx`, phone widths only; desktop navigates from the top bar).
+  A floating capsule, 68px tall, 16px from the sides and 12px above the safe area, max 440px wide. Frosted
+  paper (`surface` at 85% with a backdrop blur, web only; solid on native) and a hairline border, no shadow.
+  The active tab sits in a soft `tintBg` pill with Ultramarine icon and bold label; the pill slides between
+  tabs. Content scrolls under it, so tab screens add `useEspacoBarra()` to their bottom padding.
 - **Carimbo**: the result stamp ("APROVADA" in Ultramarine, "CHUMBADA" in Carbon), tilted −4°.
 - **VotacaoCard**: `destaque` is the feed's lead story (tag, Ultramarine headline, hemicycle, legend, parties by
   position, "Ver a votação completa ›"); otherwise a white card with tag, title, "Aprovada · 149–69 · date",
   reference, mini hemicycle and the parties that voted each way.
 - **Chip**: pill filter, Ultramarine outline, filled when selected. **Etiqueta**: read-only theme tag.
 - **Botao**: primary solid Carbon (hover Ultramarine), secondary soft grey with no outline.
+
+## Desktop (≥ 900px)
+
+The phone layout is one 760px reading column. From 900px the tab screens and the vote detail use the wide
+page (`MAX_WIDTH_LARGO`, 1200px, `<Contentor largo>`), and the top bar aligns to it. `useDisposicao()` in
+`components/ui.tsx` gives `desktop` and `colunas` (2 from 900px, 3 from 1280px).
+
+- **Votações**: a front page. The lead vote is two columns (tag, 44px Ultramarine headline, reference,
+  parties by position on the left; the large hemicycle on the right), closed by a hairline. Recent votes
+  are a grid of equal-height cards.
+- **Votação**: the title spans the page; below, the hemicycle on the left and a 400px side column on the
+  right ("Quem votou como", party names, glossary link, Perguntar/Partilhar). The deputy list is a grid.
+- **Deputados**: search capped at 480px; each deputy is its own card in a 2–3 column grid.
+- **Comparar**: party pickers, the percentage card and "Votos a favor por partido" on the left (460px);
+  "Por tema" and "Onde divergiram" on the right.
+- Reading screens (Glossário, Definições, deputy profile, Perguntar) stay in the 760px column.
 
 ## Motion
 
@@ -79,6 +102,7 @@ Web entrances are CSS keyframes on `[data-anim]`, set through `anim()` from `com
 - Lead headline: blurred rise (12px, 3px blur, 500ms). Feed cards: 8px rise, 400ms, 40ms stagger capped at 7.
 - Page enter: 8px rise with 3px blur, 250ms. Building image: blur 8px → 0, 400ms.
 - Comparar percentage: soft cross-blur (150ms) when the pair changes.
+- Tab bar: the active pill slides to the new tab, 250ms smooth-out (instant with reduced motion).
 - Press: scale 0.98; hover: border to Ultramarine, 150ms.
 - `prefers-reduced-motion`: every `[data-anim]` is off and the hemicycle renders complete.
 

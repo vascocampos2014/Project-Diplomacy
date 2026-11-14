@@ -1,8 +1,9 @@
-import { Stack } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { FaixaAzulejo } from '@/components/Azulejo';
 import { EcraVazio } from '@/components/EcraVazio';
 import { CabecalhoEcra, CampoPesquisa, Contentor } from '@/components/ui';
 import { GlossarioItem } from '@/components/GlossarioItem';
@@ -16,7 +17,9 @@ import { GLOSSARIO } from '@/lib/glossarioData';
 export default function GlossarioScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme];
-  const [pesquisa, setPesquisa] = useState('');
+  // ?termo=… (vindo de uma votação, p. ex. "Proposta de Lei") abre o glossário já filtrado.
+  const { termo: termoInicial } = useLocalSearchParams<{ termo?: string }>();
+  const [pesquisa, setPesquisa] = useState(() => (typeof termoInicial === 'string' ? termoInicial.slice(0, 60) : ''));
 
   const termos = useMemo(() => {
     const termo = normalizar(pesquisa);
@@ -29,6 +32,7 @@ export default function GlossarioScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
       <Stack.Screen options={{ title: 'Glossário' }} />
+      <FaixaAzulejo altura={14} />
       <Contentor style={styles.header}>
         <CabecalhoEcra titulo="Glossário" subtitulo="Termos comuns do processo legislativo, explicados de forma simples." />
         <CampoPesquisa

@@ -12,7 +12,11 @@ Each tab has a Portuguese landmark at the top, framed in an azulejo window
 
 ## Format
 
-- PNG, **1600 × 800** (2:1). The building centred, filling about 85% of the width, nothing cropped.
+- PNG, **2400 × 1200** (2:1), big enough for a wider window on desktop.
+- **Three-quarter view, not a flat front elevation.** The building is seen at an angle, so its depth shows, and
+  sits off-centre, in the left or right two-thirds. Its immediate setting is in a few hatched lines (the river
+  and waterline at Belém, the steps at São Bento, the hill at Pena). The other side stays plain background,
+  where the image can be cropped or a headline can sit. Keep the whole building in frame, with nothing cut off.
 - **Black ink only, on a flat Bright Snow `#F8F9FA` background** (not transparent, not white, no paper texture).
   The window is always light, even in dark mode.
 - No text, no signature, no frame, no people, no cars, no sky colour, no shadow on the ground beyond the drawing's own hatching.
@@ -22,15 +26,19 @@ Each tab has a Portuguese landmark at the top, framed in an azulejo window
 
 Same style for every building, so the set looks like one series. Replace `{BUILDING}`:
 
-> 19th-century steel engraving of {BUILDING}, frontal elevation, centred, black ink only, fine parallel
-> hatching and cross-hatching for shadows, crisp clean linework like an old banknote or postage stamp
-> vignette, flat plain #F8F9FA off-white background, no text, no border, no people, no colour, no paper
-> texture, wide 2:1 composition
+> 19th-century steel engraving of {BUILDING}, three-quarter view from a slightly low angle, building placed
+> off-centre with open empty space on one side, its immediate setting suggested in a few hatched lines,
+> black ink only, fine parallel hatching and cross-hatching for shadows, crisp clean linework like an old
+> banknote or postage stamp vignette, flat plain #F8F9FA off-white background, no sky shading, no text,
+> no border, no people, no boats, no colour, no paper texture, wide 2:1 composition
+
+Give the model a real photo taken from the angle you want as the reference image (image-to-image). The photo
+fixes the architecture; the prompt only sets the style.
 
 `{BUILDING}`:
 
 - `the Palácio de São Bento in Lisbon, the Portuguese Parliament: neoclassical facade with a wide staircase, eight-column portico and triangular pediment`
-- `the Torre de Belém in Lisbon: Manueline limestone tower on a bastion at the river's edge, with turrets and arched loggia`
+- `the Torre de Belém in Lisbon: Manueline limestone tower on a bastion standing in the Tagus, with domed corner turrets, crenellations and an arched loggia, the waterline drawn in horizontal hatching`
 - `the Mosteiro dos Jerónimos in Lisbon: long Manueline facade with the ornate south portal`
 - `the Palácio da Pena in Sintra: romantic hilltop palace with towers and domes`
 

@@ -8,8 +8,11 @@ import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-na
 import { useReducedMotion } from 'react-native-reanimated';
 import Svg, { Defs, G, Line, Path, Pattern, Rect } from 'react-native-svg';
 
+import { Amostra } from '@/components/Amostra';
 import { RESULTADO } from '@/components/ContagemVotos';
 import { anim, useCores } from '@/components/ui';
+
+export { Amostra };
 import type { Paleta } from '@/constants/Colors';
 import { Motion, Radii, Spacing } from '@/constants/Spacing';
 import { Fonts } from '@/constants/Typography';
@@ -164,7 +167,7 @@ export function Hemiciclo({
         <Line x1={2} y1={CY + 1} x2={L - 2} y2={CY + 1} stroke={tinta} strokeWidth={traco} />
       </Svg>
       {resultado && !mini ? (
-        <View style={styles.carimboZona} pointerEvents="none">
+        <View style={[styles.carimboZona, { pointerEvents: 'none' }]}>
           <Carimbo resultado={resultado} animar={animar} />
         </View>
       ) : null}
@@ -188,27 +191,6 @@ export function Carimbo({ resultado, animar = false }: { resultado: Resultado; a
 }
 
 // A amostra de textura de uma posição (legendas, listas).
-export function Amostra({ posicao, tamanho = 12 }: { posicao: Posicao; tamanho?: number }) {
-  const cores = useCores();
-  const id = `am${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
-  const tinta = cores.favor;
-  const fill =
-    posicao === 'favor' ? tinta : posicao === 'contra' ? `url(#${id})` : posicao === 'abstencao' ? cores.abstencao : cores.ausente;
-  return (
-    <Svg width={tamanho} height={tamanho} viewBox="0 0 12 12" accessible={false}>
-      {posicao === 'contra' ? (
-        <Defs>
-          <Pattern id={id} width={3} height={3} patternUnits="userSpaceOnUse" patternTransform="rotate(40)">
-            <Rect width={3} height={3} fill={cores.abstencao} />
-            <Line x1={0} y1={0} x2={0} y2={3} stroke={tinta} strokeWidth={1.1} />
-          </Pattern>
-        </Defs>
-      ) : null}
-      <Rect x={1} y={1} width={10} height={10} rx={2} fill={fill} stroke={posicao === 'ausente' ? cores.ausente : tinta} strokeWidth={1} />
-    </Svg>
-  );
-}
-
 // Legenda em linha: ■ 149 a favor · ▨ 69 contra · □ 12 abstenção
 export function LegendaVotos({
   favor,

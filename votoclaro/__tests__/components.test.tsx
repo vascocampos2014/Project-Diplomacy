@@ -13,19 +13,20 @@ import { VotoIndicator } from '@/components/VotoIndicator';
 
 describe('VotoIndicator', () => {
   it.each([
-    ['favor', 'check', 'Voto a favor'],
-    ['contra', 'close', 'Voto contra'],
-    ['abstencao', 'remove', 'Abstenção'],
-    ['ausente', 'more-horiz', 'Ausente'],
-  ] as const)('%s always has an icon and an accessible label', (posicao, icone, label) => {
+    ['favor', 'A favor', 'Voto a favor'],
+    ['contra', 'Contra', 'Voto contra'],
+    ['abstencao', 'Abstenção', 'Abstenção'],
+    ['ausente', 'Ausente', 'Ausente'],
+  ] as const)('%s shows the ink swatch with its word and an accessible label', (posicao, palavra, label) => {
     render(<VotoIndicator posicao={posicao} />);
     expect(screen.getByLabelText(label)).toBeTruthy();
-    expect(screen.getByTestId(`icon-${icone}`)).toBeTruthy();
+    expect(screen.getByText(palavra)).toBeTruthy();
   });
 
-  it('shows the text label on request', () => {
-    render(<VotoIndicator posicao="contra" showLabel />);
-    expect(screen.getByText('Contra')).toBeTruthy();
+  it('can hide the word where the context already gives it', () => {
+    render(<VotoIndicator posicao="contra" showLabel={false} />);
+    expect(screen.queryByText('Contra')).toBeNull();
+    expect(screen.getByLabelText('Voto contra')).toBeTruthy();
   });
 });
 
@@ -79,16 +80,20 @@ describe('VotacaoCard', () => {
   it('is one accessible button that opens the vote', () => {
     const onPress = jest.fn();
     render(<VotacaoCard {...props} onPress={onPress} />);
-    const botao = screen.getByRole('button', { name: /Orçamento do Estado para 2027, Proposta de Lei n\.º 110, Economia, 28 Out 2026, Aprovada/ });
+    const botao = screen.getByRole('button', {
+      name: /Orçamento do Estado para 2027, Proposta de Lei n\.º 110, Economia, 28 Out 2026\. Aprovada\. 91 a favor, 79 contra, 60 abstenção/,
+    });
     fireEvent.press(botao);
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 
   it('lists the parties in each position, skipping empty ones on a compact card', () => {
     render(<VotacaoCard {...props} partidos={{ favor: ['PSD', 'CDS-PP'], contra: ['CH'], abstencao: [] }} onPress={() => {}} />);
-    expect(screen.getByLabelText('A favor: PSD, CDS-PP')).toBeTruthy();
-    expect(screen.getByLabelText('Contra: CH')).toBeTruthy();
+    expect(screen.getByLabelText('A favor: Partido Social Democrata, CDS – Partido Popular')).toBeTruthy();
+    expect(screen.getByLabelText('Contra: Chega')).toBeTruthy();
     expect(screen.queryByLabelText('Abstenção: nenhum partido')).toBeNull();
+    // O cartão inteiro também diz quem votou como, para leitores de ecrã.
+    expect(screen.getByRole('button', { name: /A favor: Partido Social Democrata, CDS – Partido Popular\. Contra: Chega$/ })).toBeTruthy();
   });
 
   it('shows every position on the lead story, with the hemicycle', () => {
@@ -106,14 +111,14 @@ describe('VotacaoCard', () => {
 describe('DeputadoRow', () => {
   it('shows name, party, constituency and the vote', () => {
     render(<DeputadoRow nome="Aida Carvalho" partido="PS" circulo="Guarda" posicao="abstencao" />);
-    expect(screen.getByLabelText('Aida Carvalho, PS, Guarda')).toBeTruthy();
-    expect(screen.getByLabelText('Abstenção')).toBeTruthy();
+    expect(screen.getByLabelText('Aida Carvalho, Partido Socialista, Guarda, Abstenção')).toBeTruthy();
+    expect(screen.getByText('PS')).toBeTruthy();
   });
 
   it('is a button when it navigates', () => {
     const onPress = jest.fn();
     render(<DeputadoRow nome="Aida Carvalho" partido="PS" circulo="Guarda" onPress={onPress} />);
-    fireEvent.press(screen.getByRole('button', { name: 'Aida Carvalho, PS, Guarda' }));
+    fireEvent.press(screen.getByRole('button', { name: 'Aida Carvalho, Partido Socialista, Guarda' }));
     expect(onPress).toHaveBeenCalled();
   });
 

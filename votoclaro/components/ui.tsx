@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
   type PressableProps,
   type StyleProp,
@@ -16,7 +17,7 @@ import {
 
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors, { type Paleta } from '@/constants/Colors';
-import { Easing, MAX_WIDTH, Motion, Radii, Spacing } from '@/constants/Spacing';
+import { Easing, LARGURA_DESKTOP, LARGURA_LARGA, MAX_WIDTH, MAX_WIDTH_LARGO, Motion, Radii, Spacing } from '@/constants/Spacing';
 import { Fonts, Typography } from '@/constants/Typography';
 
 export function useCores(): Paleta {
@@ -43,8 +44,24 @@ export function anim(nome: Animacao, i?: number): object {
 }
 
 // Limita a largura do conteúdo no web/tablet e centra-o.
-export function Contentor({ children, style }: { children: React.ReactNode; style?: StyleProp<ViewStyle> }) {
-  return <View style={[styles.contentor, style]}>{children}</View>;
+// Nível do título para a web (h1/h2…). O react-native-web lê `aria-level`, mas os
+// tipos do React Native não o declaram; no nativo não faz nada.
+export function nivel(n: 1 | 2 | 3): object {
+  return Platform.OS === 'web' ? { 'aria-level': n } : {};
+}
+
+// Como o ecrã se organiza: telemóvel (uma coluna), computador (página larga,
+// grelha de 2 colunas) e ecrã largo (3 colunas).
+export function useDisposicao() {
+  const { width } = useWindowDimensions();
+  const desktop = width >= LARGURA_DESKTOP;
+  return { desktop, colunas: width >= LARGURA_LARGA ? 3 : desktop ? 2 : 1, largura: width };
+}
+
+// `largo`: no computador ocupa a página larga (1200) em vez da coluna de leitura.
+export function Contentor({ children, style, largo = false }: { children: React.ReactNode; style?: StyleProp<ViewStyle>; largo?: boolean }) {
+  const { desktop } = useDisposicao();
+  return <View style={[styles.contentor, largo && desktop && styles.contentorLargo, style]}>{children}</View>;
 }
 
 // Um cartão: papel branco, cantos macios, linha fina. `tinta` desenha a
@@ -223,7 +240,7 @@ export function CabecalhoEcra({
     <View style={styles.cabecalho}>
       <View style={styles.cabecalhoLinha}>
         <View style={styles.cabecalhoTextos}>
-          <Text style={[Typography.displayLg, { color: cores.text }]} accessibilityRole="header">
+          <Text style={[Typography.displayLg, { color: cores.text }]} accessibilityRole="header" {...nivel(1)}>
             {titulo}
           </Text>
           {subtitulo ? (
@@ -242,7 +259,7 @@ export function TituloSecao({ children, nota, direita }: { children: string; not
   const cores = useCores();
   return (
     <View style={styles.secao}>
-      <Text style={[styles.secaoTitulo, { color: cores.text }]} accessibilityRole="header">
+      <Text style={[styles.secaoTitulo, { color: cores.text }]} accessibilityRole="header" {...nivel(2)}>
         {children}
       </Text>
       {direita}
@@ -302,6 +319,9 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: MAX_WIDTH,
     alignSelf: 'center',
+  },
+  contentorLargo: {
+    maxWidth: MAX_WIDTH_LARGO,
   },
   cartao: {
     borderRadius: Radii.card,

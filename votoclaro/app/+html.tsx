@@ -31,12 +31,17 @@ export default function Root({ children }: { children: ReactNode }) {
 
         {/* Using raw CSS styles as an escape-hatch to ensure the background color never flickers in dark-mode. */}
         <style dangerouslySetInnerHTML={{ __html: responsiveBackground }} />
+        {/* O tema escolhido em Definições (localStorage) aplica-se antes de o JS da app
+            carregar; sem isto, quem escolheu claro num sistema escuro via um ecrã escuro. */}
+        <script dangerouslySetInnerHTML={{ __html: temaGuardado }} />
         {/* Add any additional <head> elements that you want globally available on web... */}
       </head>
       <body>{children}</body>
     </html>
   );
 }
+
+const temaGuardado = `try{var t=localStorage.getItem('votoclaro-tema');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-tema',t)}catch(e){}`;
 
 const DESCRICAO =
   'Vê como cada partido e deputado votou nas leis da Assembleia da República. Dados públicos e oficiais, sem opiniões.';
@@ -104,4 +109,11 @@ input, textarea { caret-color: #120A8F; }
 @media (prefers-reduced-motion: reduce) {
   [data-anim] { animation: none !important; }
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-}`;
+}
+
+/* Tema escolhido em Definições (atributo posto pelo script temaGuardado). */
+html[data-tema='light'] { color-scheme: light; }
+html[data-tema='light'] body { background-color: #F8F9FA; }
+html[data-tema='dark'] { color-scheme: dark; }
+html[data-tema='dark'] body { background-color: #232323; }
+`;

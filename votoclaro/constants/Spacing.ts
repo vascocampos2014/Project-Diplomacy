@@ -19,8 +19,12 @@ export const Radii = {
   pill: 999, // filtros, etiquetas de tema, pontos
 };
 
-// Largura máxima do conteúdo no web/tablet.
+// Largura máxima do conteúdo no web/tablet: uma coluna de leitura (760) e,
+// no computador, a página larga de "primeira página" (1200).
 export const MAX_WIDTH = 760;
+export const MAX_WIDTH_LARGO = 1200;
+// A partir daqui a grelha de cartões passa de 2 para 3 colunas.
+export const LARGURA_LARGA = 1280;
 
 // A partir desta largura a navegação passa para o topo (texto) e a barra de
 // separadores de baixo desaparece.

@@ -7,7 +7,8 @@ import { FaixaAzulejo } from '@/components/Azulejo';
 import { EcraVazio } from '@/components/EcraVazio';
 import { LinhaOpcoes } from '@/components/LinhaOpcoes';
 import { PartidoBar } from '@/components/PartidoBar';
-import { anim, Aviso, CabecalhoEcra, Cartao, Chip, Contentor, TituloSecao, useCores } from '@/components/ui';
+import { anim, Aviso, CabecalhoEcra, Cartao, Chip, Contentor, TituloSecao, useCores, useDisposicao } from '@/components/ui';
+import { useEspacoBarra } from '@/components/BarraSeparadores';
 import { VotoIndicator } from '@/components/VotoIndicator';
 import { getCorPartido } from '@/constants/CORES_PARTIDOS';
 import { Radii, Spacing } from '@/constants/Spacing';
@@ -45,16 +46,30 @@ export default function CompararScreen() {
 
   const ranking = useMemo(() => (stats.data ? rankingFavor(stats.data.stats, partidos) : []), [stats.data, partidos]);
 
+  const espacoBarra = useEspacoBarra();
+  const { desktop } = useDisposicao();
+  const votosAFavor = (
+    <>
+      <TituloSecao nota="Percentagem de votos a favor nas votações em que cada partido esteve presente.">
+        Votos a favor por partido
+      </TituloSecao>
+      <Cartao>
+        {ranking.map((r) => (
+          <PartidoBar key={r.partido} partido={r.partido} percentagem={r.percFavor} legenda="a favor" />
+        ))}
+      </Cartao>
+    </>
+  );
   const carregando = stats.isLoading || deputados.isLoading;
   const erro = stats.isError || deputados.isError;
 
   return (
     <SafeAreaView style={[styles.ecra, { backgroundColor: cores.background }]} edges={[]}>
-      <ScrollView contentContainerStyle={styles.conteudo}>
+      <ScrollView contentContainerStyle={[styles.conteudo, { paddingBottom: Spacing.huge + espacoBarra }]}>
         <View style={styles.faixa}>
           <FaixaAzulejo altura={14} />
         </View>
-        <Contentor>
+        <Contentor largo>
           <CabecalhoEcra
             titulo="Comparar"
             subtitulo="Com que frequência dois partidos votam da mesma forma."
@@ -74,95 +89,95 @@ export default function CompararScreen() {
             />
           ) : (
             <>
-              <SeletorPartido rotulo="Partido A" partidos={partidos} selecionado={partidoA} outro={partidoB} onSelecionar={setA} />
-              <SeletorPartido rotulo="Partido B" partidos={partidos} selecionado={partidoB} outro={partidoA} onSelecionar={setB} />
-
-              {resultado && resultado.percentagem !== null ? (
-                <>
-                  <Cartao tinta style={styles.destaque}>
-                    <View style={styles.duelo}>
-                      <Sigla partido={partidoA} />
-                      <Text style={[Typography.bodySm, { color: cores.textMuted }]}>e</Text>
-                      <Sigla partido={partidoB} />
-                    </View>
-                    {/* O número troca suavemente quando se escolhe outro par (text swap soft). */}
-                    <View
-                      key={`${partidoA}-${partidoB}`}
-                      {...anim('troca')}
-                      accessible
-                      accessibilityLabel={`Votaram da mesma forma em ${resultado.percentagem}% das votações`}
-                    >
-                      <Text style={[styles.percentagem, { color: cores.tintInk }]}>{resultado.percentagem}%</Text>
-                      <Text style={[Typography.bodyLg, styles.frase, { color: cores.text }]}>das votações com o mesmo sentido de voto</Text>
-                    </View>
-                    <View style={[styles.trilho, { backgroundColor: cores.border }]}>
-                      <View style={[styles.preenchido, { width: `${resultado.percentagem}%`, backgroundColor: cores.tint }]} />
-                    </View>
-                    <Text style={[Typography.caption, styles.escala, { color: cores.textMuted }]}>
-                      {resultado.iguais} de {resultado.comparaveis} votações em que os dois estiveram presentes.
-                    </Text>
-                  </Cartao>
-
-                  <TituloSecao nota="Percentagem de votações com a mesma posição, por tema.">Por tema</TituloSecao>
-                  <Cartao>
-                    {resultado.porTema.map((t) => (
-                      <View key={t.tema} style={styles.temaLinha} accessible accessibilityLabel={`${t.tema}: ${t.percentagem}% em ${t.comparaveis} votações`}>
-                        <Text style={[Typography.label, styles.temaNome, { color: cores.text }]}>{t.tema}</Text>
-                        <View style={[styles.temaTrilho, { backgroundColor: cores.border }]}>
-                          <View style={[styles.temaBarra, { width: `${Math.max(t.percentagem, 1)}%`, backgroundColor: cores.tint }]} />
-                        </View>
-                        <Text style={[Typography.label, styles.temaValor, { color: cores.text }]}>{t.percentagem}%</Text>
-                        <Text style={[Typography.caption, styles.temaN, { color: cores.textMuted }]} numberOfLines={1}>
-                          {t.comparaveis}
-                        </Text>
+              {/* Computador: à esquerda a escolha do par e o resultado; à direita o detalhe. */}
+              <View style={desktop ? styles.colunas : undefined}>
+                <View style={desktop ? styles.colunaEsq : undefined}>
+                  <SeletorPartido rotulo="Partido A" partidos={partidos} selecionado={partidoA} outro={partidoB} onSelecionar={setA} />
+                  <SeletorPartido rotulo="Partido B" partidos={partidos} selecionado={partidoB} outro={partidoA} onSelecionar={setB} />
+                  {resultado && resultado.percentagem !== null ? (
+                    <Cartao tinta style={styles.destaque}>
+                      <View style={styles.duelo}>
+                        <Sigla partido={partidoA} />
+                        <Text style={[Typography.bodySm, { color: cores.textMuted }]}>e</Text>
+                        <Sigla partido={partidoB} />
                       </View>
-                    ))}
-                  </Cartao>
-
-                  {resultado.divergencias.length > 0 ? (
+                      {/* O número troca suavemente quando se escolhe outro par (text swap soft). */}
+                      <View
+                        key={`${partidoA}-${partidoB}`}
+                        {...anim('troca')}
+                        accessible
+                        accessibilityLabel={`Votaram da mesma forma em ${resultado.percentagem}% das votações`}
+                      >
+                        <Text style={[styles.percentagem, { color: cores.tintInk }]}>{resultado.percentagem}%</Text>
+                        <Text style={[Typography.bodyLg, styles.frase, { color: cores.text }]}>das votações com o mesmo sentido de voto</Text>
+                      </View>
+                      <View style={[styles.trilho, { backgroundColor: cores.border }]}>
+                        <View style={[styles.preenchido, { width: `${resultado.percentagem}%`, backgroundColor: cores.tint }]} />
+                      </View>
+                      <Text style={[Typography.caption, styles.escala, { color: cores.textMuted }]}>
+                        {resultado.iguais} de {resultado.comparaveis} votações em que os dois estiveram presentes.
+                      </Text>
+                    </Cartao>
+                  ) : null}
+                  {desktop ? votosAFavor : null}
+                </View>
+                <View style={desktop ? styles.colunaDir : undefined}>
+                  {resultado && resultado.percentagem !== null ? (
                     <>
-                      <TituloSecao nota="As votações mais recentes em que tomaram posições diferentes.">Onde divergiram</TituloSecao>
-                      <Cartao style={styles.semPadding}>
-                        {resultado.divergencias.slice(0, MAX_DIVERGENCIAS).map((d, i) => (
-                          <Pressable
-                            key={d.votacaoId}
-                            onPress={() => router.push({ pathname: '/votacao/[id]', params: { id: d.votacaoId, iniciativaId: String(d.iniciativaId) } })}
-                            style={({ pressed }) => [
-                              styles.divergencia,
-                              i > 0 && { borderTopColor: cores.border, borderTopWidth: StyleSheet.hairlineWidth },
-                              pressed && { opacity: 0.7 },
-                            ]}
-                            accessibilityRole="button"
-                            accessibilityLabel={`${d.titulo}. ${partidoA}: ${d.posicaoA}. ${partidoB}: ${d.posicaoB}`}
-                          >
-                            <View style={styles.divergenciaInfo}>
-                              <Text style={[Typography.bodySm, { color: cores.text }]} numberOfLines={2}>
-                                {d.titulo}
-                              </Text>
-                              <Text style={[Typography.caption, { color: cores.textMuted }]}>
-                                {d.tema} · {d.dataVoto}
-                              </Text>
+                      <TituloSecao nota="Percentagem de votações com a mesma posição, por tema.">Por tema</TituloSecao>
+                      <Cartao>
+                        {resultado.porTema.map((t) => (
+                          <View key={t.tema} style={styles.temaLinha} accessible accessibilityLabel={`${t.tema}: ${t.percentagem}% em ${t.comparaveis} votações`}>
+                            <Text style={[Typography.label, styles.temaNome, { color: cores.text }]}>{t.tema}</Text>
+                            <View style={[styles.temaTrilho, { backgroundColor: cores.border }]}>
+                              <View style={[styles.temaBarra, { width: `${Math.max(t.percentagem, 1)}%`, backgroundColor: cores.tint }]} />
                             </View>
-                            <View style={styles.posicoes}>
-                              <PosicaoPartido partido={partidoA} posicao={d.posicaoA} />
-                              <PosicaoPartido partido={partidoB} posicao={d.posicaoB} />
-                            </View>
-                          </Pressable>
+                            <Text style={[Typography.label, styles.temaValor, { color: cores.text }]}>{t.percentagem}%</Text>
+                            <Text style={[Typography.caption, styles.temaN, { color: cores.textMuted }]} numberOfLines={1}>
+                              {t.comparaveis}
+                            </Text>
+                          </View>
                         ))}
                       </Cartao>
+
+                      {resultado.divergencias.length > 0 ? (
+                        <>
+                          <TituloSecao nota="As votações mais recentes em que tomaram posições diferentes.">Onde divergiram</TituloSecao>
+                          <Cartao style={styles.semPadding}>
+                            {resultado.divergencias.slice(0, MAX_DIVERGENCIAS).map((d, i) => (
+                              <Pressable
+                                key={d.votacaoId}
+                                onPress={() => router.push({ pathname: '/votacao/[id]', params: { id: d.votacaoId, iniciativaId: String(d.iniciativaId) } })}
+                                style={({ pressed }) => [
+                                  styles.divergencia,
+                                  i > 0 && { borderTopColor: cores.border, borderTopWidth: StyleSheet.hairlineWidth },
+                                  pressed && { opacity: 0.7 },
+                                ]}
+                                accessibilityRole="button"
+                                accessibilityLabel={`${d.titulo}. ${partidoA}: ${d.posicaoA}. ${partidoB}: ${d.posicaoB}`}
+                              >
+                                <View style={styles.divergenciaInfo}>
+                                  <Text style={[Typography.bodySm, { color: cores.text }]} numberOfLines={2}>
+                                    {d.titulo}
+                                  </Text>
+                                  <Text style={[Typography.caption, { color: cores.textMuted }]}>
+                                    {d.tema} · {d.dataVoto}
+                                  </Text>
+                                </View>
+                                <View style={styles.posicoes}>
+                                  <PosicaoPartido partido={partidoA} posicao={d.posicaoA} />
+                                  <PosicaoPartido partido={partidoB} posicao={d.posicaoB} />
+                                </View>
+                              </Pressable>
+                            ))}
+                          </Cartao>
+                        </>
+                      ) : null}
                     </>
                   ) : null}
-                </>
-              ) : null}
-
-              <TituloSecao nota="Percentagem de votos a favor nas votações em que cada partido esteve presente.">
-                Quem vota mais a favor
-              </TituloSecao>
-              <Cartao>
-                {ranking.map((r) => (
-                  <PartidoBar key={r.partido} partido={r.partido} percentagem={r.percFavor} legenda="a favor" />
-                ))}
-              </Cartao>
+                  {desktop ? null : votosAFavor}
+                </View>
+              </View>
 
               <View style={styles.aviso}>
                 <Aviso>
@@ -358,5 +373,17 @@ const styles = StyleSheet.create({
   },
   aviso: {
     marginTop: Spacing.xxl,
+  },
+  colunas: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.huge,
+  },
+  colunaEsq: {
+    width: 460,
+  },
+  colunaDir: {
+    flex: 1,
+    minWidth: 0,
   },
 });

@@ -22,3 +22,22 @@ export const COR_PARTIDO_DEFAULT = '#9CA3AF';
 export function getCorPartido(partido: string): string {
   return CORES_PARTIDOS[partido] ?? COR_PARTIDO_DEFAULT;
 }
+
+// Nome completo de cada sigla (grupos parlamentares da legislatura XVII).
+// Usado para explicar a sigla onde ela aparece e nos rótulos de acessibilidade.
+export const NOMES_PARTIDOS: Record<string, string> = {
+  PSD: 'Partido Social Democrata',
+  PS: 'Partido Socialista',
+  CH: 'Chega',
+  IL: 'Iniciativa Liberal',
+  L: 'Livre',
+  PCP: 'Partido Comunista Português',
+  'CDS-PP': 'CDS – Partido Popular',
+  BE: 'Bloco de Esquerda',
+  PAN: 'Pessoas–Animais–Natureza',
+  JPP: 'Juntos pelo Povo',
+};
+
+export function nomePartido(sigla: string): string {
+  return NOMES_PARTIDOS[sigla] ?? sigla;
+}

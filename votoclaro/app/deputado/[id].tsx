@@ -7,9 +7,10 @@ import { Avatar } from '@/components/Avatar';
 import { FaixaAzulejo } from '@/components/Azulejo';
 import { EcraVazio } from '@/components/EcraVazio';
 import { FiltroPosicao } from '@/components/FiltroPosicao';
-import { anim, Aviso, Contentor, TituloSecao, useCores } from '@/components/ui';
-import { VotoIndicator, coresPosicao } from '@/components/VotoIndicator';
-import { getCorPartido } from '@/constants/CORES_PARTIDOS';
+import { anim, Aviso, Contentor, nivel, TituloSecao, useCores } from '@/components/ui';
+import { Amostra } from '@/components/Amostra';
+import { ROTULO, VotoIndicator } from '@/components/VotoIndicator';
+import { getCorPartido, nomePartido } from '@/constants/CORES_PARTIDOS';
 import { Radii, Spacing } from '@/constants/Spacing';
 import { Fonts, Typography } from '@/constants/Typography';
 import { useDeputado } from '@/hooks/useDeputado';
@@ -58,7 +59,6 @@ export default function DeputadoDetalheScreen() {
   const stat = statsQuery.data?.stats[deputado.partido];
   const presentes = stat ? stat.total - stat.ausente : 0;
   const pct = (n: number) => (presentes > 0 ? Math.round((n / presentes) * 100) : undefined);
-  const presenca = stat && stat.total > 0 ? Math.round((presentes / stat.total) * 100) : undefined;
 
   return (
     <SafeAreaView style={[styles.ecra, { backgroundColor: cores.background }]} edges={['bottom']}>
@@ -79,7 +79,7 @@ export default function DeputadoDetalheScreen() {
                 <Avatar nome={deputado.nome} fotoUrl={fotoUrl(deputado.id)} partido={deputado.partido} size={76} />
               </View>
               <View style={styles.perfilTextos}>
-                <Text style={[Typography.displayLg, { color: cores.text }]} accessibilityRole="header">
+                <Text style={[Typography.displayLg, { color: cores.text }]} accessibilityRole="header" {...nivel(1)}>
                   {deputado.nome}
                 </Text>
                 {deputado.nomeCompleto !== deputado.nome ? (
@@ -95,15 +95,20 @@ export default function DeputadoDetalheScreen() {
               </View>
             </View>
 
-            <TituloSecao nota={`Votações do grupo parlamentar ${deputado.partido} nesta legislatura.`}>Como vota</TituloSecao>
+            {/* Os votos são registados por grupo parlamentar, não por deputado: os números
+                são do grupo e o título di-lo, para não parecerem o registo pessoal. */}
+            <TituloSecao
+              nota={`Na Assembleia, os votos são registados por grupo parlamentar, não por pessoa. Estes números são do ${nomePartido(deputado.partido)} nesta legislatura.`}
+            >
+              {`Como vota o grupo parlamentar ${deputado.partido}`}
+            </TituloSecao>
             <View style={[styles.stats, { borderTopColor: cores.tint, borderBottomColor: cores.border }]}>
               <Stat label="A favor" valor={pct(stat?.favor ?? 0)} posicao="favor" />
               <Stat label="Contra" valor={pct(stat?.contra ?? 0)} posicao="contra" />
               <Stat label="Abstenção" valor={pct(stat?.abstencao ?? 0)} posicao="abstencao" />
-              <Stat label="Presença" valor={presenca} posicao="ausente" />
             </View>
 
-            <TituloSecao nota={stat ? `${stat.total} votações` : undefined}>Historial</TituloSecao>
+            <TituloSecao nota={stat ? `${stat.total} votações do grupo parlamentar` : undefined}>Historial do grupo</TituloSecao>
             <FiltroPosicao selecionado={filtro} onSelecionar={setFiltro} />
           </Contentor>
           </View>
@@ -122,7 +127,7 @@ export default function DeputadoDetalheScreen() {
                 pressed && { opacity: 0.7 },
               ]}
               accessibilityRole="button"
-              accessibilityLabel={`${item.titulo}, ${item.dataVoto}`}
+              accessibilityLabel={`${item.titulo}, ${item.dataVoto}, ${ROTULO[item.posicao]}`}
               accessibilityHint="Abre o detalhe da votação"
             >
               <View style={styles.itemInfo}>
@@ -149,11 +154,13 @@ export default function DeputadoDetalheScreen() {
 
 function Stat({ label, valor, posicao }: { label: string; valor?: number; posicao: Posicao }) {
   const cores = useCores();
-  const c = coresPosicao(cores, posicao);
   return (
-    <View style={styles.stat} accessible accessibilityLabel={`${label}: ${valor ?? 'sem dados'}%`}>
+    <View style={styles.stat} accessible accessibilityLabel={`${label}: ${valor !== undefined ? `${valor}%` : 'sem dados'}`}>
       <Text style={[Typography.data, { color: cores.text }]}>{valor !== undefined ? `${valor}%` : '—'}</Text>
-      <Text style={[Typography.caption, { color: cores.textMuted }]}>{label}</Text>
+      <View style={styles.statRotulo}>
+        <Amostra posicao={posicao} />
+        <Text style={[Typography.caption, { color: cores.textMuted }]}>{label}</Text>
+      </View>
     </View>
   );
 }
@@ -223,6 +230,11 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: Spacing.md,
     gap: 2,
+  },
+  statRotulo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   item: {
     flexDirection: 'row',

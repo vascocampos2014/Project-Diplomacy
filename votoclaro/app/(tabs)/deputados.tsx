@@ -8,9 +8,10 @@ import { JanelaAzulejo } from '@/components/Azulejo';
 import { DeputadoRow } from '@/components/DeputadoRow';
 import { EcraVazio } from '@/components/EcraVazio';
 import { LinhaOpcoes } from '@/components/LinhaOpcoes';
-import { anim, CampoPesquisa, CabecalhoEcra, Chip, Contentor, useCores } from '@/components/ui';
+import { useEspacoBarra } from '@/components/BarraSeparadores';
+import { anim, CampoPesquisa, CabecalhoEcra, Chip, Contentor, useCores, useDisposicao } from '@/components/ui';
 import { getCorPartido } from '@/constants/CORES_PARTIDOS';
-import { Radii, Spacing } from '@/constants/Spacing';
+import { MAX_WIDTH_LARGO, Radii, Spacing } from '@/constants/Spacing';
 import { Fonts, Typography } from '@/constants/Typography';
 import { useDeputados } from '@/hooks/useDeputados';
 import { filtrarDeputados } from '@/lib/deputados';
@@ -28,30 +29,42 @@ export default function DeputadosScreen() {
   );
   const deputados = useMemo(() => filtrarDeputados(data?.deputados ?? [], pesquisa, partido), [data, pesquisa, partido]);
 
+  const espacoBarra = useEspacoBarra();
+  // Telemóvel: uma lista contínua. Computador: uma grelha de 2 ou 3 colunas,
+  // cada deputado no seu cartão.
+  const { desktop, colunas, largura } = useDisposicao();
+  const larguraPagina = Math.min(largura - Spacing.lg * 2, MAX_WIDTH_LARGO);
+  const larguraCelula = (larguraPagina - Spacing.md * (colunas - 1)) / colunas;
+
   return (
     <SafeAreaView style={[styles.ecra, { backgroundColor: cores.background }]} edges={[]}>
       <FlatList
+        key={`colunas-${colunas}`}
+        numColumns={colunas}
+        columnWrapperStyle={colunas > 1 ? [styles.linhaGrelha, { width: larguraPagina }] : undefined}
         data={deputados}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.lista}
+        contentContainerStyle={[styles.lista, { paddingBottom: Spacing.xxxl + espacoBarra }]}
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
           <View {...anim('pagina')}>
           <View style={styles.faixa}>
             <JanelaAzulejo edificio="torre-belem" />
           </View>
-          <Contentor>
+          <Contentor largo>
             <CabecalhoEcra
               titulo="Deputados"
               subtitulo={data ? `${data.deputados.length} deputados em funções` : undefined}
             />
-            <CampoPesquisa
-              valor={pesquisa}
-              onMudar={setPesquisa}
-              placeholder="Nome, partido ou círculo…"
-              accessibilityLabel="Procurar deputado"
-              accessibilityHint="Filtra a lista por nome, partido ou círculo eleitoral"
-            />
+            <View style={desktop ? styles.pesquisaLarga : undefined}>
+              <CampoPesquisa
+                valor={pesquisa}
+                onMudar={setPesquisa}
+                placeholder="Nome, partido ou círculo…"
+                accessibilityLabel="Procurar deputado"
+                accessibilityHint="Filtra a lista por nome, partido ou círculo eleitoral"
+              />
+            </View>
             <View style={styles.partidos}>
             <LinhaOpcoes>
               <Chip label="Todos" selecionado={partido === null} onPress={() => setPartido(null)} />
@@ -76,13 +89,14 @@ export default function DeputadosScreen() {
           </View>
         }
         renderItem={({ item, index }) => (
-          <Contentor>
+          <Contentor style={desktop ? { width: larguraCelula, maxWidth: larguraCelula, alignSelf: 'stretch' } : undefined}>
             <View
               style={[
                 styles.linha,
                 { backgroundColor: cores.surface, borderColor: cores.border },
-                index === 0 && styles.primeira,
-                index === deputados.length - 1 && styles.ultima,
+                desktop
+                  ? styles.celula
+                  : [index === 0 && styles.primeira, index === deputados.length - 1 && styles.ultima],
               ]}
             >
               <DeputadoRow
@@ -157,6 +171,20 @@ const styles = StyleSheet.create({
     borderLeftWidth: 1,
     borderRightWidth: 1,
     borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  pesquisaLarga: {
+    maxWidth: 480,
+  },
+  linhaGrelha: {
+    alignSelf: 'center',
+    gap: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  celula: {
+    flex: 1,
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderRadius: Radii.card,
   },
   primeira: {
     borderTopWidth: 1,

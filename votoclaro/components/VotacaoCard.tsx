@@ -10,6 +10,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { RESULTADO } from '@/components/ContagemVotos';
 import { Amostra, Hemiciclo, LegendaVotos } from '@/components/Hemiciclo';
 import { anim, Cartao, Etiqueta, useCores } from '@/components/ui';
+import { nomePartido } from '@/constants/CORES_PARTIDOS';
 import { Spacing } from '@/constants/Spacing';
 import { Fonts, Typography } from '@/constants/Typography';
 import type { PartidosPorPosicao } from '@/lib/feed';
@@ -29,6 +30,10 @@ interface VotacaoCardProps {
   onPress?: () => void;
   href?: Href;
   destaque?: boolean;
+  // Só com `destaque`: a versão a duas colunas do computador.
+  largo?: boolean;
+  // Numa grelha: o cartão estica para a altura da linha.
+  esticar?: boolean;
 }
 
 const LINHAS: { chave: keyof PartidosPorPosicao; rotulo: string }[] = [
@@ -38,12 +43,40 @@ const LINHAS: { chave: keyof PartidosPorPosicao; rotulo: string }[] = [
 ];
 
 export function VotacaoCard(props: VotacaoCardProps) {
-  const { titulo, referencia, tema, data, resultado, favor, contra, abstencao, ausentes, partidos, onPress, href, destaque } = props;
+  const { titulo, referencia, tema, data, resultado, favor, contra, abstencao, ausentes, partidos, onPress, href, destaque, largo = false, esticar = false } = props;
   const cores = useCores();
   const total = favor + contra + abstencao + ausentes;
-  const rotulo = `${titulo}, ${referencia ? `${referencia}, ` : ''}${tema}, ${data}, ${RESULTADO[resultado].label}`;
+  // O rótulo substitui o conteúdo do cartão para leitores de ecrã, por isso leva
+  // também quem votou como, não só o título.
+  const contagem = total > 0 ? `. ${favor} a favor, ${contra} contra, ${abstencao} abstenção` : '';
+  const sentidos = partidos
+    ? LINHAS.filter(({ chave }) => partidos[chave].length > 0)
+        .map(({ chave, rotulo: r }) => `${r}: ${partidos[chave].map(nomePartido).join(', ')}`)
+        .join('. ')
+    : '';
+  const rotulo = `${titulo}, ${referencia ? `${referencia}, ` : ''}${tema}, ${data}. ${RESULTADO[resultado].label}${contagem}${sentidos ? `. ${sentidos}` : ''}`;
 
   if (destaque) {
+    const manchete = (
+      <View {...anim('titulo')}>
+        <Text style={[Typography.manchete, styles.manchete, largo && styles.mancheteLarga, { color: cores.tintInk }]}>{titulo}</Text>
+      </View>
+    );
+    const meta = (
+      <Text style={[Typography.caption, { color: cores.textMuted }]}>
+        {referencia ? `${referencia} · ` : ''}
+        {data}
+      </Text>
+    );
+    const camara =
+      total > 0 ? (
+        <View style={styles.hemiciclo}>
+          <Hemiciclo favor={favor} contra={contra} abstencao={abstencao} ausentes={ausentes} resultado={resultado} animar />
+          <LegendaVotos favor={favor} contra={contra} abstencao={abstencao} ausentes={ausentes} />
+        </View>
+      ) : null;
+    const ver = <Text style={[styles.ver, { color: cores.tintInk }]}>Ver a votação completa ›</Text>;
+
     return (
       <Cartao
         onPress={onPress}
@@ -52,28 +85,41 @@ export function VotacaoCard(props: VotacaoCardProps) {
         accessibilityLabel={rotulo}
         accessibilityHint="Abre a votação completa"
       >
-        <Etiqueta>{tema}</Etiqueta>
-        <View {...anim('titulo')}>
-          <Text style={[Typography.manchete, styles.manchete, { color: cores.tintInk }]}>{titulo}</Text>
-        </View>
-        <Text style={[Typography.caption, { color: cores.textMuted }]}>
-          {referencia ? `${referencia} · ` : ''}
-          {data}
-        </Text>
-        {total > 0 ? (
-          <View style={styles.hemiciclo}>
-            <Hemiciclo favor={favor} contra={contra} abstencao={abstencao} ausentes={ausentes} resultado={resultado} animar />
-            <LegendaVotos favor={favor} contra={contra} abstencao={abstencao} ausentes={ausentes} />
+        {largo ? (
+          // Computador: primeira página a duas colunas, o texto à esquerda e a
+          // câmara à direita.
+          <View style={styles.destaqueLargo}>
+            <View style={styles.destaqueTexto}>
+              <Etiqueta>{tema}</Etiqueta>
+              {manchete}
+              {meta}
+              {partidos ? <PartidosPorSentido partidos={partidos} /> : null}
+              {ver}
+            </View>
+            <View style={styles.destaqueCamara}>{camara}</View>
           </View>
-        ) : null}
-        {partidos ? <PartidosPorSentido partidos={partidos} /> : null}
-        <Text style={[styles.ver, { color: cores.tintInk }]}>Ver a votação completa ›</Text>
+        ) : (
+          <>
+            <Etiqueta>{tema}</Etiqueta>
+            {manchete}
+            {meta}
+            {camara}
+            {partidos ? <PartidosPorSentido partidos={partidos} /> : null}
+            {ver}
+          </>
+        )}
       </Cartao>
     );
   }
 
   return (
-    <Cartao onPress={onPress} href={href} accessibilityLabel={rotulo} accessibilityHint="Abre a votação completa">
+    <Cartao
+      onPress={onPress}
+      href={href}
+      style={esticar ? styles.esticar : undefined}
+      accessibilityLabel={rotulo}
+      accessibilityHint="Abre a votação completa"
+    >
       <View style={styles.linhaCartao}>
         <View style={styles.texto}>
           <Etiqueta>{tema}</Etiqueta>
@@ -118,7 +164,7 @@ export function PartidosPorSentido({
             key={chave}
             style={styles.partidoLinha}
             accessible
-            accessibilityLabel={`${rotulo}: ${lista.length ? lista.join(', ') : 'nenhum partido'}`}
+            accessibilityLabel={`${rotulo}: ${lista.length ? lista.map(nomePartido).join(', ') : 'nenhum partido'}`}
           >
             <View style={styles.partidoRotulo}>
               <Amostra posicao={chave} />
@@ -144,6 +190,26 @@ const styles = StyleSheet.create({
   manchete: {
     marginTop: Spacing.xs,
   },
+  mancheteLarga: {
+    fontSize: 44,
+    lineHeight: 48,
+    letterSpacing: -1.2,
+    marginBottom: Spacing.xs,
+  },
+  destaqueLargo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.huge,
+  },
+  destaqueTexto: {
+    flex: 1,
+    minWidth: 0,
+    gap: Spacing.sm,
+  },
+  destaqueCamara: {
+    width: '46%',
+    maxWidth: 520,
+  },
   hemiciclo: {
     marginTop: Spacing.md,
   },
@@ -151,6 +217,9 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.semibold,
     fontSize: 14,
     marginTop: Spacing.xs,
+  },
+  esticar: {
+    flex: 1,
   },
   linhaCartao: {
     flexDirection: 'row',

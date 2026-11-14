@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MenuTresPontos } from '@/components/MenuTresPontos';
 import { useCores } from '@/components/ui';
-import { LARGURA_DESKTOP, MAX_WIDTH, Spacing } from '@/constants/Spacing';
+import { LARGURA_DESKTOP, MAX_WIDTH_LARGO, Spacing } from '@/constants/Spacing';
 import { Fonts } from '@/constants/Typography';
 
 export const SEPARADORES = [
@@ -23,7 +23,7 @@ const ICONE = require('@/assets/brand/logo-icon-96.png');
 export function Marca({ tamanho = 28 }: { tamanho?: number }) {
   const cores = useCores();
   return (
-    <View style={styles.marca} accessible accessibilityRole="header" accessibilityLabel="VotoClaro">
+    <View style={styles.marca} accessible accessibilityRole="image" accessibilityLabel="VotoClaro">
       <Image source={ICONE} style={{ width: tamanho, height: tamanho }} accessibilityIgnoresInvertColors />
       <Text style={[styles.palavra, { color: cores.text }]}>
         <Text style={styles.voto}>Voto</Text>Claro
@@ -95,7 +95,8 @@ const styles = StyleSheet.create({
   },
   interior: {
     width: '100%',
-    maxWidth: MAX_WIDTH + Spacing.lg * 2,
+    // A barra alinha com a página larga do computador (no telemóvel não há limite).
+    maxWidth: MAX_WIDTH_LARGO + Spacing.lg * 2,
     alignSelf: 'center',
     height: 56,
     paddingHorizontal: Spacing.lg,

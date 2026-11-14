@@ -103,7 +103,7 @@ export function votacaoParaIniciativa(
   };
 }
 
-const TIPOS_INICIATIVA: Record<string, string> = {
+export const TIPOS_INICIATIVA: Record<string, string> = {
   J: 'Projeto de Lei',
   P: 'Proposta de Lei',
   R: 'Projeto de Resolução',
@@ -136,6 +136,11 @@ export function referenciaVotacao(v: {
   else if (v.descricao?.startsWith('Texto de substituição')) partes.push('Texto de substituição');
 
   return partes.join(' · ');
+}
+
+// Página oficial da iniciativa no parlamento.pt (a mesma que o backend usa nas citações).
+export function paginaIniciativa(iniciativaId: number | string): string {
+  return `https://www.parlamento.pt/ActividadeParlamentar/Paginas/DetalheIniciativa.aspx?BID=${encodeURIComponent(String(iniciativaId))}`;
 }
 
 export function deputadoApiParaDeputado(d: ApiDeputado): Deputado {

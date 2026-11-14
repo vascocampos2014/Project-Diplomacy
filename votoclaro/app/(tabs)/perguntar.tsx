@@ -17,6 +17,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { FaixaAzulejo } from '@/components/Azulejo';
 import { EcraVazio } from '@/components/EcraVazio';
 import { RespostaRag } from '@/components/RespostaRag';
+import { useEspacoBarra } from '@/components/BarraSeparadores';
 import { anim, Aviso, Botao, CabecalhoEcra, Cartao, Chip, Contentor, TituloSecao, useCores } from '@/components/ui';
 import { Radii, Spacing } from '@/constants/Spacing';
 import { Fonts, Typography } from '@/constants/Typography';
@@ -38,6 +39,7 @@ type Entrada =
 
 export default function PerguntarScreen({ apiUrl = RAG_API_URL, perguntar = perguntarApi }: { apiUrl?: string; perguntar?: typeof perguntarApi }) {
   const cores = useCores();
+  const espacoBarra = useEspacoBarra();
   const [texto, setTexto] = useState('');
   // ?pergunta=… (vindo do detalhe de uma votação) preenche o campo.
   const { pergunta: perguntaInicial } = useLocalSearchParams<{ pergunta?: string }>();
@@ -173,7 +175,7 @@ export default function PerguntarScreen({ apiUrl = RAG_API_URL, perguntar = perg
           </Contentor>
         </ScrollView>
 
-        <View style={[styles.barra, { backgroundColor: cores.background, borderTopColor: cores.border }]}>
+        <View style={[styles.barra, { backgroundColor: cores.background, borderTopColor: cores.border, paddingBottom: espacoBarra || Spacing.sm }]}>
           <Contentor style={styles.barraLinha}>
             <TextInput
               value={texto}

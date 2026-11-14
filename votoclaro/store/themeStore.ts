@@ -26,6 +26,9 @@ export function lerTemaGuardado(): ThemeOverride {
 
 function guardarTema(override: ThemeOverride) {
   if (Platform.OS !== 'web') return;
+  // O mesmo atributo que o script do +html.tsx põe ao carregar a página.
+  if (override) globalThis.document?.documentElement.setAttribute('data-tema', override);
+  else globalThis.document?.documentElement.removeAttribute('data-tema');
   try {
     if (override) globalThis.localStorage?.setItem(CHAVE_TEMA, override);
     else globalThis.localStorage?.removeItem(CHAVE_TEMA);

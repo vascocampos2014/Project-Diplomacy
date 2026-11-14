@@ -5,8 +5,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
 import { useCores } from '@/components/ui';
-import { VotoIndicator } from '@/components/VotoIndicator';
-import { getCorPartido } from '@/constants/CORES_PARTIDOS';
+import { ROTULO, VotoIndicator } from '@/components/VotoIndicator';
+import { getCorPartido, nomePartido } from '@/constants/CORES_PARTIDOS';
 import { Spacing } from '@/constants/Spacing';
 import { Fonts, Typography } from '@/constants/Typography';
 import type { Posicao } from '@/types';
@@ -22,6 +22,8 @@ interface DeputadoRowProps {
 
 export function DeputadoRow({ nome, partido, circulo, fotoUrl, posicao, onPress }: DeputadoRowProps) {
   const cores = useCores();
+  // O sentido de voto entra no rótulo: é o facto que a linha existe para mostrar.
+  const rotulo = `${nome}, ${nomePartido(partido)}, ${circulo}${posicao ? `, ${ROTULO[posicao]}` : ''}`;
   const conteudo = (
     <>
       <Avatar nome={nome} fotoUrl={fotoUrl} partido={partido} />
@@ -44,7 +46,7 @@ export function DeputadoRow({ nome, partido, circulo, fotoUrl, posicao, onPress 
 
   if (!onPress) {
     return (
-      <View style={styles.linha} accessible accessibilityLabel={`${nome}, ${partido}, ${circulo}`}>
+      <View style={styles.linha} accessible accessibilityLabel={rotulo}>
         {conteudo}
       </View>
     );
@@ -54,7 +56,7 @@ export function DeputadoRow({ nome, partido, circulo, fotoUrl, posicao, onPress 
       style={({ pressed }) => [styles.linha, pressed && { opacity: 0.7 }]}
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`${nome}, ${partido}, ${circulo}`}
+      accessibilityLabel={rotulo}
       accessibilityHint="Abre o perfil do deputado"
     >
       {conteudo}

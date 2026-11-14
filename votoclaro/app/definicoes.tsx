@@ -3,6 +3,7 @@ import React from 'react';
 import { ScrollView, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { FaixaAzulejo } from '@/components/Azulejo';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { CabecalhoEcra, Cartao, Contentor, TituloSecao, useCores } from '@/components/ui';
 import { Spacing } from '@/constants/Spacing';
@@ -13,6 +14,7 @@ export default function DefinicoesScreen() {
   return (
     <SafeAreaView style={[styles.ecra, { backgroundColor: cores.background }]} edges={['bottom']}>
       <Stack.Screen options={{ title: 'Definições' }} />
+      <FaixaAzulejo altura={14} />
       <ScrollView contentContainerStyle={styles.conteudo}>
         <Contentor>
           <CabecalhoEcra titulo="Definições" />

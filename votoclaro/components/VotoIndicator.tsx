@@ -1,20 +1,12 @@
-// Indicador de posição — ver .claude/DESIGN.md. Nunca só cor: ícone sempre.
-// Uma caixa quadrada do boletim, com o ícone da posição desenhado dentro.
-import { MaterialIcons } from '@expo/vector-icons';
+// Indicador de posição — ver .claude/DESIGN.md. Nunca só cor: textura e palavra.
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { Amostra } from '@/components/Amostra';
 import { useCores } from '@/components/ui';
-import { Radii } from '@/constants/Spacing';
 import { Fonts } from '@/constants/Typography';
 import type { Posicao } from '@/types';
 
-export const ICONE: Record<Posicao, keyof typeof MaterialIcons.glyphMap> = {
-  favor: 'check',
-  contra: 'close',
-  abstencao: 'remove',
-  ausente: 'more-horiz',
-};
 export const ROTULO: Record<Posicao, string> = {
   favor: 'A favor',
   contra: 'Contra',
@@ -28,11 +20,7 @@ const A11Y: Record<Posicao, string> = {
   ausente: 'Ausente',
 };
 
-const TAMANHOS = {
-  sm: { caixa: 20, icone: 14 },
-  md: { caixa: 26, icone: 18 },
-  lg: { caixa: 36, icone: 24 },
-};
+const TAMANHOS = { sm: 12, md: 14, lg: 18 };
 
 export function coresPosicao(cores: ReturnType<typeof useCores>, posicao: Posicao) {
   return {
@@ -49,17 +37,18 @@ interface VotoIndicatorProps {
   showLabel?: boolean;
 }
 
-export function VotoIndicator({ posicao, size = 'md', showLabel = false }: VotoIndicatorProps) {
+// A amostra de tinta (cheia / tracejada / vazia / cinzenta) com a palavra ao lado:
+// o mesmo código do hemiciclo, para não haver dois sistemas de sinais.
+export function VotoIndicator({ posicao, size = 'md', showLabel = true }: VotoIndicatorProps) {
   const cores = useCores();
   const c = coresPosicao(cores, posicao);
-  const t = TAMANHOS[size];
 
   return (
     <View style={styles.linha} accessible accessibilityRole="image" accessibilityLabel={A11Y[posicao]}>
-      <View style={[styles.caixa, { width: t.caixa, height: t.caixa, backgroundColor: c.fundo, borderColor: c.tinta }]}>
-        <MaterialIcons name={ICONE[posicao]} size={t.icone} color={c.tinta} />
-      </View>
-      {showLabel ? <Text style={[styles.rotulo, { color: c.tinta }]}>{ROTULO[posicao]}</Text> : null}
+      <Amostra posicao={posicao} tamanho={TAMANHOS[size]} />
+      {showLabel ? (
+        <Text style={[styles.rotulo, size === 'sm' && styles.rotuloSm, { color: c.tinta }]}>{ROTULO[posicao]}</Text>
+      ) : null}
     </View>
   );
 }
@@ -68,16 +57,13 @@ const styles = StyleSheet.create({
   linha: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-  },
-  caixa: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: Radii.badge,
-    borderWidth: 1,
+    gap: 6,
   },
   rotulo: {
     fontFamily: Fonts.semibold,
-    fontSize: 14,
+    fontSize: 13,
+  },
+  rotuloSm: {
+    fontSize: 12,
   },
 });
