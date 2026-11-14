@@ -2,16 +2,16 @@
 // dos ecrãs e separadores). É geometria desenhada aqui, não uma imagem.
 // Ver .claude/DESIGN.md › Azulejo.
 import React, { useId } from 'react';
-import { Image, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Image, Platform, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Circle, Defs, G, Path, Pattern, Rect } from 'react-native-svg';
 
-import { anim, Contentor, useCores, useDisposicao } from '@/components/ui';
+import { Contentor, useCores, useDisposicao } from '@/components/ui';
+import { useColorScheme } from '@/components/useColorScheme';
 import { EDIFICIOS, type EdificioId } from '@/constants/Edificios';
-import { MAX_WIDTH, MAX_WIDTH_LARGO, Radii, Spacing } from '@/constants/Spacing';
+import { MAX_WIDTH, MAX_WIDTH_LARGO, Spacing } from '@/constants/Spacing';
 import { Typography } from '@/constants/Typography';
 
 const LADO = 32; // um azulejo, em unidades do desenho
-const PAPEL = '#F8F9FA';
 
 // Uma faixa de azulejos. Até 32px de altura mostra uma fila inteira de
 // azulejos mais pequenos; acima disso repete a tamanho real.
@@ -46,16 +46,21 @@ export function FaixaAzulejo({ altura = 14 }: { altura?: number }) {
   );
 }
 
-// A janela: o edifício gravado numa moldura ultramarino, sempre em "papel"
-// claro (também no modo escuro: as gravuras são tinta preta sobre #F8F9FA).
-function Janela({ edificio, style }: { edificio: EdificioId; style?: StyleProp<ViewStyle> }) {
+// A gravura do edifício, sem moldura: o papel da imagem (#F8F9FA, a cor da
+// página) funde-se com o fundo. Na web, em modo escuro, uma inversão parcial
+// leva o papel a #232323 e o traço a cinzento claro; as margens esbatem-se
+// (máscara em +html.tsx, [data-gravura]), para o edifício não acabar num corte.
+// No nativo a imagem aparece como está.
+function Gravura({ edificio, style }: { edificio: EdificioId; style?: StyleProp<ViewStyle> }) {
   const cores = useCores();
+  const escuro = useColorScheme() === 'dark';
   const e = EDIFICIOS[edificio];
   if (!e.imagem) return null;
+  const web =
+    Platform.OS === 'web' ? { dataSet: { anim: 'imagem', gravura: escuro ? 'escuro' : 'claro' } } : {};
   return (
-    <View style={[styles.janela, { backgroundColor: PAPEL, borderColor: cores.tint }, style]}>
-      {/* A caixa tem a proporção da gravura (2:1); a imagem enche-a. */}
-      <View style={styles.imagemCaixa} {...anim('imagem')}>
+    <View style={style}>
+      <View style={styles.imagemCaixa} {...web}>
         <Image
           source={e.imagem}
           style={styles.imagem}
@@ -64,15 +69,15 @@ function Janela({ edificio, style }: { edificio: EdificioId; style?: StyleProp<V
           accessibilityIgnoresInvertColors
         />
       </View>
-      <Text style={[Typography.caption, styles.legenda, { color: '#585D64' }]}>{e.nome}</Text>
+      <Text style={[Typography.caption, styles.legenda, { color: cores.textMuted }]}>{e.nome}</Text>
     </View>
   );
 }
 
-// Cabeçalho de um separador: a faixa de azulejos com o edifício numa janela,
-// e o título do ecrã (`children`).
-// - Telemóvel: a janela centrada, a sobrepor a faixa, e o título por baixo.
-// - Computador: o título à esquerda e a janela à direita, como uma primeira página.
+// Cabeçalho de um separador: a faixa de azulejos, o edifício e o título do
+// ecrã (`children`).
+// - Telemóvel: o edifício por baixo da faixa, a toda a largura, e o título a seguir.
+// - Computador: o título à esquerda e o edifício à direita, como uma primeira página.
 // Sem imagem fica só a faixa: nunca se desenha um edifício falso.
 // Espera ocupar a largura toda do ecrã (sem padding lateral à volta).
 export function CabecalhoEdificio({ edificio, children }: { edificio: EdificioId; children: React.ReactNode }) {
@@ -92,41 +97,26 @@ export function CabecalhoEdificio({ edificio, children }: { edificio: EdificioId
   if (desktop) {
     return (
       <View>
-        <FaixaAzulejo altura={64} />
+        <FaixaAzulejo altura={32} />
         <Contentor largo style={[styles.margens, styles.margensLargas, styles.lado]}>
           <View style={styles.ladoTexto}>{children}</View>
-          <Janela edificio={edificio} style={styles.janelaLado} />
+          <Gravura edificio={edificio} style={styles.gravuraLado} />
         </Contentor>
       </View>
     );
   }
   return (
     <View>
-      <View style={styles.janelaZona}>
-        <FaixaAzulejo altura={64} />
-        <Janela edificio={edificio} style={styles.janelaCentro} />
-      </View>
-      <Contentor style={styles.margens}>{children}</Contentor>
+      <FaixaAzulejo altura={32} />
+      <Contentor style={styles.margens}>
+        <Gravura edificio={edificio} style={styles.gravuraTopo} />
+        {children}
+      </Contentor>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  janelaZona: {
-    paddingBottom: Spacing.sm,
-  },
-  janela: {
-    borderWidth: 2,
-    borderRadius: Radii.card,
-    padding: Spacing.sm,
-  },
-  janelaCentro: {
-    marginTop: -48,
-    marginHorizontal: Spacing.xxl,
-    alignSelf: 'center',
-    width: '86%',
-    maxWidth: 520,
-  },
   imagemCaixa: {
     width: '100%',
     aspectRatio: 2,
@@ -148,22 +138,27 @@ const styles = StyleSheet.create({
   },
   lado: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: Spacing.huge,
   },
   ladoTexto: {
     flex: 1,
     minWidth: 0,
-    paddingTop: Spacing.xl,
   },
-  janelaLado: {
-    marginTop: -40,
-    width: '44%',
+  gravuraLado: {
+    width: '48%',
+    maxWidth: 580,
+    marginTop: Spacing.md,
+  },
+  gravuraTopo: {
+    width: '100%',
     maxWidth: 520,
+    alignSelf: 'center',
+    marginTop: Spacing.md,
   },
   legenda: {
     textAlign: 'center',
-    marginTop: 2,
+    marginTop: -Spacing.xs,
     fontSize: 12,
   },
 });

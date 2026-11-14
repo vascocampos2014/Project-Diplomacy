@@ -54,11 +54,13 @@ Elevation is declared once: a hairline `border` on white. No shadows. The lead s
 - **Azulejo** (`components/Azulejo.tsx`). `FaixaAzulejo` is the tile band, geometry drawn in SVG. Heights:
   14px strip under the top bar on detail and tool screens, 32px on tab screens without a building image,
   56px behind the deputy avatar, 64px under a building window. `CabecalhoEdificio` is a tab's header: the
-  band, the landmark in a 2px Ultramarine window (always light paper, 2:1), and the screen title. On the phone
-  the window is centred over the band with the title below; on desktop the title is on the left and the window
-  on the right, overlapping the band.
+  32px band, the landmark engraving and the screen title. The engraving has **no frame**: its paper is the page
+  colour, its edges fade out (CSS mask), and in dark mode a partial inversion (0.884) turns the paper into
+  `#232323` and the ink into light grey. On the phone the engraving sits under the band with the title below;
+  on desktop the title is on the left and the engraving on the right.
 - **Buildings** (`constants/Edificios.ts`, images in `votoclaro/assets/edificios/`). One landmark per tab:
-  Votações → São Bento, Deputados → Torre de Belém (Jerónimos and Pena are reserved). **Real images only**:
+  Votações → São Bento, Deputados → Torre de Belém (Jerónimos and Pena are reserved). Never put them in a
+  frame, card or border. **Real images only**:
   while an image is missing the tab shows the tile band alone. Never draw a fake building in SVG.
 - **Hemiciclo** (`components/Hemiciclo.tsx`). The 230-seat half ring split by position, with faint seat rows.
   Large on the feed lead and the vote detail, with the result stamp in the centre; `mini` (64px) on feed cards,

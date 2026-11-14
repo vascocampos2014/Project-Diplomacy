@@ -111,6 +111,25 @@ input, textarea { caret-color: #120A8F; }
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
 
+/* Gravuras dos edifícios (components/Azulejo.tsx › Gravura): sem moldura, o
+   papel funde-se com o fundo e as margens esbatem-se. */
+[data-gravura] {
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 14%, #000 86%, transparent 100%),
+    linear-gradient(to bottom, #000 78%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to right, transparent 0, #000 14%, #000 86%, transparent 100%),
+    linear-gradient(to bottom, #000 78%, transparent 100%);
+  mask-composite: intersect;
+}
+/* Modo claro: o papel já é #F8F9FA, a cor da página. Modo escuro: uma inversão
+   parcial (0.884) leva o papel #F8F9FA exatamente a #232323 e o traço preto a
+   cinzento claro. Sem mix-blend-mode: a animação de entrada da página isola a
+   imagem e o "blend" não teria nada por trás. */
+[data-gravura='escuro'] { filter: invert(0.884); }
+/* A entrada com blur tem de manter a inversão, senão pisca papel claro. */
+@keyframes vc-imagem-escuro { from { opacity: 0; transform: scale(1.02); filter: invert(0.884) blur(var(--blur-large)); } }
+[data-gravura='escuro'][data-anim='imagem'] { animation-name: vc-imagem-escuro; }
+
 /* Tema escolhido em Definições (atributo posto pelo script temaGuardado). */
 html[data-tema='light'] { color-scheme: light; }
 html[data-tema='light'] body { background-color: #F8F9FA; }
