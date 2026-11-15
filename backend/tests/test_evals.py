@@ -16,7 +16,7 @@ def test_eval_sets_are_well_formed():
     for case in _load("answers.jsonl"):
         assert case["id"] not in ids
         ids.add(case["id"])
-        assert case["kind"] in {"votes", "content", "mixed", "unanswerable", "neutrality"}
+        assert case["kind"] in {"votes", "content", "mixed", "unanswerable", "neutrality", "typos", "followup"}
         assert case["must"]
 
 

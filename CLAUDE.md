@@ -57,8 +57,8 @@ Votes are recorded **per parliamentary group, not per deputy**.
   .venv/bin/votoclaro ask "Como votou o PS no Projeto de Lei 511?" -v
   .venv/bin/uvicorn votoclaro_rag.api:app --port 8000
   ```
-  `tests/test_evals.py::test_eval_sets_are_well_formed` currently fails: `evals/answers.jsonl`
-  uses kind `typos`, which the test doesn't allow.
+  A new eval kind in `evals/answers.jsonl` must also be added to the allowed set in
+  `tests/test_evals.py::test_eval_sets_are_well_formed`.
 - Deploy: the Space is `vscocmp/votoclaro-rag` (`https://vscocmp-votoclaro-rag.hf.space`).
   `deploy/push_space.sh` uploads code **and the local DB**. The weekly CI refresh may have put
   newer data on the Space than you have locally, so for code-only changes upload just `src/`:
