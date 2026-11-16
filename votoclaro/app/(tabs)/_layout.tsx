@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
 import { useWindowDimensions } from 'react-native';
+import { useReducedMotion } from 'react-native-reanimated';
 
 import { BarraSeparadores } from '@/components/BarraSeparadores';
 import { BarraTopo } from '@/components/BarraTopo';
@@ -12,6 +13,8 @@ export default function TabLayout() {
   // No computador a navegação vive na barra de topo (texto); no telemóvel é a
   // cápsula flutuante em baixo (BarraSeparadores).
   const desktop = width >= LARGURA_DESKTOP;
+  // Trocar de separador esvanece (sem movimento, se o sistema pedir menos animação).
+  const menosMovimento = useReducedMotion();
 
   return (
     <Tabs
@@ -19,6 +22,7 @@ export default function TabLayout() {
       screenOptions={{
         header: () => <BarraTopo />,
         sceneStyle: { backgroundColor: cores.background },
+        animation: menosMovimento ? 'none' : 'fade',
       }}
     >
       <Tabs.Screen name="index" options={{ title: 'Votações', tabBarAccessibilityLabel: 'Votações recentes' }} />

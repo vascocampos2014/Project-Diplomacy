@@ -11,9 +11,10 @@ import { Image, Platform, Pressable, StyleSheet, Text, TextInput, useWindowDimen
 
 import { AzulejoUnico, PadraoAzulejo } from '@/components/Azulejo';
 import { Carimbo, LegendaVotos } from '@/components/Hemiciclo';
-import { transicao, useCores } from '@/components/ui';
+import { anim, transicao, useCores } from '@/components/ui';
 import { getCorPartido } from '@/constants/CORES_PARTIDOS';
-import { MAX_WIDTH_LARGO, Radii, Spacing } from '@/constants/Spacing';
+import { Easing, MAX_WIDTH_LARGO, Motion, Radii, Spacing } from '@/constants/Spacing';
+import { limparFiltros } from '@/lib/limparFiltros';
 import { Fonts, Typography } from '@/constants/Typography';
 import { useDeputados } from '@/hooks/useDeputados';
 import { useVotacoesFeed } from '@/hooks/useVotacoesFeed';
@@ -62,10 +63,29 @@ function itemDaRota(pathname: string): ItemId | null {
 // (tablet) fica absoluto, que é o que o React Native tem.
 const fixo = (Platform.OS === 'web' ? { position: 'fixed' } : { position: 'absolute' }) as unknown as ViewStyle;
 
+// O menu e o fundo escurecido entram e saem a deslizar/esvanecer (web).
+// Abrir usa a duração "fast"; fechar, a "quick", mais curta.
+const transicaoMenu = (aberto: boolean) =>
+  (Platform.OS === 'web'
+    ? {
+        transitionProperty: 'opacity, transform',
+        transitionDuration: `${aberto ? Motion.fast : Motion.quick}ms`,
+        transitionTimingFunction: Easing.smoothOut,
+      }
+    : {}) as ViewStyle;
+
+// Clicar no nome leva à lista completa, sem filtros.
+const LISTA: Partial<Record<ItemId, 'votacoes' | 'deputados'>> = { votacoes: 'votacoes', deputados: 'deputados' };
+
 export function BarraComputador({ voltar = false }: { voltar?: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
   const [aberto, setAberto] = useState<MenuId | null>(null);
+  // O menu fica montado durante a saída (mostrado) e só fica visível um frame
+  // depois de montar (visivel), para a entrada poder ser animada.
+  const [mostrado, setMostrado] = useState<MenuId | null>(null);
+  const [visivel, setVisivel] = useState(false);
+  const [pairado, setPairado] = useState<ItemId | null>(null);
   const [pesquisa, setPesquisa] = useState('');
   const temporizador = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const gatilhos = useRef<Partial<Record<MenuId, View | null>>>({});
@@ -78,6 +98,17 @@ export function BarraComputador({ voltar = false }: { voltar?: boolean }) {
   // Mudar de página fecha o menu.
   useEffect(() => setAberto(null), [pathname]);
   useEffect(() => () => clearTimeout(temporizador.current), []);
+
+  useEffect(() => {
+    if (aberto) {
+      setMostrado(aberto);
+      const f = requestAnimationFrame(() => setVisivel(true));
+      return () => cancelAnimationFrame(f);
+    }
+    setVisivel(false);
+    const t = setTimeout(() => setMostrado(null), Motion.quick);
+    return () => clearTimeout(t);
+  }, [aberto]);
 
   // Escape fecha o menu e devolve o foco ao botão que o abriu.
   useEffect(() => {
@@ -107,6 +138,15 @@ export function BarraComputador({ voltar = false }: { voltar?: boolean }) {
     clearTimeout(temporizador.current);
     setAberto(null);
   };
+
+  // Votações / Deputados / Aprender: o nome é uma ligação para a página toda;
+  // a seta ao lado (ou passar o rato) abre o menu.
+  function irPara(item: (typeof ITENS)[number]) {
+    fechar();
+    const lista = LISTA[item.id];
+    if (lista) limparFiltros(lista);
+    router.navigate(item.rota);
+  }
 
   function procurar() {
     const q = pesquisa.trim();
@@ -144,39 +184,50 @@ export function BarraComputador({ voltar = false }: { voltar?: boolean }) {
             {ITENS.map((item) => {
               const atual = item.id === ativo;
               const marca = item.id === marcado;
-              const conteudo = (estado: { hovered?: boolean }) => (
-                <View style={[styles.item, transicao, (estado.hovered || aberto === item.id) && styles.itemHover]}>
-                  <Text style={[styles.itemTexto, marca && styles.itemTextoAtivo]}>{item.nome}</Text>
-                  {item.menu ? (
-                    <MaterialIcons
-                      name="expand-more"
-                      size={18}
-                      color={marca ? TEXTO : TEXTO_SUAVE}
-                      style={aberto === item.id ? styles.setaAberta : undefined}
-                    />
-                  ) : null}
-                </View>
-              );
+              const realce = pairado === item.id || aberto === item.id;
               return (
                 <View key={item.id} style={styles.celula}>
                   {item.menu ? (
-                    <Pressable
-                      ref={(r) => {
-                        gatilhos.current[item.id as MenuId] = r;
+                    <View
+                      style={[styles.item, styles.itemDividido, transicao, realce && styles.itemHover]}
+                      onPointerEnter={() => {
+                        setPairado(item.id);
+                        passarPor(item.id as MenuId);
                       }}
-                      onPress={() => setAberto((a) => (a === item.id ? null : (item.id as MenuId)))}
-                      onHoverIn={() => passarPor(item.id as MenuId)}
-                      accessibilityRole="button"
-                      accessibilityLabel={`${item.nome}, abrir menu`}
-                      aria-expanded={aberto === item.id}
-                      aria-current={atual ? 'page' : undefined}
+                      onPointerLeave={() => setPairado((p) => (p === item.id ? null : p))}
                     >
-                      {conteudo}
-                    </Pressable>
+                      <Pressable
+                        onPress={() => irPara(item)}
+                        accessibilityRole="link"
+                        accessibilityLabel={item.id === 'aprender' ? 'Aprender, glossário' : `${item.nome}, ver todas`}
+                        aria-current={atual ? 'page' : undefined}
+                        style={styles.itemLigacao}
+                      >
+                        <Text style={[styles.itemTexto, marca && styles.itemTextoAtivo]}>{item.nome}</Text>
+                      </Pressable>
+                      <Pressable
+                        ref={(r) => {
+                          gatilhos.current[item.id as MenuId] = r;
+                        }}
+                        onPress={() => setAberto((a) => (a === item.id ? null : (item.id as MenuId)))}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Abrir menu ${item.nome}`}
+                        aria-expanded={aberto === item.id}
+                        style={styles.itemSeta}
+                      >
+                        <View style={[transicao, aberto === item.id && styles.setaAberta]}>
+                          <MaterialIcons name="expand-more" size={18} color={marca ? TEXTO : TEXTO_SUAVE} />
+                        </View>
+                      </Pressable>
+                    </View>
                   ) : (
                     <Link href={item.rota} asChild>
-                      <Pressable accessibilityRole="link" aria-current={atual ? 'page' : undefined} onHoverIn={sair}>
-                        {conteudo}
+                      <Pressable accessibilityRole="link" accessibilityLabel={item.nome} aria-current={atual ? 'page' : undefined} onHoverIn={sair}>
+                        {({ hovered }: { hovered?: boolean }) => (
+                          <View style={[styles.item, transicao, hovered && styles.itemHover]}>
+                            <Text style={[styles.itemTexto, marca && styles.itemTextoAtivo]}>{item.nome}</Text>
+                          </View>
+                        )}
                       </Pressable>
                     </Link>
                   )}
@@ -224,19 +275,35 @@ export function BarraComputador({ voltar = false }: { voltar?: boolean }) {
         </View>
       </View>
 
-      {aberto ? (
+      {mostrado ? (
         <View
-          style={[fixo, styles.menu]}
+          style={[
+            fixo,
+            styles.menu,
+            transicaoMenu(visivel),
+            visivel ? styles.menuVisivel : styles.menuEscondido,
+            { pointerEvents: aberto ? 'auto' : 'none' },
+          ]}
           onPointerEnter={ficar}
           role="region"
-          aria-label={`Menu ${ITENS.find((i) => i.id === aberto)?.nome}`}
+          aria-label={`Menu ${ITENS.find((i) => i.id === mostrado)?.nome}`}
         >
-          <MenuAberto id={aberto} fechar={fechar} />
+          {/* Passar de um menu para outro com o menu aberto troca só o conteúdo. */}
+          <View key={mostrado} {...anim('troca')}>
+            <MenuAberto id={mostrado} fechar={fechar} />
+          </View>
         </View>
       ) : null}
       </View>
       {/* O resto da página fica um pouco escurecido; um clique fora fecha. */}
-      {aberto ? <Pressable style={[fixo, styles.fundo]} onPress={fechar} accessible={false} focusable={false} /> : null}
+      {mostrado ? (
+        <Pressable
+          style={[fixo, styles.fundo, transicaoMenu(visivel), { opacity: visivel ? 1 : 0, pointerEvents: aberto ? 'auto' : 'none' }]}
+          onPress={fechar}
+          accessible={false}
+          focusable={false}
+        />
+      ) : null}
     </View>
   );
 }
@@ -263,7 +330,7 @@ function LogoImagem() {
 // O azulejo pendurado por baixo do separador ativo (ou do menu aberto).
 function Selo() {
   return (
-    <View style={[styles.selo, { pointerEvents: 'none' }]}>
+    <View style={[styles.selo, { pointerEvents: 'none' }]} {...anim('selo')}>
       <AzulejoUnico tamanho={18} linha={ULTRA} fundo="#FFFFFF" />
     </View>
   );
@@ -284,9 +351,11 @@ function Opcao({
   frase,
   ponto,
   numero,
+  limpar,
 }: {
   href: Href;
   fechar: () => void;
+  limpar?: () => void;
   icone?: keyof typeof MaterialIcons.glyphMap;
   titulo: string;
   frase?: string;
@@ -298,7 +367,15 @@ function Opcao({
     <Link href={href} asChild>
       {/* Com Link asChild o estilo tem de ser fixo (um estilo-função perde-se);
           o hover desenha-se lá dentro. */}
-      <Pressable onPress={fechar} accessibilityRole="link" style={styles.opcaoLigacao}>
+      <Pressable
+        onPress={() => {
+          fechar();
+          limpar?.();
+        }}
+        accessibilityRole="link"
+        accessibilityLabel={numero !== undefined ? `${titulo}, ${numero} deputados` : titulo}
+        style={styles.opcaoLigacao}
+      >
         {({ hovered }: { hovered?: boolean }) => (
           <View
             style={[
@@ -337,11 +414,19 @@ function Coluna({ children, rotulo }: { children: React.ReactNode; rotulo?: stri
   );
 }
 
-function VerTodas({ href, texto, fechar }: { href: Href; texto: string; fechar: () => void }) {
+function VerTodas({ href, texto, fechar, limpar }: { href: Href; texto: string; fechar: () => void; limpar?: () => void }) {
   const cores = useCores();
   return (
     <Link href={href} asChild>
-      <Pressable onPress={fechar} accessibilityRole="link" style={styles.verTodas}>
+      <Pressable
+        onPress={() => {
+          fechar();
+          limpar?.();
+        }}
+        accessibilityRole="link"
+        accessibilityLabel={texto}
+        style={styles.verTodas}
+      >
         <Text style={[styles.verTodasTexto, { color: cores.tintInk }]}>{texto}</Text>
         <MaterialIcons name="arrow-forward" size={18} color={cores.tintInk} />
       </Pressable>
@@ -359,7 +444,13 @@ function MenuVotacoes({ fechar }: { fechar: () => void }) {
         <View style={styles.grelha}>
           {TEMAS.map((t) => (
             <View key={t} style={styles.metade}>
-              <Opcao href={{ pathname: '/', params: { tema: t } }} fechar={fechar} icone={ICONE_TEMA[t]} titulo={t} />
+              <Opcao
+                href={{ pathname: '/', params: { tema: t } }}
+                fechar={fechar}
+                limpar={() => limparFiltros('votacoes', { tema: t })}
+                icone={ICONE_TEMA[t]}
+                titulo={t}
+              />
             </View>
           ))}
         </View>
@@ -406,7 +497,7 @@ function MenuVotacoes({ fechar }: { fechar: () => void }) {
         ) : (
           <Text style={[Typography.bodySm, { color: cores.textMuted }]}>A carregar…</Text>
         )}
-        <VerTodas href="/" texto="Ver todas as votações" fechar={fechar} />
+        <VerTodas href="/" texto="Ver todas as votações" fechar={fechar} limpar={() => limparFiltros('votacoes')} />
       </Coluna>
     </Colunas>
   );
@@ -425,6 +516,7 @@ function MenuDeputados({ fechar }: { fechar: () => void }) {
               <Opcao
                 href={{ pathname: '/deputados', params: { partido: sigla } }}
                 fechar={fechar}
+                limpar={() => limparFiltros('deputados', { partido: sigla })}
                 ponto={getCorPartido(sigla)}
                 titulo={sigla}
                 numero={n}
@@ -440,6 +532,7 @@ function MenuDeputados({ fechar }: { fechar: () => void }) {
         <Opcao
           href="/deputados"
           fechar={fechar}
+          limpar={() => limparFiltros('deputados')}
           icone="groups"
           titulo={data ? `Todos os ${data.deputados.length} deputados` : 'Todos os deputados'}
           frase="Em funções na XVII legislatura"
@@ -557,6 +650,33 @@ const styles = StyleSheet.create({
   },
   itemHover: {
     backgroundColor: '#231A9E',
+  },
+  // Com menu: o nome e a seta são dois alvos; o espaçamento passa para dentro
+  // deles, para toda a cápsula ser clicável.
+  itemDividido: {
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+    gap: 0,
+  },
+  itemLigacao: {
+    paddingLeft: Spacing.md,
+    paddingRight: 2,
+    paddingVertical: Spacing.sm,
+  },
+  itemSeta: {
+    paddingLeft: 2,
+    paddingRight: Spacing.sm,
+    paddingVertical: Spacing.sm,
+    borderTopRightRadius: Radii.chip,
+    borderBottomRightRadius: Radii.chip,
+  },
+  menuVisivel: {
+    opacity: 1,
+    transform: [{ translateY: 0 }],
+  },
+  menuEscondido: {
+    opacity: 0,
+    transform: [{ translateY: -8 }],
   },
   itemTexto: {
     fontFamily: Fonts.medium,

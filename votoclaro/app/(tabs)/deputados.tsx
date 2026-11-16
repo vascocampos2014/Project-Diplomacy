@@ -1,5 +1,5 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,6 +17,7 @@ import { MAX_WIDTH_LARGO, Radii, Spacing } from '@/constants/Spacing';
 import { Fonts, Typography } from '@/constants/Typography';
 import { useDeputados } from '@/hooks/useDeputados';
 import { filtrarDeputados } from '@/lib/deputados';
+import { useLimparFiltros } from '@/lib/limparFiltros';
 import type { Deputado } from '@/types';
 
 export default function DeputadosScreen() {
@@ -38,6 +39,13 @@ export default function DeputadosScreen() {
     setPartido(p);
     router.setParams({ partido: p ?? undefined });
   };
+  // Vindo da barra do topo: começa do zero, só com o partido pedido (ou nenhum).
+  const navigation = useNavigation();
+  useLimparFiltros('deputados', (f) => {
+    setPesquisa('');
+    setPartido(f.partido ?? null);
+    navigation.setParams({ partido: f.partido, q: undefined } as never);
+  });
   const { data, isLoading, isError, refetch } = useDeputados();
 
   const partidos = useMemo(
@@ -212,6 +220,10 @@ function DeputadosComputador({
   const cores = useCores();
   const [circulo, setCirculo] = useState<string | null>(null);
   const [verCirculos, setVerCirculos] = useState(false);
+  useLimparFiltros('deputados', () => {
+    setCirculo(null);
+    setVerCirculos(false);
+  });
   const lista = todos ?? [];
   const circulos = useMemo(() => {
     const c = new Map<string, number>();
@@ -331,6 +343,7 @@ function DeputadosComputador({
                     accao={{ label: 'Limpar filtros', onPress: () => (setPesquisa(''), escolherPartido(null), setCirculo(null)) }}
                   />
                 ) : (
+                  <View key={`${partido}-${circulo}`} {...anim('lista')}>
                   <Tabela
                     cabecalho={
                       <>
@@ -367,6 +380,7 @@ function DeputadosComputador({
                       </LinhaLigacao>
                     ))}
                   </Tabela>
+                  </View>
                 )}
               </>
             )}

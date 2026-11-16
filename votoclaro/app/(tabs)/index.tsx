@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,6 +17,7 @@ import { useDeputados } from '@/hooks/useDeputados';
 import { useVotacoesFeed } from '@/hooks/useVotacoesFeed';
 import type { Posicao, Resultado } from '@/types';
 import type { ItemFeed } from '@/lib/feed';
+import { useLimparFiltros } from '@/lib/limparFiltros';
 import { TEMAS } from '@/lib/temas';
 import { ICONE_TEMA } from '@/components/BarraComputador';
 
@@ -27,6 +28,10 @@ export default function FeedScreen() {
   const params = useLocalSearchParams<{ tema?: string }>();
   const tema = params.tema && TEMAS.includes(params.tema) ? params.tema : null;
   const setTema = (t: string | null) => router.setParams({ tema: t ?? undefined });
+  // Vindo da barra do topo: tira o ?tema= deste ecrã (o separador pode estar
+  // montado com um tema antigo) e aplica só o pedido.
+  const navigation = useNavigation();
+  useLimparFiltros('votacoes', (f) => navigation.setParams({ tema: f.tema } as never));
   const [aAtualizar, setAAtualizar] = useState(false);
   const { itens, total, isLoading, isError, refetch } = useVotacoesFeed();
 
@@ -165,6 +170,10 @@ function VotacoesComputador({
   const deputados = useDeputados();
   const [resultado, setResultado] = useState<Resultado | null>(null);
   const [tipo, setTipo] = useState<string | null>(null);
+  useLimparFiltros('votacoes', () => {
+    setResultado(null);
+    setTipo(null);
+  });
   const todos = itens ?? [];
   const partidos = useMemo(
     () =>
@@ -230,6 +239,7 @@ function VotacoesComputador({
                 accao={{ label: 'Limpar filtros', onPress: () => (setTema(null), setResultado(null), setTipo(null)) }}
               />
             ) : (
+              <View key={`${tema}-${resultado}-${tipo}`} {...anim('lista')}>
               <Tabela
                 cabecalho={
                   <>
@@ -269,6 +279,7 @@ function VotacoesComputador({
                   </LinhaLigacao>
                 ))}
               </Tabela>
+              </View>
             )}
           </Painel>
         </Contentor>

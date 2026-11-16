@@ -105,6 +105,12 @@ input, textarea { caret-color: #120A8F; }
 [data-anim='carimbo'] { animation: vc-carimbo var(--duration-slow) var(--ease-smooth-out) 560ms both; }
 [data-anim='imagem'] { animation: vc-imagem var(--duration-slow) var(--ease-smooth-out) both; }
 [data-anim='troca'] { animation: vc-troca var(--duration-quick) var(--ease-in-out) both; }
+/* A lista refeita depois de mudar um filtro: sobe e aparece, sem desfocar. */
+@keyframes vc-lista { from { opacity: 0; transform: translateY(var(--distance-base)); } }
+[data-anim='lista'] { animation: vc-lista var(--duration-fast) var(--ease-smooth-out) both; }
+/* O azulejo pendurado por baixo do separador ativo: aparece rodado e cresce. */
+@keyframes vc-selo { from { opacity: 0; transform: rotate(45deg) scale(0.4); } }
+[data-anim='selo'] { animation: vc-selo var(--duration-fast) var(--ease-smooth-out) both; }
 
 @media (prefers-reduced-motion: reduce) {
   [data-anim] { animation: none !important; }

@@ -37,7 +37,7 @@ export const transicao = (Platform.OS === 'web'
 // Entradas animadas no web: o CSS está no +html.tsx ([data-anim]) e respeita
 // prefers-reduced-motion. `i` dá o atraso em escada (40ms por item, até 8).
 // No nativo não faz nada.
-export type Animacao = 'pagina' | 'titulo' | 'item' | 'carimbo' | 'imagem' | 'troca';
+export type Animacao = 'pagina' | 'titulo' | 'item' | 'carimbo' | 'imagem' | 'troca' | 'lista' | 'selo';
 export function anim(nome: Animacao, i?: number): object {
   if (Platform.OS !== 'web') return {};
   return { dataSet: { anim: nome, ...(i !== undefined ? { i: String(Math.min(i, 8)) } : {}) } };
