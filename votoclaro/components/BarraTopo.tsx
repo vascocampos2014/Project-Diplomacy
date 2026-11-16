@@ -3,7 +3,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { Link, useRouter } from 'expo-router';
 import React from 'react';
-import { Image, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BarraComputador } from '@/components/BarraComputador';
@@ -12,13 +12,11 @@ import { useCores } from '@/components/ui';
 import { LARGURA_DESKTOP, MAX_WIDTH_LARGO, Spacing } from '@/constants/Spacing';
 import { Fonts } from '@/constants/Typography';
 
-const ICONE = require('@/assets/brand/logo-icon-96.png');
-
-export function Marca({ tamanho = 28 }: { tamanho?: number }) {
+// Só o nome, sem o ícone do logótipo.
+export function Marca() {
   const cores = useCores();
   return (
     <View style={styles.marca} accessible accessibilityRole="image" accessibilityLabel="VotoClaro">
-      <Image source={ICONE} style={{ width: tamanho, height: tamanho }} accessibilityIgnoresInvertColors />
       <Text style={[styles.palavra, { color: cores.text }]}>
         <Text style={styles.voto}>Voto</Text>Claro
       </Text>

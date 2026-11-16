@@ -7,7 +7,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { Link, usePathname, useRouter, type Href } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
-import { Image, Platform, Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View, type ViewStyle } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View, type ViewStyle } from 'react-native';
 
 import { AzulejoUnico, PadraoAzulejo } from '@/components/Azulejo';
 import { Carimbo, LegendaVotos } from '@/components/Hemiciclo';
@@ -325,23 +325,13 @@ export function BarraComputador({ voltar = false }: { voltar?: boolean }) {
   );
 }
 
+// Só o nome, sem o ícone do logótipo.
 function MarcaClara() {
   return (
-    <View style={styles.marcaInterior}>
-      <View style={styles.logoFundo}>
-        {/* O logótipo tal como é (imagem), num pequeno papel branco para se ler no azul. */}
-        <LogoImagem />
-      </View>
-      <Text style={styles.palavra}>
-        <Text style={styles.voto}>Voto</Text>Claro
-      </Text>
-    </View>
+    <Text style={styles.palavra}>
+      <Text style={styles.voto}>Voto</Text>Claro
+    </Text>
   );
-}
-
-const ICONE_LOGO = require('@/assets/brand/logo-icon-96.png');
-function LogoImagem() {
-  return <Image source={ICONE_LOGO} style={{ width: 26, height: 26 }} accessibilityIgnoresInvertColors />;
 }
 
 // O azulejo pendurado por baixo do separador ativo (ou do menu aberto).
@@ -617,21 +607,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.lg,
   },
+  // Fundo ultramarino cheio, como os itens, para as linhas do azulejo não
+  // passarem por baixo das letras.
   marca: {
-    marginRight: Spacing.lg,
-  },
-  marcaInterior: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  logoFundo: {
-    width: 34,
-    height: 34,
-    borderRadius: 9,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
+    marginRight: Spacing.md,
+    marginLeft: -Spacing.sm,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: Radii.chip,
+    backgroundColor: 'rgba(18,10,143,0.9)',
   },
   palavra: {
     fontFamily: Fonts.regular,
