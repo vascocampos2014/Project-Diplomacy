@@ -13,7 +13,7 @@ import { AzulejoUnico, PadraoAzulejo } from '@/components/Azulejo';
 import { Carimbo, LegendaVotos } from '@/components/Hemiciclo';
 import { anim, transicao, useCores } from '@/components/ui';
 import { getCorPartido } from '@/constants/CORES_PARTIDOS';
-import { Easing, MAX_WIDTH_LARGO, Motion, Radii, Spacing } from '@/constants/Spacing';
+import { MAX_WIDTH_LARGO, Motion, Radii, Spacing } from '@/constants/Spacing';
 import { limparFiltros } from '@/lib/limparFiltros';
 import { Fonts, Typography } from '@/constants/Typography';
 import { useDeputados } from '@/hooks/useDeputados';
@@ -63,16 +63,17 @@ function itemDaRota(pathname: string): ItemId | null {
 // (tablet) fica absoluto, que é o que o React Native tem.
 const fixo = (Platform.OS === 'web' ? { position: 'fixed' } : { position: 'absolute' }) as unknown as ViewStyle;
 
-// O menu e o fundo escurecido entram e saem a deslizar/esvanecer (web).
-// Abrir usa a duração "fast"; fechar, a "quick", mais curta.
-const transicaoMenu = (aberto: boolean) =>
-  (Platform.OS === 'web'
-    ? {
-        transitionProperty: 'opacity, transform',
-        transitionDuration: `${aberto ? Motion.fast : Motion.quick}ms`,
-        transitionTimingFunction: Easing.smoothOut,
-      }
-    : {}) as ViewStyle;
+// O menu e o fundo escurecido entram e saem com o padrão "menu dropdown" do
+// transitions.dev: o CSS está no +html.tsx ([data-menu], [data-veu], [data-seta]).
+// No nativo dataSet não faz nada.
+type Fase = 'entrar' | 'aberto' | 'sair';
+const dados = (chave: 'menu' | 'veu' | 'seta', valor: string): object =>
+  Platform.OS === 'web' ? { dataSet: { [chave]: valor } } : {};
+
+// Depois de clicar num nome, o rato ainda está em cima dele: não reabrir o
+// menu até sair desse item. Fica fora do componente porque cada separador
+// tem a sua própria barra, e a da página nova também sente o rato por cima.
+const bloqueado: { current: ItemId | null } = { current: null };
 
 // Clicar no nome leva à lista completa, sem filtros.
 const LISTA: Partial<Record<ItemId, 'votacoes' | 'deputados'>> = { votacoes: 'votacoes', deputados: 'deputados' };
@@ -94,6 +95,7 @@ export function BarraComputador({ voltar = false }: { voltar?: boolean }) {
   const compacta = useWindowDimensions().width < 1180;
   const ativo = itemDaRota(pathname);
   const marcado = aberto ?? ativo;
+  const fase: Fase = !aberto ? 'sair' : visivel ? 'aberto' : 'entrar';
 
   // Mudar de página fecha o menu.
   useEffect(() => setAberto(null), [pathname]);
@@ -102,7 +104,11 @@ export function BarraComputador({ voltar = false }: { voltar?: boolean }) {
   useEffect(() => {
     if (aberto) {
       setMostrado(aberto);
-      const f = requestAnimationFrame(() => setVisivel(true));
+      // Dois frames: o browser tem de pintar o estado "entrar" antes de passar a
+      // "aberto", senão salta a transição.
+      let f = requestAnimationFrame(() => {
+        f = requestAnimationFrame(() => setVisivel(true));
+      });
       return () => cancelAnimationFrame(f);
     }
     setVisivel(false);
@@ -126,12 +132,15 @@ export function BarraComputador({ voltar = false }: { voltar?: boolean }) {
   // Rato: abre ao passar (com uma pausa curta, para não abrir de passagem) e
   // fecha um pouco depois de sair da barra e do menu.
   const passarPor = (id: MenuId) => {
+    if (bloqueado.current === id) return;
     clearTimeout(temporizador.current);
     temporizador.current = setTimeout(() => setAberto(id), aberto ? 0 : 140);
   };
   const sair = () => {
     clearTimeout(temporizador.current);
-    temporizador.current = setTimeout(() => setAberto(null), 220);
+    // Fechar nunca deve esperar: só uma pausa curta (--duration-micro) para
+    // um deslize do rato para fora não fechar o menu.
+    temporizador.current = setTimeout(() => setAberto(null), 80);
   };
   const ficar = () => clearTimeout(temporizador.current);
   const fechar = () => {
@@ -142,6 +151,7 @@ export function BarraComputador({ voltar = false }: { voltar?: boolean }) {
   // Votações / Deputados / Aprender: o nome é uma ligação para a página toda;
   // a seta ao lado (ou passar o rato) abre o menu.
   function irPara(item: (typeof ITENS)[number]) {
+    bloqueado.current = item.id;
     fechar();
     const lista = LISTA[item.id];
     if (lista) limparFiltros(lista);
@@ -194,7 +204,15 @@ export function BarraComputador({ voltar = false }: { voltar?: boolean }) {
                         setPairado(item.id);
                         passarPor(item.id as MenuId);
                       }}
-                      onPointerLeave={() => setPairado((p) => (p === item.id ? null : p))}
+                      onPointerLeave={(e) => {
+                        setPairado((p) => (p === item.id ? null : p));
+                        // Ao trocar de página a barra antiga esconde-se e "sai" sem o rato
+                        // se mexer: só desbloqueia se o rato já não estiver neste item.
+                        const { clientX, clientY } = e.nativeEvent as unknown as PointerEvent;
+                        const porBaixo = Platform.OS === 'web' ? document.elementFromPoint(clientX, clientY) : null;
+                        if (bloqueado.current === item.id && !porBaixo?.closest(`[data-item="${item.id}"]`)) bloqueado.current = null;
+                      }}
+                      {...(Platform.OS === 'web' ? { dataSet: { item: item.id } } : {})}
                     >
                       <Pressable
                         onPress={() => irPara(item)}
@@ -215,7 +233,10 @@ export function BarraComputador({ voltar = false }: { voltar?: boolean }) {
                         aria-expanded={aberto === item.id}
                         style={styles.itemSeta}
                       >
-                        <View style={[transicao, aberto === item.id && styles.setaAberta]}>
+                        <View
+                          style={Platform.OS === 'web' ? undefined : aberto === item.id && styles.setaAberta}
+                          {...dados('seta', aberto === item.id ? 'aberta' : 'fechada')}
+                        >
                           <MaterialIcons name="expand-more" size={18} color={marca ? TEXTO : TEXTO_SUAVE} />
                         </View>
                       </Pressable>
@@ -277,13 +298,8 @@ export function BarraComputador({ voltar = false }: { voltar?: boolean }) {
 
       {mostrado ? (
         <View
-          style={[
-            fixo,
-            styles.menu,
-            transicaoMenu(visivel),
-            visivel ? styles.menuVisivel : styles.menuEscondido,
-            { pointerEvents: aberto ? 'auto' : 'none' },
-          ]}
+          style={[fixo, styles.menu, { pointerEvents: aberto ? 'auto' : 'none' }]}
+          {...dados('menu', fase)}
           onPointerEnter={ficar}
           role="region"
           aria-label={`Menu ${ITENS.find((i) => i.id === mostrado)?.nome}`}
@@ -298,7 +314,8 @@ export function BarraComputador({ voltar = false }: { voltar?: boolean }) {
       {/* O resto da página fica um pouco escurecido; um clique fora fecha. */}
       {mostrado ? (
         <Pressable
-          style={[fixo, styles.fundo, transicaoMenu(visivel), { opacity: visivel ? 1 : 0, pointerEvents: aberto ? 'auto' : 'none' }]}
+          style={[fixo, styles.fundo, { pointerEvents: aberto ? 'auto' : 'none' }]}
+          {...dados('veu', fase)}
           onPress={fechar}
           accessible={false}
           focusable={false}
@@ -669,14 +686,6 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
     borderTopRightRadius: Radii.chip,
     borderBottomRightRadius: Radii.chip,
-  },
-  menuVisivel: {
-    opacity: 1,
-    transform: [{ translateY: 0 }],
-  },
-  menuEscondido: {
-    opacity: 0,
-    transform: [{ translateY: -8 }],
   },
   itemTexto: {
     fontFamily: Fonts.medium,

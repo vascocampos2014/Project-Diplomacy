@@ -1,11 +1,11 @@
 import { Tabs } from 'expo-router';
-import { useWindowDimensions } from 'react-native';
+import { Easing, useWindowDimensions } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 
 import { BarraSeparadores } from '@/components/BarraSeparadores';
 import { BarraTopo } from '@/components/BarraTopo';
 import { useCores } from '@/components/ui';
-import { LARGURA_DESKTOP } from '@/constants/Spacing';
+import { LARGURA_DESKTOP, Motion } from '@/constants/Spacing';
 
 export default function TabLayout() {
   const cores = useCores();
@@ -23,6 +23,9 @@ export default function TabLayout() {
         header: () => <BarraTopo />,
         sceneStyle: { backgroundColor: cores.background },
         animation: menosMovimento ? 'none' : 'fade',
+        // transitions.dev: mudar de página = --duration-fast com --ease-smooth-out
+        // (o predefinido da biblioteca é 150ms linear).
+        transitionSpec: { animation: 'timing', config: { duration: Motion.fast, easing: Easing.bezier(0.22, 1, 0.36, 1) } },
       }}
     >
       <Tabs.Screen name="index" options={{ title: 'Votações', tabBarAccessibilityLabel: 'Votações recentes' }} />
