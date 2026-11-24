@@ -12,7 +12,9 @@ import { Stack } from 'expo-router';
 import Head from 'expo-router/head';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 import 'react-native-reanimated';
+import { inject as injectAnalytics } from '@vercel/analytics';
 
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
@@ -28,6 +30,11 @@ export const unstable_settings = {
   // A deep link straight to a detail page still gets the tabs underneath, so "back" works.
   initialRouteName: '(tabs)',
 };
+
+// Vercel Web Analytics (web only): cookieless page views. The script and its
+// beacons are served from this origin (/_vercel/insights), so the CSP's 'self'
+// already allows them. It hooks history.pushState, so Expo Router navigations count.
+if (Platform.OS === 'web') injectAnalytics();
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
